@@ -1,0 +1,51 @@
+name: runtime-preflight-gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    paths:
+      - "scripts/runtime-preflight-gate.sh"
+      - "scripts/ci-preflight-gate.sh"
+      - "scripts/metadata-schema-check.sh"
+      - "scripts/runner06-preflight.sh"
+      - "docker-compose.yml"
+      - "backend/.env.example"
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    env:
+      RUNNER_ID: "06"
+      PROFILE_ID: "db-runtime-v1"
+      EXPECTED_ENV_SOURCE: "${{ github.workspace }}/backend/.env.example"
+      ENV_SOURCE: "${{ github.workspace }}/backend/.env.example"
+      COMPOSE_FILE: "${{ github.workspace }}/docker-compose.yml"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure scripts executable
+        run: chmod +x scripts/runtime-preflight-gate.sh scripts/ci-preflight-gate.sh scripts/metadata-schema-check.sh scripts/runner06-preflight.sh
+
+      - name: Run deterministic preflight gate
+        run: scripts/ci-preflight-gate.sh
+
+  metadata-schema-validation:
+    runs-on: ubuntu-latest
+    env:
+      RUNNER_ID: "06"
+      PROFILE_ID: "db-runtime-v1"
+      EXPECTED_ENV_SOURCE: "${{ github.workspace }}/backend/.env.example"
+      ENV_SOURCE: "${{ github.workspace }}/backend/.env.example"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure metadata script executable
+        run: chmod +x scripts/metadata-schema-check.sh
+
+      - name: Validate runtime metadata schema
+        run: scripts/metadata-schema-check.sh

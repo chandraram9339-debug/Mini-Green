@@ -1,0 +1,8 @@
+runner_id=06
+utc=2026-04-15T15:19:45Z
+profile_id=NOT_SET_IN_RUNTIME_ENV
+env_source=/home/ramos/Документы/miniapp/backend/.env
+dsn_redacted=postgresql://miniapp:***@localhost:5432/miniapp
+step=SQL_preflight_SELECT_1
+result=PASS
+sql_output=?column?=1
