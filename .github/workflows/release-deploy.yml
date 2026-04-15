@@ -12,6 +12,20 @@ on:
         required: true
         default: "staging-rc"
         type: string
+      visual_fidelity_pass:
+        description: "Visual Fidelity PASS confirmed by 06_SECURITY_QA (true/false)"
+        required: true
+        default: "false"
+        type: string
+      visual_evidence_ref:
+        description: "QA visual evidence ref (run ID / report URL)"
+        required: true
+        type: string
+      qa_owner_tag:
+        description: "QA owner tag confirming visual acceptance"
+        required: true
+        default: "06_SECURITY_QA"
+        type: string
   push:
     tags:
       - "rc-*"
@@ -26,6 +40,9 @@ jobs:
     env:
       RELEASE_TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
       TARGET_ENV: ${{ github.event.inputs.target_environment || 'staging-rc' }}
+      VISUAL_FIDELITY_PASS: ${{ github.event.inputs.visual_fidelity_pass || 'false' }}
+      VISUAL_EVIDENCE_REF: ${{ github.event.inputs.visual_evidence_ref || 'missing' }}
+      QA_OWNER_TAG: ${{ github.event.inputs.qa_owner_tag || '06_SECURITY_QA' }}
     steps:
       - name: Capture deploy start UTC
         run: echo "DEPLOY_START_UTC=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
@@ -51,6 +68,20 @@ jobs:
           echo "deployed_commit=${DEPLOYED_COMMIT}"
           echo "target_environment=${TARGET_ENV}"
 
+      - name: Enforce visual quality gate (06_SECURITY_QA)
+        run: |
+          if [[ "${VISUAL_FIDELITY_PASS}" != "true" ]]; then
+            echo "release_close=BLOCKED"
+            echo "reason=Visual Fidelity PASS missing from 06_SECURITY_QA"
+            echo "qa_owner_tag=${QA_OWNER_TAG}"
+            echo "visual_evidence_ref=${VISUAL_EVIDENCE_REF}"
+            exit 1
+          fi
+          echo "release_close=UNBLOCKED"
+          echo "visual_fidelity_pass=${VISUAL_FIDELITY_PASS}"
+          echo "qa_owner_tag=${QA_OWNER_TAG}"
+          echo "visual_evidence_ref=${VISUAL_EVIDENCE_REF}"
+
       - name: Deploy RC to target environment
         run: |
           # Deployment hook point for release pipeline.
@@ -68,6 +99,9 @@ jobs:
           target_environment=${TARGET_ENV}
           deploy_start_utc=${DEPLOY_START_UTC}
           deploy_end_utc=${DEPLOY_END_UTC}
+          visual_fidelity_pass=${VISUAL_FIDELITY_PASS}
+          qa_owner_tag=${QA_OWNER_TAG}
+          visual_evidence_ref=${VISUAL_EVIDENCE_REF}
           workflow_run_url=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
           EOF
           cat deploy-evidence.txt

@@ -35,3 +35,14 @@ Both paths use the same deterministic gate and emit:
 
 - Required check 1: `preflight` (runtime preflight gate)
 - Required check 2: `metadata-schema-validation` (runtime metadata schema gate)
+
+## Runtime drift guard contract
+
+- Contract file: `scripts/runtime-drift-contract.env`
+- Drift keys (hard-fail on mismatch): `env_source`, `profile_id`, `dsn_hash`
+- Alert rule: `scripts/alerts/runtime-drift-alert-rule.yml`
+
+## Release close gate
+
+- Checklist: `docs/release-quality-gate-checklist.md`
+- Release close is blocked unless `Visual Fidelity PASS` is confirmed by `06_SECURITY_QA`.
