@@ -823,12 +823,6 @@ function App() {
                   <h2 className="internal-hero-title">{routeTitles.faq}</h2>
                 </header>
               )}
-              {route === "topup" && (
-                <header className="internal-hero internal-hero-topup">
-                  <h2 className="internal-hero-title">Deposit</h2>
-                  <p className="internal-hero-label">Recieve USDT</p>
-                </header>
-              )}
               {route === "withdraw" && (
                 <header className="internal-hero internal-hero-withdraw">
                   <h2 className="internal-hero-title">Withdraw</h2>
@@ -1029,43 +1023,48 @@ function App() {
               )}
 
               {route === "topup" && (
-                <div className="topup-block">
-                  <h3 className="topup-title">Receive USDT</h3>
-                  <TopUpQrVisual />
-                  <p className="topup-qr-hint">Scan the code or copy the address below</p>
-                  <div className="topup-deposit-stack">
-                    <article className="metric-card topup-deposit-card">
-                      <div className="topup-deposit-head">
-                        <p className="metric-label">Network</p>
-                        <p className="topup-network-pill">TRC20</p>
-                      </div>
-                      <div className="topup-wallet-copy-row">
-                        <div className="topup-wallet-text-block">
-                          <p className="metric-label">Deposit address</p>
-                          <p className="topup-address-mono">{topupAddressDisplay(DEFAULT_TOPUP_ADDRESS)}</p>
+                <div className="topup-page">
+                  <header className="internal-hero internal-hero-topup">
+                    <h2 className="internal-hero-title">{routeTitles.topup}</h2>
+                    <p className="internal-hero-label">Receive USDT on TRC20</p>
+                  </header>
+                  <div className="topup-block">
+                    <TopUpQrVisual />
+                    <p className="topup-qr-hint">Scan the code or copy the address below</p>
+                    <div className="topup-deposit-stack">
+                      <article className="metric-card topup-deposit-card">
+                        <div className="topup-deposit-head">
+                          <p className="metric-label">Network</p>
+                          <p className="topup-network-pill">TRC20</p>
                         </div>
-                        <button
-                          type="button"
-                          className="topup-copy-cta"
-                          disabled={isBusy}
-                          onClick={async () => {
-                            if (isBusy) return;
-                            try {
-                              await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
-                              flashTopupCopied();
-                            } catch {
-                              flashTopupCopyError();
-                            }
-                          }}
-                        >
-                          {topupCopyState === "success"
-                            ? "Copied"
-                            : topupCopyState === "error"
-                              ? "Copy unavailable"
-                              : "Copy"}
-                        </button>
-                      </div>
-                    </article>
+                        <div className="topup-wallet-copy-row">
+                          <div className="topup-wallet-text-block">
+                            <p className="metric-label">Deposit address</p>
+                            <p className="topup-address-mono">{topupAddressDisplay(DEFAULT_TOPUP_ADDRESS)}</p>
+                          </div>
+                          <button
+                            type="button"
+                            className="topup-copy-cta"
+                            disabled={isBusy}
+                            onClick={async () => {
+                              if (isBusy) return;
+                              try {
+                                await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
+                                flashTopupCopied();
+                              } catch {
+                                flashTopupCopyError();
+                              }
+                            }}
+                          >
+                            {topupCopyState === "success"
+                              ? "Copied"
+                              : topupCopyState === "error"
+                                ? "Copy unavailable"
+                                : "Copy"}
+                          </button>
+                        </div>
+                      </article>
+                    </div>
                   </div>
                 </div>
               )}
