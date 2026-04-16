@@ -134,7 +134,7 @@ interface StateViewProps {
 }
 
 function topupAddressTwoLines(full: string): readonly [string, string] {
-  if (full.length <= 20) return [full, ""] as const;
+  if (full.length <= 22) return [full, ""] as const;
   const mid = Math.ceil(full.length / 2);
   return [full.slice(0, mid), full.slice(mid)] as const;
 }
@@ -150,15 +150,16 @@ function TopUpQrVisual() {
 function TopupAddressPanel({ address }: { address: string }) {
   const [first, second] = topupAddressTwoLines(address);
   return (
-    <div className="topup-address-panel">
+    <article className="topup-address-panel">
       <div className="topup-address-panel-head">
+        <p className="metric-label topup-address-panel-title">Deposit address</p>
         <span className="topup-network-chip">TRC20</span>
       </div>
       <div className="topup-address-lines" aria-label="Deposit address">
         <p className="topup-address-line">{first}</p>
         {second ? <p className="topup-address-line">{second}</p> : null}
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -1041,8 +1042,8 @@ function App() {
               {route === "topup" && (
                 <div className="topup-page">
                   <header className="internal-hero internal-hero-topup">
-                    <h2 className="internal-hero-title">{routeTitles.topup}</h2>
-                    <p className="internal-hero-label">Recieve USDT</p>
+                    <h2 className="internal-hero-title">{screenData.topup.title}</h2>
+                    <p className="internal-hero-label">{screenData.topup.description}</p>
                   </header>
                   <div className="topup-frame">
                     <TopUpQrVisual />
@@ -1062,13 +1063,29 @@ function App() {
                       }}
                     >
                       <span className="topup-copy-row-icon" aria-hidden="true">
-                        ⧉
+                        <svg className="topup-copy-svg" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                          <path
+                            d="M16 4h2a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2h2"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinejoin="round"
+                          />
+                          <rect
+                            x="4"
+                            y="8"
+                            width="12"
+                            height="12"
+                            rx="2"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                          />
+                        </svg>
                       </span>
                       {topupCopyState === "success"
                         ? "Copied"
                         : topupCopyState === "error"
                           ? "Copy unavailable"
-                          : "Copy"}
+                          : "Copy address"}
                     </button>
                   </div>
                 </div>
@@ -1225,7 +1242,11 @@ function App() {
                     ) : route === "topup" ? (
                       <>
                         <span className="btn-main-paid-glyph" aria-hidden="true">
-                          ✓
+                          <svg className="btn-main-paid-svg" viewBox="0 0 24 24" width="14" height="14" fill="none">
+                            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.75" />
+                            <path d="M3 10h18" stroke="currentColor" strokeWidth="1.75" />
+                            <circle cx="12" cy="15" r="1.25" fill="currentColor" />
+                          </svg>
                         </span>
                         Paid
                       </>
