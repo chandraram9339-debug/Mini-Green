@@ -195,6 +195,7 @@ function App() {
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
   const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">("all");
   const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">("7d");
+  const [withdrawAddress, setWithdrawAddress] = React.useState("");
   const [topupCopied, setTopupCopied] = React.useState(false);
   const [confirmStep, setConfirmStep] = React.useState<"review" | "submitting" | "success">("review");
   const confirmTimerRef = React.useRef<number | null>(null);
@@ -802,15 +803,18 @@ function App() {
                       <span className="withdraw-network-pill">TRC20</span>
                     </div>
                     <div className="withdraw-field-wrap">
-                      <div
+                      <input
+                        type="text"
                         className="withdraw-field"
-                        role="textbox"
-                        aria-label="Wallet address (demo placeholder)"
-                        aria-readonly="true"
-                        tabIndex={0}
-                      >
-                        Paste
-                      </div>
+                        aria-label="Wallet address"
+                        placeholder="Paste"
+                        autoComplete="off"
+                        spellCheck={false}
+                        inputMode="text"
+                        value={withdrawAddress}
+                        onChange={(event) => setWithdrawAddress(event.target.value)}
+                        disabled={isBusy}
+                      />
                     </div>
                     <p className="withdraw-field-hint">
                       USDT on TRC20 only. Sending on the wrong network may result in permanent loss.

@@ -1441,6 +1441,7 @@ button:focus-visible,
 }
 
 .withdraw-field {
+  width: 100%;
   min-height: 52px;
   padding: 14px 14px 12px;
   border-radius: 12px;
@@ -1449,8 +1450,19 @@ button:focus-visible,
   font-size: 15px;
   line-height: 22px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.42);
+  color: rgba(255, 255, 255, 0.92);
   letter-spacing: 0.01em;
+  outline: none;
+  appearance: none;
+}
+
+.withdraw-field::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.withdraw-field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .withdraw-field-hint {
