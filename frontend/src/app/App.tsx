@@ -162,13 +162,6 @@ function metricRows(route: RouteId): Array<{ label: string; value: string }> {
       { label: "Pending ops", value: "2" },
     ];
   }
-  if (route === "money") {
-    return [
-      { label: "Available", value: "$8,540.00" },
-      { label: "Locked", value: "$1,250.00" },
-      { label: "Recent fee", value: "$4.80" },
-    ];
-  }
   if (route === "trading") {
     return [
       { label: "Strategy", value: "Conservative" },
@@ -776,7 +769,7 @@ function App() {
                 </div>
               )}
 
-              {(route === "money" || route === "trading") && (
+              {route === "trading" && (
                 <div className="metrics-grid">
                   {metricRows(route).map((item) => (
                     <article key={item.label} className="metric-card">
