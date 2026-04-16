@@ -417,14 +417,14 @@ function App() {
               </div>
               <div className="dashboard-cta-stack">
                 <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
-                  ⌁ Details
+                  Details
                 </button>
                 <div className="dashboard-support-row">
                   <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                    ☍ Social Media
+                    Social Media
                   </button>
                   <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                    ☰ Support
+                    Support
                   </button>
                 </div>
               </div>
@@ -696,7 +696,13 @@ function App() {
                       <span className="withdraw-network-pill">TRC20</span>
                     </div>
                     <div className="withdraw-field-wrap">
-                      <div className="withdraw-field" role="textbox" aria-label="Wallet address (demo placeholder)">
+                      <div
+                        className="withdraw-field"
+                        role="textbox"
+                        aria-label="Wallet address (demo placeholder)"
+                        aria-readonly="true"
+                        tabIndex={0}
+                      >
                         Paste
                       </div>
                     </div>
