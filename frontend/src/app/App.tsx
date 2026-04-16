@@ -714,7 +714,20 @@ function App() {
             <div className="dashboard-balance-row">
               <div>
                 <p className="dashboard-balance-value">{dashboardBalance}</p>
-                <p className="dashboard-balance-sub">{FIGMA_VISUAL_STUBS.dashboardLiquidLine} USDT</p>
+                <div className="dashboard-metric-strip" aria-label="Available and referral balances">
+                  <div className="dashboard-metric-cell">
+                    <p className="dashboard-metric-label">Available</p>
+                    <p className="dashboard-metric-value">
+                      {FIGMA_VISUAL_STUBS.dashboardLiquidLine} <span className="dashboard-metric-unit">USDT</span>
+                    </p>
+                  </div>
+                  <div className="dashboard-metric-cell">
+                    <p className="dashboard-metric-label">Referral</p>
+                    <p className="dashboard-metric-value">
+                      {FIGMA_VISUAL_STUBS.referralAmount} <span className="dashboard-metric-unit">USDT</span>
+                    </p>
+                  </div>
+                </div>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -722,19 +735,19 @@ function App() {
                   onClick={() => navigate("topup")}
                   disabled={isBusy}
                 >
-                  + Top up
+                  Top up
                 </button>
                 <button
                   className="dashboard-pill dashboard-pill-muted"
                   onClick={() => navigate("withdraw")}
                   disabled={isBusy}
                 >
-                  ↑ Withdraw
+                  Withdraw
                 </button>
               </div>
             </div>
             <button className="dashboard-details-btn" onClick={() => navigate("money")} disabled={isBusy}>
-              ◫ Details
+              Details
             </button>
           </div>
         ) : null}
@@ -748,7 +761,7 @@ function App() {
                 <div className="dashboard-chart-module">
                   <div className="dashboard-chart-module-head">
                     <span className="dashboard-chart-title">BTC / USDT</span>
-                    <span className="dashboard-chart-range">24h</span>
+                    <span className="dashboard-chart-range">24H</span>
                   </div>
                   <div className="dashboard-chart" aria-hidden="true">
                     <div className="dashboard-chart-y-axis">
@@ -785,8 +798,8 @@ function App() {
                     Details
                   </button>
                   <div className="dashboard-support-row">
-                    <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("topup")} disabled={isBusy}>
-                      Top Up Help
+                    <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
+                      Referral
                     </button>
                     <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
                       Support

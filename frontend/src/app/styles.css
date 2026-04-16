@@ -642,11 +642,37 @@ button:focus-visible,
   font-weight: 600;
 }
 
-.dashboard-balance-sub {
-  margin: 6px 0 0;
-  font-size: 20px;
-  line-height: 25px;
+.dashboard-metric-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  margin-top: 8px;
+  max-width: 220px;
+}
+
+.dashboard-metric-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
   font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.55);
+}
+
+.dashboard-metric-value {
+  margin: 2px 0 0;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #0a0a0a;
+}
+
+.dashboard-metric-unit {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(10, 10, 10, 0.55);
 }
 
 .dashboard-actions {
