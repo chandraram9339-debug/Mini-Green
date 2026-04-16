@@ -52,7 +52,13 @@ Both paths use the same deterministic gate and emit:
 - Artifact includes deterministic checks for critical auth/init and UI paths:
   `status`, `code`, `reason`, `trace_id`, and final `PASS`/`FAIL`.
 - Production-like init knobs live in `backend/.env.example`:
-  `DEMO_INIT_TOKENS`, `MOCK_INITDATA_SECRET`, `MOCK_INITDATA_MAX_AGE_SEC`, `ENABLE_OPS_LOGS`.
+  `AUTH_PROVIDER_MODE`, `DEMO_INIT_TOKENS`, `MOCK_INITDATA_SECRET`, `MOCK_INITDATA_MAX_AGE_SEC`,
+  `TELEGRAM_BOT_TOKEN`, `ACTION_STORE_PATH`, `ENABLE_OPS_LOGS`.
+- `AUTH_PROVIDER_MODE=mock` validates demo-safe tokens and signed mock payloads.
+- `AUTH_PROVIDER_MODE=telegram` validates real Telegram-style `initData` against `TELEGRAM_BOT_TOKEN`
+  without changing the API contract.
+- Action flow confidence is backed by durable file state at `ACTION_STORE_PATH` (default:
+  `backend/runtime/action-store.json`) for `top-up` / `withdraw` / `confirm`.
 
 CI integration:
 - Pull requests to `main`: smoke regression run + artifact upload
@@ -61,9 +67,31 @@ CI integration:
 ## Release close gate
 
 - Checklist: `docs/release-quality-gate-checklist.md`
+- Dependency confidence map: `docs/production-dependency-confidence-map.md`
 - Release close is blocked unless `Visual Fidelity PASS` is confirmed by `06_SECURITY_QA`.
 - Temporary policy for external tooling blocker (`MCP quota`): use status `BLOCKED_WITH_EXTERNAL_DEPENDENCY` with `24h` TTL and mandatory visual auto-rerun after unblock.
 - Deploy workflow: `.github/workflows/release-deploy.yml`
 - Rollback quick-pass workflow: `.github/workflows/rollback-quick-pass.yml`
 - Release ops alert rule: `scripts/alerts/release-operations-alert-rule.yml`
 - Current RC baseline can resolve rollback from `rc-2026.04.16-01` to `rc-2026.04.15-01`.
+
+## Real Dependency Confidence
+
+- Auth/provider confidence is observed through release-close evidence and QA ownership rather than hidden bypass.
+- Secret/runtime confidence is enforced through `runtime-preflight-gate`, `metadata-schema-validation`, and `runtime-drift-mismatch-v1`.
+- Durable storage confidence is bounded by deterministic DB readiness checks and rollback target availability.
+- Monitoring confidence is bounded by repository alert contracts plus whatever downstream sink wiring exists in the release environment.
+
+## Provider-Like Verification Support
+
+- QA support check: `scripts/provider-verify-support-check.sh`
+- Alert rule: `scripts/alerts/provider-verification-alert-rule.yml`
+- Live provider support baseline: `docs/provider-live-support-baseline.md`
+- Live workflow: `.github/workflows/provider-live-support.yml`
+- For `AUTH_PROVIDER_MODE=telegram`, QA support is considered wired only when:
+  - `TELEGRAM_BOT_TOKEN` is injected from a real secret source
+  - `ENABLE_OPS_LOGS=true`
+  - `ACTION_STORE_PATH` is writable in the runtime environment
+- Non-local downstream evidence for live support should come from the workflow run URL, uploaded artifact, and step summary, not only local temp logs.
+- If provider wiring is unavailable or degraded, the support check emits structured failure fields:
+  `owner-tag`, `runner_id`, `first_failing_substep`, `failure_hop`, `reason`.

@@ -1,0 +1,30 @@
+rule_id: provider-verification-support-v1
+enabled: true
+owner_tag: 07_REPO_ARCH/Infra
+scope: qa-provider-like-verification
+match:
+  failure_hop:
+    - auth_provider
+    - provider_config
+    - provider_observability
+    - provider_storage
+    - env_source
+  first_failing_substep:
+    - provider_mode
+    - provider_secret
+    - ops_logs
+    - action_store_path
+required_payload_fields:
+  - utc_timestamp
+  - owner-tag
+  - runner_id
+  - first_failing_substep
+  - failure_hop
+  - reason
+condition: status == "FAIL"
+severity: critical
+notify:
+  channel: war-room
+  sink_file: /tmp/provider-verification-alerts.log
+dedupe_key: runner_id + first_failing_substep + failure_hop
+action: block_provider_verification_and_page_owner
