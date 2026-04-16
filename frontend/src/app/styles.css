@@ -1743,6 +1743,78 @@ button:focus-visible,
   font-weight: 600;
 }
 
+.confirm-result-card {
+  padding: 18px 16px;
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(64, 255, 150, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(64, 255, 150, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(64, 255, 150, 0.08) 0%, rgba(25, 25, 25, 0.96) 100%);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+}
+
+.confirm-result-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
+  color: #0a0a0a;
+  background: #40ff96;
+}
+
+.confirm-result-kicker {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.confirm-result-title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.confirm-result-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.confirm-result-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.confirm-result-meta-label {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.confirm-result-meta-value {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  color: rgba(255, 255, 255, 0.86);
+}
+
 .note-text {
   margin: 0;
   color: rgba(255, 255, 255, 0.75);

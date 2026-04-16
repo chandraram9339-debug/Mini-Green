@@ -196,6 +196,8 @@ function App() {
   const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">("all");
   const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">("7d");
   const [topupCopied, setTopupCopied] = React.useState(false);
+  const [confirmStep, setConfirmStep] = React.useState<"review" | "submitting" | "success">("review");
+  const confirmTimerRef = React.useRef<number | null>(null);
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
   const flashTopupCopied = React.useCallback(() => {
@@ -210,6 +212,7 @@ function App() {
   React.useEffect(() => {
     return () => {
       if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
+      if (confirmTimerRef.current != null) window.clearTimeout(confirmTimerRef.current);
     };
   }, []);
 
@@ -274,6 +277,16 @@ function App() {
   }, []);
 
   React.useEffect(() => {
+    if (route !== "confirm") {
+      if (confirmTimerRef.current != null) {
+        window.clearTimeout(confirmTimerRef.current);
+        confirmTimerRef.current = null;
+      }
+      setConfirmStep("review");
+    }
+  }, [route]);
+
+  React.useEffect(() => {
     if (route !== "faq") {
       setExpandedFaqId(null);
       return;
@@ -310,36 +323,6 @@ function App() {
   const primaryCta = content.primaryCta;
   const secondaryCta = content.secondaryCta;
   const isDashboard = route === "dashboard";
-
-  if (initState === "idle") {
-    return (
-      <main className="app app-center">
-        <h1>Mini App</h1>
-        <p>Open app to start auth/init flow.</p>
-        <button onClick={startInit}>Open app</button>
-      </main>
-    );
-  }
-
-  if (initState === "loading") {
-    return (
-      <main className="app app-center">
-        <h1>Initializing</h1>
-        <p>Checking auth/init status...</p>
-      </main>
-    );
-  }
-
-  if (initState === "error") {
-    return (
-      <main className="app app-center">
-        <h1>Init failed</h1>
-        <p>Session initialization failed.</p>
-        <button onClick={startInit}>Retry init</button>
-      </main>
-    );
-  }
-
   const isBusy = state === "loading";
 
   const greenHeader = isGreenHeaderRoute(route);
@@ -384,6 +367,46 @@ function App() {
     if (moneyFilter === "in") return moneyRows.filter((row) => row.tone === "in");
     return moneyRows.filter((row) => row.tone === "out" || row.tone === "pending");
   }, [moneyFilter, moneyRows]);
+  const handleConfirmSend = React.useCallback(() => {
+    if (isBusy || confirmStep !== "review") return;
+    setConfirmStep("submitting");
+    if (confirmTimerRef.current != null) {
+      window.clearTimeout(confirmTimerRef.current);
+    }
+    confirmTimerRef.current = window.setTimeout(() => {
+      setConfirmStep("success");
+      confirmTimerRef.current = null;
+    }, 900);
+  }, [confirmStep, isBusy]);
+
+  if (initState === "idle") {
+    return (
+      <main className="app app-center">
+        <h1>Mini App</h1>
+        <p>Open app to start auth/init flow.</p>
+        <button onClick={startInit}>Open app</button>
+      </main>
+    );
+  }
+
+  if (initState === "loading") {
+    return (
+      <main className="app app-center">
+        <h1>Initializing</h1>
+        <p>Checking auth/init status...</p>
+      </main>
+    );
+  }
+
+  if (initState === "error") {
+    return (
+      <main className="app app-center">
+        <h1>Init failed</h1>
+        <p>Session initialization failed.</p>
+        <button onClick={startInit}>Retry init</button>
+      </main>
+    );
+  }
 
   return (
     <main className={`app${isDashboard ? " app--dashboard-merge" : ""}`}>
@@ -829,41 +852,61 @@ function App() {
 
               {route === "confirm" && (
                 <div className="confirm-block">
-                  <article className="metric-card confirm-cheque-card">
-                    <header className="confirm-cheque-head">
-                      <div>
-                        <p className="confirm-cheque-kicker">Operation summary</p>
-                        <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
+                  {confirmStep === "success" ? (
+                    <article className="metric-card confirm-result-card" aria-live="polite">
+                      <div className="confirm-result-mark" aria-hidden="true">
+                        ✓
                       </div>
-                      <span className="confirm-cheque-ref" title="Trace reference">
-                        trace_02adf1
-                      </span>
-                    </header>
-                    <div className="confirm-cheque-body">
-                      <div className="confirm-cheque-row">
-                        <span className="confirm-cheque-label">Recipient</span>
-                        <span className="confirm-cheque-value">TRC20 · wallet ending …8A2F</span>
-                      </div>
-                      <div className="confirm-cheque-divider" />
-                      <div className="confirm-cheque-row confirm-cheque-row--hero">
-                        <span className="confirm-cheque-label">Amount</span>
-                        <div className="confirm-cheque-amount-block">
-                          <span className="confirm-cheque-amount">600.00</span>
-                          <span className="confirm-cheque-unit">USDT</span>
-                        </div>
-                      </div>
-                      <div className="confirm-cheque-row confirm-cheque-row--fee">
-                        <span className="confirm-cheque-label">Comission</span>
-                        <span className="confirm-cheque-fee">10%</span>
-                      </div>
-                      <p className="confirm-cheque-subline">Fee is withheld from your balance before the transfer is sent.</p>
-                    </div>
-                    <footer className="confirm-cheque-foot">
-                      <p className="confirm-cheque-disclaimer">
-                        *Review all details. Blockchain transfers are <strong>irreversible</strong> after submission.
+                      <p className="confirm-result-kicker">Mocked completion</p>
+                      <h3 className="confirm-result-title">Transfer queued successfully</h3>
+                      <p className="confirm-result-body">
+                        Your frontend flow completed and a mocked result was shown instead of redirecting silently.
                       </p>
-                    </footer>
-                  </article>
+                      <div className="confirm-result-meta">
+                        <span className="confirm-result-meta-label">Trace</span>
+                        <span className="confirm-result-meta-value">trace_02adf1</span>
+                      </div>
+                    </article>
+                  ) : (
+                    <article className="metric-card confirm-cheque-card">
+                      <header className="confirm-cheque-head">
+                        <div>
+                          <p className="confirm-cheque-kicker">Operation summary</p>
+                          <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
+                        </div>
+                        <span className="confirm-cheque-ref" title="Trace reference">
+                          trace_02adf1
+                        </span>
+                      </header>
+                      <div className="confirm-cheque-body">
+                        <div className="confirm-cheque-row">
+                          <span className="confirm-cheque-label">Recipient</span>
+                          <span className="confirm-cheque-value">TRC20 · wallet ending …8A2F</span>
+                        </div>
+                        <div className="confirm-cheque-divider" />
+                        <div className="confirm-cheque-row confirm-cheque-row--hero">
+                          <span className="confirm-cheque-label">Amount</span>
+                          <div className="confirm-cheque-amount-block">
+                            <span className="confirm-cheque-amount">600.00</span>
+                            <span className="confirm-cheque-unit">USDT</span>
+                          </div>
+                        </div>
+                        <div className="confirm-cheque-row confirm-cheque-row--fee">
+                          <span className="confirm-cheque-label">Comission</span>
+                          <span className="confirm-cheque-fee">10%</span>
+                        </div>
+                        <p className="confirm-cheque-subline">
+                          Fee is withheld from your balance before the transfer is sent.
+                        </p>
+                      </div>
+                      <footer className="confirm-cheque-foot">
+                        <p className="confirm-cheque-disclaimer">
+                          *Review all details. Blockchain transfers are <strong>irreversible</strong> after
+                          submission.
+                        </p>
+                      </footer>
+                    </article>
+                  )}
                 </div>
               )}
 
@@ -871,19 +914,23 @@ function App() {
                 {primaryCta ? (
                   <button
                     className="btn-main"
-                    onClick={() => navigate(primaryCta.target)}
-                    disabled={isBusy}
+                    onClick={route === "confirm" ? handleConfirmSend : () => navigate(primaryCta.target)}
+                    disabled={isBusy || (route === "confirm" && confirmStep === "submitting")}
                   >
-                    {primaryCta.label}
+                    {route === "confirm" && confirmStep === "submitting" ? "Sending..." : primaryCta.label}
                   </button>
                 ) : null}
                 {secondaryCta ? (
                   <button
                     className="ghost btn-secondary"
-                    onClick={() => navigate(secondaryCta.target)}
+                    onClick={
+                      route === "confirm" && confirmStep === "success"
+                        ? () => navigate("dashboard")
+                        : () => navigate(secondaryCta.target)
+                    }
                     disabled={isBusy}
                   >
-                    {secondaryCta.label}
+                    {route === "confirm" && confirmStep === "success" ? "Back to Dashboard" : secondaryCta.label}
                   </button>
                 ) : null}
               </div>
