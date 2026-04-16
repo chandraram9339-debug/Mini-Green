@@ -12,7 +12,7 @@ export const routeTitles: Record<RouteId, string> = {
   money: "Money Details",
   trading: "Trading Details",
   faq: "FAQ",
-  topup: "Top Up",
+  topup: "Deposit",
   withdraw: "Withdraw",
   confirm: "Confirm",
 };
@@ -43,7 +43,7 @@ export const screenData: Record<RouteId, ScreenData> = {
     secondaryCta: { label: "Back to Dashboard", target: "dashboard" },
   },
   topup: {
-    title: "Top Up",
+    title: "Deposit",
     description: "Choose a funding method and continue to confirmation.",
     primaryCta: { label: "Continue to Confirm", action: "navigate", target: "confirm" },
     secondaryCta: { label: "Back to Dashboard", target: "dashboard" },
