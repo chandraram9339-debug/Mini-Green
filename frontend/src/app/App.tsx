@@ -225,7 +225,8 @@ function isGreenHeaderRoute(route: RouteId): boolean {
     route === "trading" ||
     route === "withdraw" ||
     route === "confirm" ||
-    route === "topup"
+    route === "topup" ||
+    route === "faq"
   );
 }
 
@@ -480,6 +481,8 @@ function App() {
   const primaryCta = content.primaryCta;
   const secondaryCta = content.secondaryCta;
   const isDashboard = route === "dashboard";
+  const showTopBarNotifyChip = route !== "topup" && route !== "faq";
+  const showTopBarSettingsChip = route !== "faq";
   const isBusy =
     screenState === "loading" || actionState === "submitting" || confirmStep === "submitting";
 
@@ -647,44 +650,52 @@ function App() {
             <div className="top-bar-mark" aria-label="App home">
               dEP
             </div>
+          ) : route === "topup" ? (
+            <h1 className="top-title">Deposit</h1>
           ) : (
             <h1 className="top-title">{routeTitles[route]}</h1>
           )}
         </div>
         <div className="top-bar-end">
-          <div className="top-bar-accessories" role="toolbar" aria-label="Quick actions">
-            <button
-              type="button"
-              className="top-bar-chip top-bar-chip--notify"
-              disabled={isBusy}
-              aria-label="Open notifications help"
-              onClick={() => openFaqEntry("timing")}
-            >
-              <img
-                className="top-bar-icon top-bar-icon--notify"
-                src={topBarNotifyIcon}
-                alt=""
-                aria-hidden="true"
-              />
-              <span className="top-bar-badge" aria-hidden="true">
-                25
-              </span>
-            </button>
-            <button
-              type="button"
-              className="top-bar-chip"
-              disabled={isBusy}
-              aria-label="Open support settings help"
-              onClick={() => openFaqEntry("support")}
-            >
-              <img
-                className="top-bar-icon top-bar-icon--settings"
-                src={topBarSettingsIcon}
-                alt=""
-                aria-hidden="true"
-              />
-            </button>
-          </div>
+          {showTopBarNotifyChip || showTopBarSettingsChip ? (
+            <div className="top-bar-accessories" role="toolbar" aria-label="Quick actions">
+              {showTopBarNotifyChip ? (
+                <button
+                  type="button"
+                  className="top-bar-chip top-bar-chip--notify"
+                  disabled={isBusy}
+                  aria-label="Open notifications help"
+                  onClick={() => openFaqEntry("timing")}
+                >
+                  <img
+                    className="top-bar-icon top-bar-icon--notify"
+                    src={topBarNotifyIcon}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span className="top-bar-badge" aria-hidden="true">
+                    25
+                  </span>
+                </button>
+              ) : null}
+              {showTopBarSettingsChip ? (
+                <button
+                  type="button"
+                  className="top-bar-chip"
+                  disabled={isBusy}
+                  aria-label="Open support settings help"
+                  onClick={() => openFaqEntry("support")}
+                >
+                  <img
+                    className="top-bar-icon top-bar-icon--settings"
+                    src={topBarSettingsIcon}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </header>
 
