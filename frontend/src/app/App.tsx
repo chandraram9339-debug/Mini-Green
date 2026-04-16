@@ -838,20 +838,20 @@ function App() {
               {route === "faq" && (
                 <header className="internal-hero internal-hero-faq">
                   <h2 className="internal-hero-title">{routeTitles.faq}</h2>
+                  <p className="internal-hero-label">{screenData.faq.description}</p>
                 </header>
               )}
               {route === "withdraw" && (
                 <header className="internal-hero internal-hero-withdraw">
-                  <h2 className="internal-hero-title">Withdraw</h2>
-                  <p className="internal-hero-label">Address name</p>
+                  <h2 className="internal-hero-title">{screenData.withdraw.title}</h2>
+                  <p className="internal-hero-label">{screenData.withdraw.description}</p>
                 </header>
               )}
               {route === "confirm" && (
                 <header className="internal-hero internal-hero-confirm">
-                  <h2 className="internal-hero-title">USDT Transfer</h2>
+                  <h2 className="internal-hero-title">{screenData.confirm.title}</h2>
                   <p className="internal-hero-label">
-                    *The commission is charged from the remaining balance. We charge a 10% fee on
-                    withdrawals.
+                    *Fee is charged from the remaining balance. A 10% withdrawal fee applies.
                   </p>
                 </header>
               )}
@@ -1240,7 +1240,7 @@ function App() {
                           </div>
                         </div>
                         <div className="confirm-cheque-row confirm-cheque-row--fee">
-                          <span className="confirm-cheque-label">Comission</span>
+                          <span className="confirm-cheque-label">Commission</span>
                           <span className="confirm-cheque-fee">{DEFAULT_ACTION_FEE_LABEL}</span>
                         </div>
                         <p className="confirm-cheque-subline">
