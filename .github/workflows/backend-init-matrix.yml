@@ -62,7 +62,7 @@ jobs:
           node-version: 20
 
       - name: Install backend dependencies
-        run: pnpm --dir backend install --frozen-lockfile
+        run: pnpm --dir backend install --no-frozen-lockfile
 
       - name: Run init matrix case
         env:
