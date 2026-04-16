@@ -82,6 +82,47 @@ interface StateViewProps {
   children: React.ReactNode;
 }
 
+/** Demo deposit address (visual only; no API). */
+const TOPUP_DEPOSIT_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
+
+function topupAddressDisplay(full: string): string {
+  if (full.length <= 18) return full;
+  return `${full.slice(0, 8)}…${full.slice(-6)}`;
+}
+
+function topupQrCellOn(row: number, col: number, size: number): boolean {
+  const inTl = row < 7 && col < 7;
+  const inTr = row < 7 && col >= size - 7;
+  const inBl = row >= size - 7 && col < 7;
+  if (inTl || inTr || inBl) {
+    const fr = inTl ? row : inTr ? row : row - (size - 7);
+    const fc = inTl ? col : inTr ? col - (size - 7) : col;
+    if (fr === 0 || fr === 6 || fc === 0 || fc === 6) return true;
+    if (fr >= 2 && fr <= 4 && fc >= 2 && fc <= 4) return true;
+    return false;
+  }
+  return ((row * 31 + col * 17 + (row >> 1)) % 11) < 5;
+}
+
+function TopUpQrVisual() {
+  const size = 21;
+  const cells: boolean[] = [];
+  for (let r = 0; r < size; r += 1) {
+    for (let c = 0; c < size; c += 1) {
+      cells.push(topupQrCellOn(r, c, size));
+    }
+  }
+  return (
+    <div className="topup-qr-shell" aria-hidden="true">
+      <div className="topup-qr-grid" style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}>
+        {cells.map((on, i) => (
+          <span key={i} className={on ? "topup-qr-cell topup-qr-cell--on" : "topup-qr-cell"} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StateView({ state, onRetry, children }: StateViewProps) {
   if (state === "loading") {
     return (
@@ -196,6 +237,23 @@ function App() {
   );
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
+  const [topupCopied, setTopupCopied] = React.useState(false);
+  const topupCopyTimerRef = React.useRef<number | null>(null);
+
+  const flashTopupCopied = React.useCallback(() => {
+    if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
+    setTopupCopied(true);
+    topupCopyTimerRef.current = window.setTimeout(() => {
+      setTopupCopied(false);
+      topupCopyTimerRef.current = null;
+    }, 2000);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
+    };
+  }, []);
 
   const navigate = React.useCallback((nextRoute: RouteId, replace = false) => {
     const nextUrl = `${routeToPath(nextRoute)}${window.location.search}`;
@@ -284,39 +342,58 @@ function App() {
 
   const isBusy = state === "loading";
 
+  const greenHeader = isGreenHeaderRoute(route);
+
   return (
-    <main className="app">
-      <header className={`top-bar ${isGreenHeaderRoute(route) ? "top-bar-green" : "top-bar-dark"}`}>
-        <button className="ghost icon-btn" onClick={() => window.history.back()} disabled={isBusy}>
-          ←
-        </button>
-        <h1 className="top-title">{routeTitles[route]}</h1>
-        <button className="ghost icon-btn" onClick={() => window.history.forward()} disabled={isBusy}>
-          →
-        </button>
+    <main className={`app${isDashboard ? " app--dashboard-merge" : ""}`}>
+      <header className={`top-bar ${greenHeader ? "top-bar-green" : "top-bar-dark"}`}>
+        <div className="top-bar-start">
+          <button
+            type="button"
+            className="ghost icon-btn top-bar-back"
+            onClick={() => window.history.back()}
+            disabled={isBusy}
+            aria-label="Back"
+          >
+            ←
+          </button>
+        </div>
+        <div className="top-bar-center">
+          {isDashboard ? (
+            <div className="top-bar-mark" aria-label="App home">
+              dEP
+            </div>
+          ) : (
+            <h1 className="top-title">{routeTitles[route]}</h1>
+          )}
+        </div>
+        <div className="top-bar-end">
+          <div className="top-bar-accessories" role="toolbar" aria-label="Quick actions">
+            <button
+              type="button"
+              className="top-bar-chip top-bar-chip--notify"
+              disabled={isBusy}
+              aria-label="Notifications"
+            >
+              <span className="top-bar-chip-icon" aria-hidden="true">
+                ◌
+              </span>
+              <span className="top-bar-badge" aria-hidden="true">
+                2
+              </span>
+            </button>
+            <button type="button" className="top-bar-chip" disabled={isBusy} aria-label="Settings">
+              <span className="top-bar-chip-icon" aria-hidden="true">
+                ⚙
+              </span>
+            </button>
+          </div>
+        </div>
       </header>
 
       <section className={`screen-card screen-${route}`}>
         {isDashboard ? (
           <div className="dashboard-top">
-            <div className="dashboard-appbar">
-              <button
-                className="ghost icon-btn dashboard-appbar-btn"
-                onClick={() => window.history.back()}
-                disabled={isBusy}
-              >
-                ←
-              </button>
-              <div className="dashboard-logo">dEP</div>
-              <div className="dashboard-appbar-icons">
-                <button className="dashboard-icon-chip" disabled={isBusy}>
-                  ◌
-                </button>
-                <button className="dashboard-icon-chip" disabled={isBusy}>
-                  ⚙
-                </button>
-              </div>
-            </div>
             <p className="dashboard-balance-label">Total Balance</p>
             <div className="dashboard-balance-row">
               <div>
@@ -499,11 +576,36 @@ function App() {
               {route === "topup" && (
                 <div className="topup-block">
                   <h3>Receive USDT</h3>
-                  <div className="qr-placeholder">QR</div>
-                  <article className="metric-card topup-wallet-row">
-                    <p className="metric-label">Wallet</p>
-                    <p className="metric-value">TRC20 • A1B2...9Z8Y</p>
-                  </article>
+                  <TopUpQrVisual />
+                  <p className="topup-qr-hint">Scan the code or copy the address below</p>
+                  <div className="topup-deposit-stack">
+                    <article className="metric-card topup-deposit-card">
+                      <p className="metric-label">Network</p>
+                      <p className="topup-network-pill">TRC20</p>
+                      <div className="topup-wallet-copy-row">
+                        <div className="topup-wallet-text-block">
+                          <p className="metric-label">Deposit address</p>
+                          <p className="topup-address-mono">{topupAddressDisplay(TOPUP_DEPOSIT_ADDRESS)}</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="topup-copy-cta"
+                          disabled={isBusy}
+                          onClick={async () => {
+                            if (isBusy) return;
+                            try {
+                              await navigator.clipboard.writeText(TOPUP_DEPOSIT_ADDRESS);
+                              flashTopupCopied();
+                            } catch {
+                              /* clipboard may be unavailable */
+                            }
+                          }}
+                        >
+                          {topupCopied ? "Copied" : "Copy"}
+                        </button>
+                      </div>
+                    </article>
+                  </div>
                 </div>
               )}
 
