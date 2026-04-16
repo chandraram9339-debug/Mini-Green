@@ -259,9 +259,17 @@ button:disabled {
 }
 
 .internal-hero {
-  margin-top: 6px;
-  margin-bottom: 12px;
-  padding: 14px 14px 12px;
+  --hero-kicker-size: 11px;
+  --hero-kicker-weight: 400;
+  --hero-kicker-letter-spacing: 0;
+  --hero-kicker-line-height: 1;
+  --hero-title-size: 20px;
+  --hero-title-weight: 500;
+  --hero-title-letter-spacing: 0.02em;
+  --hero-title-line-height: 1;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  padding: 16px 18px 14px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #131313;
@@ -269,21 +277,22 @@ button:disabled {
 
 .internal-hero-kicker {
   margin: 0;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 11px;
-  line-height: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.62);
+  font-family: Inter, "Segoe UI", sans-serif;
+  font-size: var(--hero-kicker-size);
+  line-height: var(--hero-kicker-line-height);
+  font-weight: var(--hero-kicker-weight);
+  letter-spacing: var(--hero-kicker-letter-spacing);
 }
 
 .internal-hero-title {
   margin: 6px 0 0;
   color: rgba(255, 255, 255, 0.95);
-  font-size: 19px;
-  line-height: 24px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: Outfit, Inter, sans-serif;
+  font-size: var(--hero-title-size);
+  line-height: var(--hero-title-line-height);
+  font-weight: var(--hero-title-weight);
+  letter-spacing: var(--hero-title-letter-spacing);
 }
 
 .internal-hero-money {

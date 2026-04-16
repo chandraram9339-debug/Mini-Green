@@ -433,38 +433,38 @@ function App() {
             <div className={`screen-template template-${route}`}>
               {route === "money" && (
                 <header className="internal-hero internal-hero-money">
-                  <p className="internal-hero-kicker">Money details</p>
-                  <h2 className="internal-hero-title">Track available funds and latest operations</h2>
+                  <p className="internal-hero-kicker">Detail Balance</p>
+                  <h2 className="internal-hero-title">Current balance</h2>
                 </header>
               )}
               {route === "trading" && (
                 <header className="internal-hero internal-hero-trading">
-                  <p className="internal-hero-kicker">Trading details</p>
-                  <h2 className="internal-hero-title">Monitor bot execution and period metrics</h2>
+                  <p className="internal-hero-kicker">Detail Bot</p>
+                  <h2 className="internal-hero-title">Bot status / Actual price</h2>
                 </header>
               )}
               {route === "faq" && (
                 <header className="internal-hero internal-hero-faq">
-                  <p className="internal-hero-kicker">Support center</p>
-                  <h2 className="internal-hero-title">Answers for top up, withdraw, and confirmations</h2>
+                  <p className="internal-hero-kicker">Support</p>
+                  <h2 className="internal-hero-title">FAQ</h2>
                 </header>
               )}
               {route === "topup" && (
                 <header className="internal-hero internal-hero-topup">
-                  <p className="internal-hero-kicker">Top Up</p>
-                  <h2 className="internal-hero-title">Deposit with USDT TRC20</h2>
+                  <p className="internal-hero-kicker">Deposit</p>
+                  <h2 className="internal-hero-title">Recieve USDT</h2>
                 </header>
               )}
               {route === "withdraw" && (
                 <header className="internal-hero internal-hero-withdraw">
-                  <p className="internal-hero-kicker">Withdraw</p>
-                  <h2 className="internal-hero-title">Send funds to your external wallet</h2>
+                  <p className="internal-hero-kicker">USDT Transfer</p>
+                  <h2 className="internal-hero-title">Withdraw</h2>
                 </header>
               )}
               {route === "confirm" && (
                 <header className="internal-hero internal-hero-confirm">
-                  <p className="internal-hero-kicker">Final review</p>
-                  <h2 className="internal-hero-title">Check transfer details before submission</h2>
+                  <p className="internal-hero-kicker">Transfer</p>
+                  <h2 className="internal-hero-title">USDT Transfer</h2>
                 </header>
               )}
               {route === "money" && (
