@@ -154,49 +154,6 @@ function StateView({ state, onRetry, children }: StateViewProps) {
   return <>{children}</>;
 }
 
-function metricRows(route: RouteId): Array<{ label: string; value: string }> {
-  if (route === "dashboard") {
-    return [
-      { label: "Total balance", value: "$12,480.20" },
-      { label: "Today's pnl", value: "+$248.10" },
-      { label: "Pending ops", value: "2" },
-    ];
-  }
-  if (route === "trading") {
-    return [
-      { label: "Strategy", value: "Conservative" },
-      { label: "Open orders", value: "3" },
-      { label: "Execution", value: "Read-only status" },
-    ];
-  }
-  if (route === "topup") {
-    return [
-      { label: "Method", value: "USDT transfer" },
-      { label: "Network", value: "TRC20" },
-      { label: "Est. arrival", value: "2-5 min" },
-    ];
-  }
-  if (route === "withdraw") {
-    return [
-      { label: "Destination", value: "Wallet ending ...8A2F" },
-      { label: "Amount", value: "$600.00" },
-      { label: "Fee", value: "$1.20" },
-    ];
-  }
-  if (route === "confirm") {
-    return [
-      { label: "Action", value: "Withdraw" },
-      { label: "Trace", value: "trace_02adf1" },
-      { label: "Policy", value: "allow" },
-    ];
-  }
-  return [
-    { label: "How to top up", value: "From Dashboard > Top Up" },
-    { label: "How to withdraw", value: "Money Details > Withdraw" },
-    { label: "Support", value: "In-app FAQ ticket flow" },
-  ];
-}
-
 function screenIcon(route: RouteId): string {
   if (route === "dashboard") return "DB";
   if (route === "money") return "MD";
@@ -510,23 +467,6 @@ function App() {
           ) : (
             <div className={`screen-template template-${route}`}>
               <p className="body-copy">{content.description}</p>
-              {route === "trading" && (
-                <div className="metrics-grid metrics-grid-tabs">
-                  <article className="metric-card metric-tab">
-                    <p className="metric-label">Deposit</p>
-                    <p className="metric-value">725.62 USDT</p>
-                  </article>
-                  <article className="metric-card metric-tab">
-                    <p className="metric-label">Referral</p>
-                    <p className="metric-value">425.22 USDT</p>
-                  </article>
-                  <article className="metric-card metric-tab">
-                    <p className="metric-label">Bot</p>
-                    <p className="metric-value">Active</p>
-                  </article>
-                </div>
-              )}
-
               {route === "money" && (
                 <>
                   <section className="money-overview" aria-label="Balance overview">
@@ -616,21 +556,37 @@ function App() {
 
               {route === "trading" && (
                 <div className="trading-stack">
+                  <div className="trading-stack-head">
+                    <p className="trading-section-title">Trading bot statistics for the period</p>
+                    <div className="stats-tabs" role="tablist" aria-label="Period">
+                      {["1d", "7d", "30d", "All"].map((label, i) => (
+                        <button
+                          key={label}
+                          type="button"
+                          className={i === 1 ? "stat-pill stat-pill-active" : "stat-pill"}
+                          disabled={isBusy}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="trading-graph" aria-hidden="true">
                     <div className="trading-graph-line" />
                   </div>
-                  <p className="trading-section-title">Trading bot statistics for the period:</p>
-                  <div className="stats-tabs" role="tablist" aria-label="Period">
-                    {["1d", "7d", "30d", "All"].map((label, i) => (
-                      <button
-                        key={label}
-                        type="button"
-                        className={i === 1 ? "stat-pill stat-pill-active" : "stat-pill"}
-                        disabled={isBusy}
-                      >
-                        {label}
-                      </button>
-                    ))}
+                  <div className="trading-kpi-row" aria-label="Trading summary">
+                    <div className="trading-kpi-cell">
+                      <p className="trading-kpi-label">Strategy</p>
+                      <p className="trading-kpi-value">Conservative</p>
+                    </div>
+                    <div className="trading-kpi-cell">
+                      <p className="trading-kpi-label">Open orders</p>
+                      <p className="trading-kpi-value">3</p>
+                    </div>
+                    <div className="trading-kpi-cell">
+                      <p className="trading-kpi-label">Execution</p>
+                      <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                    </div>
                   </div>
                   <article className="metric-card trading-stat-card">
                     <p className="metric-label">Performance</p>
@@ -766,17 +722,6 @@ function App() {
                   <p className="note-text confirm-fee-note">
                     *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
                   </p>
-                </div>
-              )}
-
-              {route === "trading" && (
-                <div className="metrics-grid">
-                  {metricRows(route).map((item) => (
-                    <article key={item.label} className="metric-card">
-                      <p className="metric-label">{item.label}</p>
-                      <p className="metric-value">{item.value}</p>
-                    </article>
-                  ))}
                 </div>
               )}
 
