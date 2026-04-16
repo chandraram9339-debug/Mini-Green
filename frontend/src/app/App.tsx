@@ -700,21 +700,50 @@ function App() {
 
               {route === "withdraw" && (
                 <div className="withdraw-block">
-                  <article className="metric-card withdraw-address-row">
-                    <p className="metric-label">Address name</p>
-                    <p className="metric-value">Paste wallet address</p>
-                  </article>
-                  <p className="note-text">
-                    The withdrawal process is automatic and may take from 10 minutes to 2-3 hours.
-                  </p>
-                  <article className="metric-card withdraw-balance-panel">
-                    <p className="metric-label">Current balance</p>
-                    <p className="metric-value">725.62 USDT</p>
-                    <p className="metric-label withdraw-subline">Available for withdrawal*</p>
-                    <p className="metric-value metric-value-accent">653.06 USDT</p>
-                    <p className="note-text withdraw-fee-note">
-                      *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
+                  <article className="metric-card withdraw-form-card">
+                    <div className="withdraw-form-head">
+                      <p className="metric-label">Destination</p>
+                      <span className="withdraw-network-pill">TRC20</span>
+                    </div>
+                    <div className="withdraw-field-wrap">
+                      <div className="withdraw-field" role="textbox" aria-label="Wallet address (demo placeholder)">
+                        Paste TRC20 wallet address
+                      </div>
+                    </div>
+                    <p className="withdraw-field-hint">
+                      USDT on TRC20 only. Sending on the wrong network may result in permanent loss.
                     </p>
+                  </article>
+                  <div className="withdraw-callout" role="note">
+                    <span className="withdraw-callout-mark" aria-hidden="true">
+                      ⏱
+                    </span>
+                    <p className="withdraw-callout-text">
+                      Withdrawals are automatic. Typical completion: <strong>10 min – 3 h</strong> (up to 7 days in
+                      edge cases).
+                    </p>
+                  </div>
+                  <article className="metric-card withdraw-balance-panel">
+                    <div className="withdraw-balance-head">
+                      <p className="withdraw-balance-title">Balance</p>
+                      <span className="withdraw-balance-badge">Live</span>
+                    </div>
+                    <div className="withdraw-balance-main">
+                      <div>
+                        <p className="metric-label">Current balance</p>
+                        <p className="withdraw-balance-figure">725.62 USDT</p>
+                      </div>
+                    </div>
+                    <div className="withdraw-balance-divider" />
+                    <div className="withdraw-available-block">
+                      <p className="metric-label">Available for withdrawal*</p>
+                      <p className="withdraw-available-figure">653.06 USDT</p>
+                    </div>
+                    <div className="withdraw-fee-strip">
+                      <p className="withdraw-fee-strip-text">
+                        *Fee charged from remaining balance — <strong>10%</strong> withdrawal fee applies.
+                      </p>
+                    </div>
                   </article>
                 </div>
               )}
