@@ -391,7 +391,9 @@ button:focus-visible,
 }
 
 .internal-hero-money {
-  background: linear-gradient(180deg, rgba(124, 168, 255, 0.12) 0%, #131313 100%);
+  background: linear-gradient(180deg, rgba(46, 221, 125, 0.2) 0%, rgba(19, 19, 19, 1) 52%);
+  border-radius: 18px 18px 22px 22px;
+  padding-bottom: 16px;
 }
 
 .internal-hero-trading {
@@ -966,14 +968,24 @@ button:focus-visible,
   margin-top: 4px;
 }
 
+.money-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.screen-money .money-page > .internal-hero-money {
+  margin-top: 2px;
+}
+
 .money-overview {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: 1fr minmax(108px, 38%);
-  gap: 12px;
-  align-items: stretch;
-  padding: 14px 14px 16px;
-  border-radius: 16px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 16px 18px;
+  border-radius: 18px;
   background: linear-gradient(145deg, #161616 0%, #101010 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
@@ -983,8 +995,8 @@ button:focus-visible,
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 6px;
 }
 
 .money-overview-kicker {
@@ -999,8 +1011,8 @@ button:focus-visible,
 
 .money-overview-figure {
   margin: 0;
-  font-size: 28px;
-  line-height: 32px;
+  font-size: 32px;
+  line-height: 36px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: #f5f8ff;
@@ -1016,20 +1028,22 @@ button:focus-visible,
 }
 
 .money-overview-side {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
 }
 
 .money-side-block {
   flex: 1;
-  padding: 10px 10px 12px;
-  border-radius: 12px;
+  min-height: 76px;
+  padding: 12px 12px 14px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
   display: grid;
   gap: 2px;
-  align-content: start;
+  align-content: center;
 }
 
 .money-side-block--accent {
@@ -1071,7 +1085,7 @@ button:focus-visible,
 }
 
 .money-activity-head {
-  margin-top: 18px;
+  margin-top: 22px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -1116,8 +1130,8 @@ button:focus-visible,
 }
 
 .money-history-feed {
-  margin-top: 10px;
-  border-radius: 14px;
+  margin-top: 12px;
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.07);
   background: #121212;

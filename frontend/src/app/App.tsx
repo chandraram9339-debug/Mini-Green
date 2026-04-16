@@ -810,12 +810,6 @@ function App() {
             </div>
           ) : (
             <div className={`screen-template template-${route}`}>
-              {route === "money" && (
-                <header className="internal-hero internal-hero-money">
-                  <h2 className="internal-hero-title">Deposit</h2>
-                  <p className="internal-hero-label">dep</p>
-                </header>
-              )}
               {route === "trading" && (
                 <header className="internal-hero internal-hero-trading">
                   <h2 className="internal-hero-title">Trading</h2>
@@ -848,8 +842,12 @@ function App() {
                   </p>
                 </header>
               )}
-              {route === "money" && (
-                <>
+              {route === "money" ? (
+                <div className="money-page">
+                  <header className="internal-hero internal-hero-money">
+                    <h2 className="internal-hero-title">Deposit</h2>
+                    <p className="internal-hero-label">{screenData.money.description}</p>
+                  </header>
                   <section className="money-overview" aria-label="Balance overview">
                     <div className="money-overview-primary">
                       <p className="money-overview-kicker">Available balance</p>
@@ -857,7 +855,7 @@ function App() {
                         {moneyAvailable} <span className="money-overview-unit">USDT</span>
                       </p>
                     </div>
-                    <div className="money-overview-side">
+                    <div className="money-overview-side" role="group" aria-label="Referral and bot status">
                       <div className="money-side-block">
                         <p className="money-side-label">Referral</p>
                         <p className="money-side-value">{FIGMA_VISUAL_STUBS.referralAmount}</p>
@@ -920,8 +918,8 @@ function App() {
                       </article>
                     ))}
                   </div>
-                </>
-              )}
+                </div>
+              ) : null}
 
               {route === "trading" && (
                 <div className="trading-stack">
