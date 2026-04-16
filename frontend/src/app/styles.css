@@ -157,6 +157,13 @@ button:focus-visible,
   transition: transform 120ms ease, filter 120ms ease, background 140ms ease;
 }
 
+.top-bar-close-glyph {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+  color: currentColor;
+}
+
 .top-bar-icon {
   display: block;
   width: 20px;

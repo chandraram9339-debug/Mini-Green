@@ -653,38 +653,58 @@ function App() {
           )}
         </div>
         <div className="top-bar-end">
-          <div className="top-bar-accessories" role="toolbar" aria-label="Quick actions">
-            <button
-              type="button"
-              className="top-bar-chip top-bar-chip--notify"
-              disabled={isBusy}
-              aria-label="Open notifications help"
-              onClick={() => openFaqEntry("timing")}
-            >
-              <img
-                className="top-bar-icon top-bar-icon--notify"
-                src={topBarNotifyIcon}
-                alt=""
-                aria-hidden="true"
-              />
-              <span className="top-bar-badge" aria-hidden="true">
-                25
-              </span>
-            </button>
-            <button
-              type="button"
-              className="top-bar-chip"
-              disabled={isBusy}
-              aria-label="Open support settings help"
-              onClick={() => openFaqEntry("support")}
-            >
-              <img
-                className="top-bar-icon top-bar-icon--settings"
-                src={topBarSettingsIcon}
-                alt=""
-                aria-hidden="true"
-              />
-            </button>
+          <div
+            className="top-bar-accessories"
+            role="toolbar"
+            aria-label={route === "topup" ? "Close deposit" : "Quick actions"}
+          >
+            {route === "topup" ? (
+              <button
+                type="button"
+                className="top-bar-chip top-bar-chip--close"
+                disabled={isBusy}
+                aria-label="Close"
+                onClick={handleBack}
+              >
+                <span className="top-bar-close-glyph" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="top-bar-chip top-bar-chip--notify"
+                  disabled={isBusy}
+                  aria-label="Open notifications help"
+                  onClick={() => openFaqEntry("timing")}
+                >
+                  <img
+                    className="top-bar-icon top-bar-icon--notify"
+                    src={topBarNotifyIcon}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span className="top-bar-badge" aria-hidden="true">
+                    25
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="top-bar-chip"
+                  disabled={isBusy}
+                  aria-label="Open support settings help"
+                  onClick={() => openFaqEntry("support")}
+                >
+                  <img
+                    className="top-bar-icon top-bar-icon--settings"
+                    src={topBarSettingsIcon}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -781,7 +801,7 @@ function App() {
               )}
               {route === "faq" && (
                 <header className="internal-hero internal-hero-faq">
-                  <h2 className="internal-hero-title">FAQ</h2>
+                  <h2 className="internal-hero-title">{routeTitles.faq}</h2>
                 </header>
               )}
               {route === "topup" && (
