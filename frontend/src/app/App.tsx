@@ -193,6 +193,8 @@ function App() {
   );
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
+  const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">("all");
+  const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">("7d");
   const [topupCopied, setTopupCopied] = React.useState(false);
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
@@ -220,6 +222,48 @@ function App() {
     }
     setRoute(nextRoute);
   }, []);
+
+  const navigateWithParams = React.useCallback(
+    (nextRoute: RouteId, updates: Record<string, string | null>, replace = false) => {
+      const params = new URLSearchParams(window.location.search);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value == null || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+      const query = params.toString();
+      const nextUrl = `${routeToPath(nextRoute)}${query ? `?${query}` : ""}`;
+      if (replace) {
+        window.history.replaceState({ route: nextRoute }, "", nextUrl);
+      } else {
+        window.history.pushState({ route: nextRoute }, "", nextUrl);
+      }
+      setRoute(nextRoute);
+    },
+    []
+  );
+
+  const openFaqEntry = React.useCallback(
+    (entryId: string) => {
+      navigateWithParams("faq", { faqExpand: entryId });
+      setExpandedFaqId(entryId);
+    },
+    [navigateWithParams]
+  );
+
+  const handleBack = React.useCallback(() => {
+    if (route === "dashboard") {
+      navigate("dashboard", true);
+      return;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigate("dashboard", true);
+  }, [navigate, route]);
 
   React.useEffect(() => {
     const onPopState = () => {
@@ -299,6 +343,47 @@ function App() {
   const isBusy = state === "loading";
 
   const greenHeader = isGreenHeaderRoute(route);
+  const moneyRows = React.useMemo(
+    () =>
+      [
+        {
+          title: "Top up completed",
+          meta: "Today · 14:32",
+          amount: "+42.10 USDT",
+          tone: "in" as const,
+        },
+        {
+          title: "Referral reward",
+          meta: "Yesterday · 09:10",
+          amount: "+18.00 USDT",
+          tone: "in" as const,
+        },
+        {
+          title: "Withdrawal pending",
+          meta: "Processing · est. 2h",
+          amount: "−600.00 USDT",
+          tone: "pending" as const,
+        },
+        {
+          title: "Fee charge",
+          meta: "Auto · network",
+          amount: "−1.20 USDT",
+          tone: "out" as const,
+        },
+        {
+          title: "Top up completed",
+          meta: "Mon · 11:05",
+          amount: "+200.00 USDT",
+          tone: "in" as const,
+        },
+      ] as const,
+    []
+  );
+  const filteredMoneyRows = React.useMemo(() => {
+    if (moneyFilter === "all") return moneyRows;
+    if (moneyFilter === "in") return moneyRows.filter((row) => row.tone === "in");
+    return moneyRows.filter((row) => row.tone === "out" || row.tone === "pending");
+  }, [moneyFilter, moneyRows]);
 
   return (
     <main className={`app${isDashboard ? " app--dashboard-merge" : ""}`}>
@@ -307,7 +392,7 @@ function App() {
           <button
             type="button"
             className="ghost icon-btn top-bar-back"
-            onClick={() => window.history.back()}
+            onClick={handleBack}
             disabled={isBusy}
             aria-label="Back"
           >
@@ -329,7 +414,8 @@ function App() {
               type="button"
               className="top-bar-chip top-bar-chip--notify"
               disabled={isBusy}
-              aria-label="Notifications"
+              aria-label="Open notifications help"
+              onClick={() => openFaqEntry("timing")}
             >
               <img
                 className="top-bar-icon top-bar-icon--notify"
@@ -341,7 +427,13 @@ function App() {
                 25
               </span>
             </button>
-            <button type="button" className="top-bar-chip" disabled={isBusy} aria-label="Settings">
+            <button
+              type="button"
+              className="top-bar-chip"
+              disabled={isBusy}
+              aria-label="Open support settings help"
+              onClick={() => openFaqEntry("support")}
+            >
               <img
                 className="top-bar-icon top-bar-icon--settings"
                 src={topBarSettingsIcon}
@@ -420,10 +512,10 @@ function App() {
                   Details
                 </button>
                 <div className="dashboard-support-row">
-                  <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                  <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("topup")} disabled={isBusy}>
                     Social Media
                   </button>
-                  <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                  <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
                     Support
                   </button>
                 </div>
@@ -493,52 +585,40 @@ function App() {
                   <div className="money-activity-head">
                     <h3 className="money-activity-title">Recent activity</h3>
                     <div className="money-activity-tabs" role="tablist" aria-label="Activity filter">
-                      <button type="button" className="money-activity-tab money-activity-tab--active" disabled={isBusy}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={moneyFilter === "all"}
+                        className={`money-activity-tab${moneyFilter === "all" ? " money-activity-tab--active" : ""}`}
+                        disabled={isBusy}
+                        onClick={() => setMoneyFilter("all")}
+                      >
                         All
                       </button>
-                      <button type="button" className="money-activity-tab" disabled={isBusy}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={moneyFilter === "in"}
+                        className={`money-activity-tab${moneyFilter === "in" ? " money-activity-tab--active" : ""}`}
+                        disabled={isBusy}
+                        onClick={() => setMoneyFilter("in")}
+                      >
                         In
                       </button>
-                      <button type="button" className="money-activity-tab" disabled={isBusy}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={moneyFilter === "out"}
+                        className={`money-activity-tab${moneyFilter === "out" ? " money-activity-tab--active" : ""}`}
+                        disabled={isBusy}
+                        onClick={() => setMoneyFilter("out")}
+                      >
                         Out
                       </button>
                     </div>
                   </div>
                   <div className="money-history-feed" role="list">
-                    {(
-                      [
-                        {
-                          title: "Top up completed",
-                          meta: "Today · 14:32",
-                          amount: "+42.10 USDT",
-                          tone: "in" as const,
-                        },
-                        {
-                          title: "Referral reward",
-                          meta: "Yesterday · 09:10",
-                          amount: "+18.00 USDT",
-                          tone: "in" as const,
-                        },
-                        {
-                          title: "Withdrawal pending",
-                          meta: "Processing · est. 2h",
-                          amount: "−600.00 USDT",
-                          tone: "pending" as const,
-                        },
-                        {
-                          title: "Fee charge",
-                          meta: "Auto · network",
-                          amount: "−1.20 USDT",
-                          tone: "out" as const,
-                        },
-                        {
-                          title: "Top up completed",
-                          meta: "Mon · 11:05",
-                          amount: "+200.00 USDT",
-                          tone: "in" as const,
-                        },
-                      ] as const
-                    ).map((row, idx) => (
+                    {filteredMoneyRows.map((row, idx) => (
                       <article
                         key={`${row.title}-${idx}`}
                         className={`money-feed-row money-feed-row--${row.tone}`}
@@ -565,8 +645,11 @@ function App() {
                         <button
                           key={label}
                           type="button"
-                          className={i === 1 ? "stat-pill stat-pill-active" : "stat-pill"}
+                          role="tab"
+                          aria-selected={tradingRange === label}
+                          className={tradingRange === label ? "stat-pill stat-pill-active" : "stat-pill"}
                           disabled={isBusy}
+                          onClick={() => setTradingRange(label as "1d" | "7d" | "30d" | "All")}
                         >
                           {label}
                         </button>
