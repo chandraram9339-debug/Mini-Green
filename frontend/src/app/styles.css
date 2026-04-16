@@ -1267,6 +1267,116 @@ button:focus-visible,
   margin-top: 14px;
 }
 
+.trading-hero {
+  margin-top: 14px;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #2edd7d 0%, #1a9f5a 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
+  gap: 10px 16px;
+  align-items: center;
+}
+
+.trading-hero-main {
+  min-width: 0;
+}
+
+.trading-hero-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.7);
+}
+
+.trading-hero-value {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0a0a0a;
+}
+
+.trading-hero-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #16c768;
+  box-shadow: 0 0 0 3px rgba(22, 199, 104, 0.35);
+}
+
+.trading-hero-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) auto;
+  gap: 8px 14px;
+  align-items: center;
+}
+
+.trading-hero-meta-block {
+  min-width: 0;
+}
+
+.trading-hero-meta-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(10, 10, 10, 0.7);
+}
+
+.trading-hero-meta-value {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #0a0a0a;
+}
+
+.trading-hero-meta-unit {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(10, 10, 10, 0.6);
+}
+
+.trading-hero-meta-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.trading-hero-cta {
+  min-width: 84px;
+  height: 34px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  border: 1px solid rgba(10, 10, 10, 0.12);
+}
+
+.trading-hero-cta--primary {
+  background: #0a0a0a;
+  color: #f5f8ff;
+}
+
+.trading-hero-cta--ghost {
+  background: rgba(10, 10, 10, 0.08);
+  color: #0a0a0a;
+}
+
 .trading-stack-head {
   display: flex;
   flex-direction: column;

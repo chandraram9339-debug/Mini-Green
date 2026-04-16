@@ -943,60 +943,102 @@ function App() {
               ) : null}
 
               {route === "trading" && (
-                <div className="trading-stack">
-                  <div className="trading-stack-head">
-                    <p className="trading-section-title">Trading bot statistics for the period:</p>
-                    <div className="stats-tabs" role="tablist" aria-label="Period">
-                      {["1d", "7d", "30d", "All"].map((label, i) => (
-                        <button
-                          key={label}
-                          type="button"
-                          role="tab"
-                          aria-selected={tradingRange === label}
-                          className={tradingRange === label ? "stat-pill stat-pill-active" : "stat-pill"}
-                          disabled={isBusy}
-                          onClick={() => setTradingRange(label as "1d" | "7d" | "30d" | "All")}
-                        >
-                          {label}
+                <>
+                  <section className="trading-hero" aria-label="Trading bot status">
+                    <div className="trading-hero-main">
+                      <p className="trading-hero-label">Bot status</p>
+                      <p className="trading-hero-value">
+                        <span className="trading-hero-dot" aria-hidden="true" /> Active
+                      </p>
+                    </div>
+                    <div className="trading-hero-meta">
+                      <div className="trading-hero-meta-block">
+                        <p className="trading-hero-meta-label">Actual price</p>
+                        <p className="trading-hero-meta-value">
+                          {FIGMA_VISUAL_STUBS.tradingPriceLine} <span className="trading-hero-meta-unit">USDT/BTC</span>
+                        </p>
+                      </div>
+                      <div className="trading-hero-meta-actions" aria-label="Bot control">
+                        <button type="button" className="trading-hero-cta trading-hero-cta--primary" disabled>
+                          Start
                         </button>
-                      ))}
+                        <button type="button" className="trading-hero-cta trading-hero-cta--ghost" disabled>
+                          Stop
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="trading-graph" aria-hidden="true">
-                    <div className="trading-graph-line" />
-                  </div>
-                  <div className="trading-kpi-row" aria-label="Trading summary">
-                    <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Strategy</p>
-                      <p className="trading-kpi-value">Conservative</p>
+                  </section>
+                  <div className="trading-stack">
+                    <div className="trading-stack-head">
+                      <p className="trading-section-title">Trading bot statistics for the period:</p>
+                      <div className="stats-tabs" role="tablist" aria-label="Period">
+                        {["24h", "3d", "7d", "1m"].map((label, i) => (
+                          <button
+                            key={label}
+                            type="button"
+                            role="tab"
+                            aria-selected={
+                              (label === "24h" && tradingRange === "1d") ||
+                              (label === "3d" && tradingRange === "7d") ||
+                              (label === "7d" && tradingRange === "30d") ||
+                              (label === "1m" && tradingRange === "All")
+                            }
+                            className={
+                              (label === "24h" && tradingRange === "1d") ||
+                              (label === "3d" && tradingRange === "7d") ||
+                              (label === "7d" && tradingRange === "30d") ||
+                              (label === "1m" && tradingRange === "All")
+                                ? "stat-pill stat-pill-active"
+                                : "stat-pill"
+                            }
+                            disabled={isBusy}
+                            onClick={() =>
+                              setTradingRange(
+                                label === "24h" ? "1d" : label === "3d" ? "7d" : label === "7d" ? "30d" : "All"
+                              )
+                            }
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Open orders</p>
-                      <p className="trading-kpi-value">3</p>
+                    <div className="trading-graph" aria-hidden="true">
+                      <div className="trading-graph-line" />
                     </div>
-                    <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Execution</p>
-                      <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                    <div className="trading-kpi-row" aria-label="Trading summary">
+                      <div className="trading-kpi-cell">
+                        <p className="trading-kpi-label">Strategy</p>
+                        <p className="trading-kpi-value">Conservative</p>
+                      </div>
+                      <div className="trading-kpi-cell">
+                        <p className="trading-kpi-label">Open orders</p>
+                        <p className="trading-kpi-value">3</p>
+                      </div>
+                      <div className="trading-kpi-cell">
+                        <p className="trading-kpi-label">Execution</p>
+                        <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                      </div>
                     </div>
-                  </div>
-                  <article className="metric-card trading-stat-card">
-                    <p className="metric-label">Performance</p>
-                    <p className="metric-value metric-value-accent">+4.2%</p>
-                    <p className="trading-card-caption">Read-only summary</p>
-                  </article>
-                  {[
-                    ["Stats", "12 active operations"],
-                    ["Successful", "9"],
-                    ["Unsuccessful", "1"],
-                    ["New trade", "2"],
-                  ].map(([label, value]) => (
-                    <article key={label} className="metric-card trading-list-row">
-                      <p className="metric-label">{label}</p>
-                      <p className="metric-value">{value}</p>
+                    <article className="metric-card trading-stat-card">
+                      <p className="metric-label">Performance</p>
+                      <p className="metric-value metric-value-accent">+4.2%</p>
+                      <p className="trading-card-caption">Read-only summary</p>
                     </article>
-                  ))}
-                  <p className="metric-label">trading:</p>
-                </div>
+                    {[
+                      ["Stats", "12 active operations"],
+                      ["Successful", "9"],
+                      ["Unsuccessful", "1"],
+                      ["New trade", "2"],
+                    ].map(([label, value]) => (
+                      <article key={label} className="metric-card trading-list-row">
+                        <p className="metric-label">{label}</p>
+                        <p className="metric-value">{value}</p>
+                      </article>
+                    ))}
+                    <p className="metric-label">trading:</p>
+                  </div>
+                </>
               )}
 
               {route === "faq" && (
