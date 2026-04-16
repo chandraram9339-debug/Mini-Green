@@ -245,39 +245,56 @@ button:disabled {
   font-weight: 500;
 }
 
-.screen-header {
-  display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 8px;
+.internal-hero {
+  margin-top: 6px;
+  margin-bottom: 12px;
+  padding: 14px 14px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #131313;
 }
 
-.screen-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #38df83;
-  border: 0;
-  background: #0f0f0f;
+.internal-hero-kicker {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.screen-subtitle {
-  margin: 2px 0 0;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-.body-copy {
-  margin: 10px 0 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 16px;
+.internal-hero-title {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 19px;
   line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.internal-hero-money {
+  background: linear-gradient(180deg, rgba(124, 168, 255, 0.12) 0%, #131313 100%);
+}
+
+.internal-hero-trading {
+  background: linear-gradient(180deg, rgba(64, 255, 150, 0.12) 0%, #131313 100%);
+}
+
+.internal-hero-faq {
+  background: linear-gradient(180deg, rgba(160, 160, 255, 0.12) 0%, #131313 100%);
+}
+
+.internal-hero-topup {
+  background: linear-gradient(180deg, rgba(235, 245, 255, 0.08) 0%, #131313 100%);
+}
+
+.internal-hero-withdraw {
+  background: linear-gradient(180deg, rgba(255, 196, 120, 0.12) 0%, #131313 100%);
+}
+
+.internal-hero-confirm {
+  background: linear-gradient(180deg, rgba(64, 255, 150, 0.08) 0%, #131313 100%);
 }
 
 .metrics-grid {

@@ -166,16 +166,6 @@ function StateView({ state, onRetry, children }: StateViewProps) {
   return <>{children}</>;
 }
 
-function screenIcon(route: RouteId): string {
-  if (route === "dashboard") return "DB";
-  if (route === "money") return "MD";
-  if (route === "trading") return "TD";
-  if (route === "faq") return "FQ";
-  if (route === "topup") return "TU";
-  if (route === "withdraw") return "WD";
-  return "CF";
-}
-
 const bottomNavCaption: Partial<Record<RouteId, string>> = {
   dashboard: "Home",
   money: "Money",
@@ -420,17 +410,7 @@ function App() {
               ◫ Details
             </button>
           </div>
-        ) : (
-          <div className="screen-header">
-            <span className="screen-icon" aria-hidden="true">
-              {screenIcon(route)}
-            </span>
-            <div>
-              <h2>{content.title}</h2>
-              <p className="screen-subtitle">{routeTitles[route]}</p>
-            </div>
-          </div>
-        )}
+        ) : null}
         <StateView state={state} onRetry={retry}>
           {isDashboard ? (
             <div className="dashboard-body">
@@ -478,7 +458,42 @@ function App() {
             </div>
           ) : (
             <div className={`screen-template template-${route}`}>
-              <p className="body-copy">{content.description}</p>
+              {route === "money" && (
+                <header className="internal-hero internal-hero-money">
+                  <p className="internal-hero-kicker">Money details</p>
+                  <h2 className="internal-hero-title">Track available funds and latest operations</h2>
+                </header>
+              )}
+              {route === "trading" && (
+                <header className="internal-hero internal-hero-trading">
+                  <p className="internal-hero-kicker">Trading details</p>
+                  <h2 className="internal-hero-title">Monitor bot execution and period metrics</h2>
+                </header>
+              )}
+              {route === "faq" && (
+                <header className="internal-hero internal-hero-faq">
+                  <p className="internal-hero-kicker">Support center</p>
+                  <h2 className="internal-hero-title">Answers for top up, withdraw, and confirmations</h2>
+                </header>
+              )}
+              {route === "topup" && (
+                <header className="internal-hero internal-hero-topup">
+                  <p className="internal-hero-kicker">Top Up</p>
+                  <h2 className="internal-hero-title">Deposit with USDT TRC20</h2>
+                </header>
+              )}
+              {route === "withdraw" && (
+                <header className="internal-hero internal-hero-withdraw">
+                  <p className="internal-hero-kicker">Withdraw</p>
+                  <h2 className="internal-hero-title">Send funds to your external wallet</h2>
+                </header>
+              )}
+              {route === "confirm" && (
+                <header className="internal-hero internal-hero-confirm">
+                  <p className="internal-hero-kicker">Final review</p>
+                  <h2 className="internal-hero-title">Check transfer details before submission</h2>
+                </header>
+              )}
               {route === "money" && (
                 <>
                   <section className="money-overview" aria-label="Balance overview">
