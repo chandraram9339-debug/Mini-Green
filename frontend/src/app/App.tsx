@@ -716,10 +716,10 @@ function App() {
             <div className="dashboard-balance-row">
               <div className="dashboard-balance-stack">
                 <p className="dashboard-balance-value">{dashboardBalance}</p>
-                <p className="dashboard-referral-kicker">Received by referrals</p>
                 <p className="dashboard-referral-amount">
                   {FIGMA_VISUAL_STUBS.referralAmount} <span className="dashboard-referral-unit">USDT</span>
                 </p>
+                <p className="dashboard-referral-kicker">Received by referrals</p>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -754,10 +754,13 @@ function App() {
                   </div>
                   <div className="dashboard-perf-chart" aria-hidden="true">
                     <div className="dashboard-perf-y-axis">
-                      <span>−4%</span>
-                      <span>0%</span>
-                      <span>+4%</span>
-                      <span>+8%</span>
+                      <span>+4.00%</span>
+                      <span>+3.00%</span>
+                      <span>+2.00%</span>
+                      <span>+1.00%</span>
+                      <span>0.00%</span>
+                      <span>−1.00%</span>
+                      <span>−2.00%</span>
                     </div>
                     <div className="dashboard-perf-plot">
                       <div className="dashboard-perf-grid" />
