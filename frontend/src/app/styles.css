@@ -279,6 +279,25 @@ button:focus-visible,
   border-color: #191919;
 }
 
+.top-bar-dark .top-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.top-bar-dark .top-bar-back.icon-btn.ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: transparent;
+  color: #f5f8ff;
+}
+
+.top-bar-dark .top-bar-back .top-bar-icon {
+  filter: brightness(0) invert(1);
+  opacity: 0.92;
+}
+
+.top-bar-dark .top-bar-chip--close .top-bar-close-glyph {
+  color: rgba(255, 255, 255, 0.96);
+}
+
 .app--dashboard-merge {
   gap: 0;
 }
