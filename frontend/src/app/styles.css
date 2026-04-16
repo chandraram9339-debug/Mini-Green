@@ -694,6 +694,15 @@ button:focus-visible,
   font-size: 12px;
   line-height: 12px;
   font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dashboard-pill-icon {
+  flex-shrink: 0;
+  display: block;
 }
 
 .dashboard-pill-main {
@@ -716,6 +725,15 @@ button:focus-visible,
   font-size: 16px;
   line-height: 20px;
   font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dashboard-details-icon {
+  flex-shrink: 0;
+  display: block;
 }
 
 .dashboard-body {
