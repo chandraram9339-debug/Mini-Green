@@ -750,21 +750,41 @@ function App() {
 
               {route === "confirm" && (
                 <div className="confirm-block">
-                  <div className="confirm-cheque">
-                    {[
-                      ["Address", "TRC20 wallet"],
-                      ["Amount", "600.00 USDT"],
-                      ["Fee", "10%"],
-                    ].map(([label, value]) => (
-                      <article className="metric-card confirm-row" key={label}>
-                        <p className="metric-label">{label}</p>
-                        <p className="metric-value">{value}</p>
-                      </article>
-                    ))}
-                  </div>
-                  <p className="note-text confirm-fee-note">
-                    *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
-                  </p>
+                  <article className="metric-card confirm-cheque-card">
+                    <header className="confirm-cheque-head">
+                      <div>
+                        <p className="confirm-cheque-kicker">Operation summary</p>
+                        <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
+                      </div>
+                      <span className="confirm-cheque-ref" title="Trace reference">
+                        trace_02adf1
+                      </span>
+                    </header>
+                    <div className="confirm-cheque-body">
+                      <div className="confirm-cheque-row">
+                        <span className="confirm-cheque-label">Destination</span>
+                        <span className="confirm-cheque-value">TRC20 · wallet ending …8A2F</span>
+                      </div>
+                      <div className="confirm-cheque-divider" />
+                      <div className="confirm-cheque-row confirm-cheque-row--hero">
+                        <span className="confirm-cheque-label">You send</span>
+                        <div className="confirm-cheque-amount-block">
+                          <span className="confirm-cheque-amount">600.00</span>
+                          <span className="confirm-cheque-unit">USDT</span>
+                        </div>
+                      </div>
+                      <div className="confirm-cheque-row confirm-cheque-row--fee">
+                        <span className="confirm-cheque-label">Service fee</span>
+                        <span className="confirm-cheque-fee">10%</span>
+                      </div>
+                      <p className="confirm-cheque-subline">Fee is withheld from your balance before the transfer is sent.</p>
+                    </div>
+                    <footer className="confirm-cheque-foot">
+                      <p className="confirm-cheque-disclaimer">
+                        *Review all details. Blockchain transfers are <strong>irreversible</strong> after submission.
+                      </p>
+                    </footer>
+                  </article>
                 </div>
               )}
 

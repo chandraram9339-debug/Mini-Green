@@ -1532,19 +1532,159 @@ button:disabled {
   margin-bottom: 0;
 }
 
-.confirm-cheque {
-  display: grid;
-  gap: 10px;
+.confirm-cheque-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
 }
 
-.confirm-row {
-  min-height: 49px;
-  padding: 10px 16px;
+.confirm-cheque-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(64, 255, 150, 0.08) 0%, rgba(10, 10, 10, 0) 100%);
 }
 
-.confirm-fee-note {
-  margin-top: 8px;
-  padding-left: 12px;
+.confirm-cheque-kicker {
+  margin: 0 0 4px;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.confirm-cheque-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.confirm-cheque-ref {
+  flex-shrink: 0;
+  margin-top: 2px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.confirm-cheque-body {
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.confirm-cheque-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+.confirm-cheque-row--hero {
+  align-items: flex-end;
+  padding: 12px 0 10px;
+}
+
+.confirm-cheque-row--fee {
+  padding: 4px 0 0;
+}
+
+.confirm-cheque-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.52);
+  flex-shrink: 0;
+}
+
+.confirm-cheque-value {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm-cheque-divider {
+  height: 1px;
+  margin: 4px 0 2px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.confirm-cheque-amount-block {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.confirm-cheque-amount {
+  font-size: 30px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #f5f8ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm-cheque-unit {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.confirm-cheque-fee {
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 700;
+  color: #40ff96;
+  font-variant-numeric: tabular-nums;
+}
+
+.confirm-cheque-subline {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.confirm-cheque-foot {
+  padding: 10px 14px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.confirm-cheque-disclaimer {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.confirm-cheque-disclaimer strong {
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
 }
 
 .note-text {
