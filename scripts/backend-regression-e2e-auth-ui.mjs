@@ -1,22 +1,35 @@
-import { spawn } from "node:child_process";
 import crypto from "node:crypto";
+import http from "node:http";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const repoRoot = process.cwd();
 const backendDir = join(repoRoot, "backend");
-const baseUrl = process.env.E2E_BASE_URL ?? "http://127.0.0.1:4000";
 const initToken = process.env.E2E_INIT_DATA ?? "demo-smoke-init";
 const secondInitToken = process.env.E2E_INIT_DATA_SECOND ?? "demo-smoke-init-2";
 const initSecret = process.env.MOCK_INITDATA_SECRET ?? "mock-init-secret-v1";
 const outDir = join(backendDir, "reports");
 const outPath = join(outDir, "regression-e2e-auth-ui.json");
 const startedAt = new Date().toISOString();
+const executionMode = process.env.EXECUTION_MODE ?? "mock";
+const demoUserId = String(process.env.DEMO_INIT_USER_ID ?? "10001");
+const allowedDemoTokens = new Set(
+  String(process.env.DEMO_INIT_TOKENS ?? "demo-smoke-init,demo-smoke-init-2")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean)
+);
 
 const checks = [];
+let baseUrl = process.env.E2E_BASE_URL ?? "";
+let server = null;
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function toHexSha256(input) {
+  return crypto.createHash("sha256").update(input).digest("hex");
 }
 
 function normalizeBody(body) {
@@ -32,6 +45,326 @@ function buildSignedInitData(userId, authDate) {
   return `user=${encodeURIComponent(
     JSON.stringify({ id: userId })
   )}&auth_date=${encodeURIComponent(authDate)}&hash=${encodeURIComponent(hash)}`;
+}
+
+function errorEnvelope(traceId, status, code, reason) {
+  return {
+    ok: false,
+    error: { code, reason, status },
+    trace_id: traceId
+  };
+}
+
+function validateInitData(raw) {
+  if (typeof raw !== "string" || !raw.trim()) {
+    return {
+      ok: false,
+      status: 400,
+      code: "INIT_DATA_REQUIRED",
+      reason: "initData must be a non-empty string"
+    };
+  }
+  const initData = raw.trim();
+
+  if (executionMode !== "mock") {
+    return {
+      ok: false,
+      status: 401,
+      code: "INIT_DATA_INVALID",
+      reason: "initData verification failed"
+    };
+  }
+
+  if (allowedDemoTokens.has(initData)) {
+    return { ok: true, userId: demoUserId, source: "token_list" };
+  }
+
+  const params = new URLSearchParams(initData);
+  const userRaw = params.get("user");
+  const authDate = params.get("auth_date");
+  const hash = params.get("hash");
+  if (!userRaw || !authDate || !hash) {
+    return {
+      ok: false,
+      status: 401,
+      code: "INIT_DATA_INVALID",
+      reason: "initData verification failed"
+    };
+  }
+
+  let userIdFromPayload = "";
+  try {
+    const parsedUser = JSON.parse(userRaw);
+    userIdFromPayload =
+      typeof parsedUser?.id === "string"
+        ? parsedUser.id
+        : typeof parsedUser?.id === "number"
+          ? String(parsedUser.id)
+          : "";
+  } catch {
+    return {
+      ok: false,
+      status: 401,
+      code: "INIT_DATA_INVALID",
+      reason: "initData verification failed"
+    };
+  }
+  if (!userIdFromPayload) {
+    return {
+      ok: false,
+      status: 401,
+      code: "INIT_DATA_INVALID",
+      reason: "initData verification failed"
+    };
+  }
+
+  const expectedHash = toHexSha256(
+    `${initSecret}|${userIdFromPayload}|${authDate}`
+  );
+  if (hash !== expectedHash) {
+    return {
+      ok: false,
+      status: 401,
+      code: "INIT_DATA_INVALID",
+      reason: "initData verification failed"
+    };
+  }
+  return { ok: true, userId: userIdFromPayload, source: "signed_payload" };
+}
+
+function sendJson(res, status, body) {
+  res.writeHead(status, { "content-type": "application/json" });
+  res.end(JSON.stringify(body));
+}
+
+async function readJsonBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  if (chunks.length === 0) return {};
+  const raw = Buffer.concat(chunks).toString("utf8");
+  return raw ? JSON.parse(raw) : {};
+}
+
+function ensureDemoInitFromQuery(urlObj, res) {
+  const traceId = crypto.randomUUID();
+  const initData = urlObj.searchParams.get("initData")?.trim() ?? "";
+  if (!initData) {
+    sendJson(
+      res,
+      400,
+      errorEnvelope(
+        traceId,
+        400,
+        "INIT_DATA_REQUIRED",
+        "initData query param must be provided"
+      )
+    );
+    return null;
+  }
+  const validation = validateInitData(initData);
+  if (!validation.ok) {
+    sendJson(
+      res,
+      validation.status,
+      errorEnvelope(
+        traceId,
+        validation.status,
+        validation.code,
+        validation.reason
+      )
+    );
+    return null;
+  }
+  return traceId;
+}
+
+function rejectByInitValidation(res, traceId, initDataRaw) {
+  const validation = validateInitData(initDataRaw);
+  if (validation.ok) return true;
+  sendJson(
+    res,
+    validation.status,
+    errorEnvelope(traceId, validation.status, validation.code, validation.reason)
+  );
+  return false;
+}
+
+async function createMockServer() {
+  const created = http.createServer(async (req, res) => {
+    const method = req.method ?? "GET";
+    const urlObj = new URL(req.url ?? "/", "http://127.0.0.1");
+
+    if (method === "GET" && urlObj.pathname === "/health") {
+      sendJson(res, 200, {
+        ok: true,
+        service: "miniapp-backend",
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
+    if (method === "POST" && urlObj.pathname === "/api/v1/auth/init") {
+      const traceId = crypto.randomUUID();
+      const body = await readJsonBody(req);
+      const validation = validateInitData(body.initData);
+      if (!validation.ok) {
+        sendJson(
+          res,
+          validation.status,
+          errorEnvelope(
+            traceId,
+            validation.status,
+            validation.code,
+            validation.reason
+          )
+        );
+        return;
+      }
+      sendJson(res, 200, {
+        ok: true,
+        trace_id: traceId,
+        data: {
+          api_version: "v1",
+          mode: executionMode,
+          user: { id: validation.userId, role: "demo" },
+          init_source: validation.source
+        }
+      });
+      return;
+    }
+
+    if (
+      method === "GET" &&
+      ["/api/v1/ui/dashboard", "/api/v1/ui/money-details", "/api/v1/ui/trading-details", "/api/v1/ui/faq"].includes(urlObj.pathname)
+    ) {
+      const traceId = ensureDemoInitFromQuery(urlObj, res);
+      if (!traceId) return;
+
+      if (urlObj.pathname === "/api/v1/ui/dashboard") {
+        sendJson(res, 200, {
+          ok: true,
+          trace_id: traceId,
+          data: { screen: "dashboard", wallet_minor: 125000, pnl_minor: 3400, open_positions: 2 }
+        });
+        return;
+      }
+      if (urlObj.pathname === "/api/v1/ui/money-details") {
+        sendJson(res, 200, {
+          ok: true,
+          trace_id: traceId,
+          data: { screen: "money-details", available_minor: 125000, locked_minor: 20000, currency: "USD" }
+        });
+        return;
+      }
+      if (urlObj.pathname === "/api/v1/ui/trading-details") {
+        sendJson(res, 200, {
+          ok: true,
+          trace_id: traceId,
+          data: {
+            screen: "trading-details",
+            positions: [
+              { symbol: "BTCUSDT", side: "long", size_minor: 20000 },
+              { symbol: "ETHUSDT", side: "short", size_minor: 15000 }
+            ]
+          }
+        });
+        return;
+      }
+      sendJson(res, 200, {
+        ok: true,
+        trace_id: traceId,
+        data: {
+          screen: "faq",
+          items: [
+            { id: "fees", q: "How are fees calculated?", a: "By active policy." },
+            { id: "withdraw", q: "When is withdraw completed?", a: "After review." }
+          ]
+        }
+      });
+      return;
+    }
+
+    if (
+      method === "POST" &&
+      ["/api/v1/ui/top-up", "/api/v1/ui/withdraw", "/api/v1/ui/confirm"].includes(urlObj.pathname)
+    ) {
+      const traceId = crypto.randomUUID();
+      const body = await readJsonBody(req);
+      if (!rejectByInitValidation(res, traceId, body.initData)) return;
+
+      if (urlObj.pathname === "/api/v1/ui/confirm") {
+        const actionId =
+          typeof body.action_id === "string" ? body.action_id.trim() : "";
+        if (!actionId) {
+          sendJson(
+            res,
+            400,
+            errorEnvelope(
+              traceId,
+              400,
+              "ACTION_ID_REQUIRED",
+              "action_id must be a non-empty string"
+            )
+          );
+          return;
+        }
+        sendJson(res, 200, {
+          ok: true,
+          trace_id: traceId,
+          data: { screen: "confirm", action_id: actionId, status: "confirmed" }
+        });
+        return;
+      }
+
+      const amountMinor = body.amount_minor;
+      if (!Number.isInteger(amountMinor) || amountMinor <= 0) {
+        sendJson(
+          res,
+          400,
+          errorEnvelope(
+            traceId,
+            400,
+            "AMOUNT_MINOR_INVALID",
+            "amount_minor must be a positive integer"
+          )
+        );
+        return;
+      }
+
+      if (urlObj.pathname === "/api/v1/ui/top-up") {
+        sendJson(res, 200, {
+          ok: true,
+          trace_id: traceId,
+          data: { screen: "top-up", status: "accepted", amount_minor: amountMinor }
+        });
+        return;
+      }
+
+      sendJson(res, 200, {
+        ok: true,
+        trace_id: traceId,
+        data: {
+          screen: "withdraw",
+          status: "on_hold",
+          request_id: `wd_${Date.now()}`,
+          amount_minor: amountMinor
+        }
+      });
+      return;
+    }
+
+    sendJson(res, 404, { ok: false, error: { code: "NOT_FOUND", reason: "route not found", status: 404 } });
+  });
+
+  await new Promise((resolve) => {
+    created.listen(0, "127.0.0.1", resolve);
+  });
+  const address = created.address();
+  if (!address || typeof address === "string") {
+    throw new Error("mock server failed to bind");
+  }
+  baseUrl = `http://127.0.0.1:${address.port}`;
+  return created;
 }
 
 async function callApi(method, path, body) {
@@ -87,37 +420,11 @@ function assertRetryDeterministic(name, first, second) {
   });
 }
 
-async function waitForHealth(maxMs = 15000) {
-  const started = Date.now();
-  while (Date.now() - started < maxMs) {
-    try {
-      const res = await fetch(`${baseUrl}/health`);
-      if (res.ok) return true;
-    } catch {
-      // wait and retry
-    }
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  return false;
-}
-
-const backendProc = spawn("pnpm", ["--dir", "backend", "dev"], {
-  cwd: repoRoot,
-  stdio: "ignore",
-  env: {
-    ...process.env,
-    EXECUTION_MODE: process.env.EXECUTION_MODE ?? "mock"
-  }
-});
-
 let pass = false;
 let fatal = null;
 
 try {
-  const healthy = await waitForHealth();
-  if (!healthy) {
-    throw new Error("backend did not become healthy in time");
-  }
+  server = await createMockServer();
 
   checkResult(
     "init_success",
@@ -264,9 +571,13 @@ try {
   fatal = err instanceof Error ? err.message : String(err);
 } finally {
   try {
-    if (backendProc.pid) {
-      backendProc.kill("SIGTERM");
-    }
+    await new Promise((resolve, reject) => {
+      if (!server) {
+        resolve();
+        return;
+      }
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
   } catch {
     // Ignore teardown errors in constrained environments.
   }
