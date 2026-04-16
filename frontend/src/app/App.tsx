@@ -537,7 +537,7 @@ function App() {
                 </button>
                 <div className="dashboard-support-row">
                   <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("topup")} disabled={isBusy}>
-                    Social Media
+                    Top Up Help
                   </button>
                   <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
                     Support
