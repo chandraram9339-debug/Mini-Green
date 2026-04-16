@@ -225,8 +225,7 @@ function isGreenHeaderRoute(route: RouteId): boolean {
     route === "trading" ||
     route === "withdraw" ||
     route === "confirm" ||
-    route === "topup" ||
-    route === "faq"
+    route === "topup"
   );
 }
 
@@ -630,7 +629,7 @@ function App() {
   }
 
   return (
-    <main className={`app${isDashboard ? " app--dashboard-merge" : ""}`}>
+    <main className={`app${isDashboard || route === "topup" ? " app--dashboard-merge" : ""}`}>
       <header className={`top-bar ${greenHeader ? "top-bar-green" : "top-bar-dark"}`}>
         <div className="top-bar-start">
           <button
