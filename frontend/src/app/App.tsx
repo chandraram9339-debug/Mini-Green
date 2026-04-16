@@ -845,7 +845,7 @@ function App() {
               {route === "money" ? (
                 <div className="money-page">
                   <header className="internal-hero internal-hero-money">
-                    <h2 className="internal-hero-title">Deposit</h2>
+                    <h2 className="internal-hero-title">Money</h2>
                     <p className="internal-hero-label">{screenData.money.description}</p>
                   </header>
                   <section className="money-overview" aria-label="Balance overview">

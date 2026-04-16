@@ -396,6 +396,10 @@ button:focus-visible,
   padding-bottom: 16px;
 }
 
+.internal-hero-money > .internal-hero-title:first-child {
+  margin-top: 0;
+}
+
 .internal-hero-trading {
   background: linear-gradient(180deg, rgba(64, 255, 150, 0.12) 0%, #131313 100%);
 }
