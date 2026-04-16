@@ -90,6 +90,10 @@ function routeToPath(route: RouteId): string {
 
 function pathToRoute(pathname: string): RouteId {
   const key = pathname.replace(/^\/+/, "").toLowerCase();
+  // Legacy / mistaken paths: there is no separate "amount" or "recipient" screen (ТЗ — один экран вывода).
+  if (key === "amount" || key === "recipient") {
+    return "withdraw";
+  }
   if (
     key === "dashboard" ||
     key === "money" ||
