@@ -32,9 +32,6 @@ This checklist is mandatory for release close.
 - Workflow: `.github/workflows/release-deploy.yml`
 - Workflow: `.github/workflows/rollback-quick-pass.yml`
 - Gate step: `Enforce visual quality gate (06_SECURITY_QA)`
-<<<<<<< HEAD
-- Blocking behavior: run exits with non-zero status when `visual_fidelity_pass != true`.
-=======
 - Alert rules:
   - `scripts/alerts/runtime-drift-alert-rule.yml`
   - `scripts/alerts/release-operations-alert-rule.yml`
@@ -45,4 +42,3 @@ This checklist is mandatory for release close.
 - Rollback confidence rule:
   - each RC baseline must resolve a `rollback_candidate_tag` or explicitly record `UNAVAILABLE`
   - release readiness is stronger when `rollback-quick-pass` has a fresh PASS against the current target environment
->>>>>>> 240b7ae (chore(infra): productionize release ops baseline)

@@ -14,7 +14,8 @@ export interface ScreenData {
   description: string;
   primaryCta?: {
     label: string;
-    target: RouteId;
+    action: "navigate" | "confirm-submit";
+    target?: RouteId;
   };
   secondaryCta?: {
     label: string;

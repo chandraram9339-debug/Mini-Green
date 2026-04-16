@@ -1,4 +1,19 @@
 import React from "react";
+import {
+  ApiError,
+  confirmAction,
+  createTopUp,
+  createWithdraw,
+  type DashboardPayload,
+  fetchDashboard,
+  fetchFaq,
+  fetchMoneyDetails,
+  fetchTradingDetails,
+  initSession,
+  type MoneyDetailsPayload,
+  resolveInitData,
+  type SessionPayload,
+} from "./api";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
 import topupQrAsset from "./assets/topup-qr-1-5256.svg";
@@ -7,9 +22,21 @@ import topBarNotifyIcon from "./assets/topbar-notify-1-6436.svg";
 import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 
 const fallbackRoute: RouteId = "dashboard";
-const delayMs = 300;
+const uiStorageKey = "miniapp-frontend-ui-state";
+const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
+const DEFAULT_ACTION_FEE_LABEL = "10%";
+const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
 
-const FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
+/** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
+const FIGMA_VISUAL_STUBS = {
+  referralAmount: "425.22",
+  tradingPriceLine: "69 425.22",
+  performancePeriod: "7D",
+  performanceLegendPrimary: "Bot yield",
+  performanceLegendSecondary: "Benchmark",
+} as const;
+
+const LOCAL_FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
   {
     id: "topup",
     title: "How to top up balance?",
@@ -32,6 +59,31 @@ const FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
   },
 ];
 
+interface PendingAction {
+  actionId: string;
+  kind: "top-up" | "withdraw";
+  amountMinor: number;
+  status: string;
+  traceId: string;
+  recipientLabel: string;
+}
+
+function formatMinor(minor: number): string {
+  return (minor / 100).toFixed(2);
+}
+
+function mergeFaqEntries(remoteEntries: Array<{ id: string; q: string; a: string }>) {
+  const merged = new Map(LOCAL_FAQ_ENTRIES.map((entry) => [entry.id, entry]));
+  remoteEntries.forEach((entry) => {
+    merged.set(entry.id, {
+      id: entry.id,
+      title: entry.q,
+      body: entry.a,
+    });
+  });
+  return Array.from(merged.values());
+}
+
 function routeToPath(route: RouteId): string {
   return route === "dashboard" ? "/" : `/${route}`;
 }
@@ -52,6 +104,20 @@ function pathToRoute(pathname: string): RouteId {
   return fallbackRoute;
 }
 
+function readUiStorage() {
+  try {
+    const raw = window.sessionStorage.getItem(uiStorageKey);
+    if (!raw) return {};
+    return JSON.parse(raw) as Partial<{
+      moneyFilter: "all" | "in" | "out";
+      tradingRange: "1d" | "7d" | "30d" | "All";
+      withdrawAddress: string;
+    }>;
+  } catch {
+    return {};
+  }
+}
+
 function readForcedState(route: RouteId): Exclude<LoadState, "ready"> | null {
   const params = new URLSearchParams(window.location.search);
   const state = params.get(`${route}State`);
@@ -61,37 +127,16 @@ function readForcedState(route: RouteId): Exclude<LoadState, "ready"> | null {
   return null;
 }
 
-function useScreenState(route: RouteId) {
-  const [state, setState] = React.useState<LoadState>("loading");
-  const [token, setToken] = React.useState(0);
-
-  React.useEffect(() => {
-    setState("loading");
-    const forcedState = readForcedState(route);
-    const timer = window.setTimeout(() => {
-      setState(forcedState ?? "ready");
-    }, delayMs);
-    return () => window.clearTimeout(timer);
-  }, [route, token]);
-
-  return {
-    state,
-    retry: () => setToken((current) => current + 1),
-  };
-}
-
 interface StateViewProps {
   state: LoadState;
   onRetry: () => void;
   children: React.ReactNode;
 }
 
-/** Demo deposit address (visual only; no API). */
-const TOPUP_DEPOSIT_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
-
-function topupAddressDisplay(full: string): string {
-  if (full.length <= 18) return full;
-  return `${full.slice(0, 8)}…${full.slice(-6)}`;
+function topupAddressTwoLines(full: string): readonly [string, string] {
+  if (full.length <= 22) return [full, ""] as const;
+  const mid = Math.ceil(full.length / 2);
+  return [full.slice(0, mid), full.slice(mid)] as const;
 }
 
 function TopUpQrVisual() {
@@ -99,6 +144,22 @@ function TopUpQrVisual() {
     <div className="topup-qr-shell" aria-hidden="true">
       <img className="topup-qr-svg" src={topupQrAsset} alt="Deposit QR code" />
     </div>
+  );
+}
+
+function TopupAddressPanel({ address }: { address: string }) {
+  const [first, second] = topupAddressTwoLines(address);
+  return (
+    <article className="topup-address-panel">
+      <div className="topup-address-panel-head">
+        <p className="metric-label topup-address-panel-title">Deposit address</p>
+        <span className="topup-network-chip">TRC20</span>
+      </div>
+      <div className="topup-address-lines" aria-label="Deposit address">
+        <p className="topup-address-line">{first}</p>
+        {second ? <p className="topup-address-line">{second}</p> : null}
+      </div>
+    </article>
   );
 }
 
@@ -182,25 +243,56 @@ function isGreenHeaderRoute(route: RouteId): boolean {
     route === "dashboard" ||
     route === "trading" ||
     route === "withdraw" ||
-    route === "confirm" ||
-    route === "topup"
+    route === "confirm"
   );
 }
 
 function App() {
-  const [initState, setInitState] = React.useState<"idle" | "loading" | "error" | "ready">(
-    "idle"
-  );
+  const storedUiState = React.useMemo(() => readUiStorage(), []);
+  const resolvedInitIdentity = React.useMemo(() => resolveInitData(), []);
+  const [initState, setInitState] = React.useState<"loading" | "error" | "ready">("loading");
+  const [initToken, setInitToken] = React.useState(0);
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
-  const [topupCopied, setTopupCopied] = React.useState(false);
+  const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">(storedUiState.moneyFilter ?? "all");
+  const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">(
+    storedUiState.tradingRange ?? "7d"
+  );
+  const [withdrawAddress, setWithdrawAddress] = React.useState(storedUiState.withdrawAddress ?? "");
+  const [topupCopyState, setTopupCopyState] = React.useState<"idle" | "success" | "error">("idle");
+  const [confirmStep, setConfirmStep] = React.useState<"review" | "submitting" | "success">("review");
+  const [screenState, setScreenState] = React.useState<LoadState>("loading");
+  const [screenReloadToken, setScreenReloadToken] = React.useState(0);
+  const [session, setSession] = React.useState<
+    | (SessionPayload & {
+        traceId: string;
+        initData: string;
+        resolvedInitSource: string;
+      })
+    | null
+  >(null);
+  const [dashboardData, setDashboardData] = React.useState<DashboardPayload | null>(null);
+  const [moneyData, setMoneyData] = React.useState<MoneyDetailsPayload | null>(null);
+  const [faqEntries, setFaqEntries] = React.useState(LOCAL_FAQ_ENTRIES);
+  const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
+  const [actionState, setActionState] = React.useState<"idle" | "submitting">("idle");
+  const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
   const flashTopupCopied = React.useCallback(() => {
     if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
-    setTopupCopied(true);
+    setTopupCopyState("success");
     topupCopyTimerRef.current = window.setTimeout(() => {
-      setTopupCopied(false);
+      setTopupCopyState("idle");
+      topupCopyTimerRef.current = null;
+    }, 2000);
+  }, []);
+
+  const flashTopupCopyError = React.useCallback(() => {
+    if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
+    setTopupCopyState("error");
+    topupCopyTimerRef.current = window.setTimeout(() => {
+      setTopupCopyState("idle");
       topupCopyTimerRef.current = null;
     }, 2000);
   }, []);
@@ -221,6 +313,48 @@ function App() {
     setRoute(nextRoute);
   }, []);
 
+  const navigateWithParams = React.useCallback(
+    (nextRoute: RouteId, updates: Record<string, string | null>, replace = false) => {
+      const params = new URLSearchParams(window.location.search);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value == null || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      });
+      const query = params.toString();
+      const nextUrl = `${routeToPath(nextRoute)}${query ? `?${query}` : ""}`;
+      if (replace) {
+        window.history.replaceState({ route: nextRoute }, "", nextUrl);
+      } else {
+        window.history.pushState({ route: nextRoute }, "", nextUrl);
+      }
+      setRoute(nextRoute);
+    },
+    []
+  );
+
+  const openFaqEntry = React.useCallback(
+    (entryId: string) => {
+      navigateWithParams("faq", { faqExpand: entryId });
+      setExpandedFaqId(entryId);
+    },
+    [navigateWithParams]
+  );
+
+  const handleBack = React.useCallback(() => {
+    if (route === "dashboard") {
+      navigate("dashboard", true);
+      return;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigate("dashboard", true);
+  }, [navigate, route]);
+
   React.useEffect(() => {
     const onPopState = () => {
       setRoute(pathToRoute(window.location.pathname));
@@ -230,52 +364,270 @@ function App() {
   }, []);
 
   React.useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        uiStorageKey,
+        JSON.stringify({
+          moneyFilter,
+          tradingRange,
+          withdrawAddress,
+        })
+      );
+    } catch {
+      /* session storage may be unavailable */
+    }
+  }, [moneyFilter, tradingRange, withdrawAddress]);
+
+  React.useEffect(() => {
+    if (route !== "confirm") {
+      setConfirmStep("review");
+    }
+  }, [route]);
+
+  React.useEffect(() => {
+    setActionMessage(null);
+  }, [route]);
+
+  React.useEffect(() => {
     if (route !== "faq") {
       setExpandedFaqId(null);
       return;
     }
     const param = new URLSearchParams(window.location.search).get("faqExpand");
-    if (param && FAQ_ENTRIES.some((e) => e.id === param)) {
+    if (param && faqEntries.some((e) => e.id === param)) {
       setExpandedFaqId(param);
     } else {
       setExpandedFaqId(null);
     }
-  }, [route]);
+  }, [faqEntries, route]);
 
   const startInit = React.useCallback(() => {
-    setInitState("loading");
-    const forceFail = new URLSearchParams(window.location.search).get("initFail");
-    window.setTimeout(() => {
-      if (forceFail === "1") {
-        setInitState("error");
-        return;
-      }
-      setInitState("ready");
-      navigate(pathToRoute(window.location.pathname), true);
-    }, delayMs);
-  }, [navigate]);
+    setInitToken((current) => current + 1);
+  }, []);
 
   React.useEffect(() => {
-    if (initState === "idle" && window.location.pathname !== "/") {
-      startInit();
+    setInitState("loading");
+    setActionMessage(null);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("initFail") === "1") {
+      setInitState("error");
+      return;
     }
-  }, [initState, startInit]);
 
-  const { state, retry } = useScreenState(route);
+    const abortController = new AbortController();
+    initSession(resolvedInitIdentity.value, abortController.signal)
+      .then(({ data, traceId }) => {
+        setSession({
+          ...data,
+          traceId,
+          initData: resolvedInitIdentity.value,
+          resolvedInitSource: resolvedInitIdentity.source,
+        });
+        setInitState("ready");
+        navigate(pathToRoute(window.location.pathname), true);
+      })
+      .catch(() => {
+        setInitState("error");
+      });
+
+    return () => abortController.abort();
+  }, [initToken, navigate, resolvedInitIdentity]);
+
+  React.useEffect(() => {
+    if (initState !== "ready" || !session) {
+      return;
+    }
+
+    const forcedState = readForcedState(route);
+    if (forcedState) {
+      setScreenState(forcedState);
+      return;
+    }
+
+    if (route === "topup" || route === "withdraw" || route === "confirm") {
+      setScreenState("ready");
+      return;
+    }
+
+    const abortController = new AbortController();
+    setScreenState("loading");
+
+    const loadRoute = async () => {
+      try {
+        if (route === "dashboard") {
+          const { data } = await fetchDashboard(session.initData, abortController.signal);
+          setDashboardData(data);
+          setScreenState("ready");
+          return;
+        }
+
+        if (route === "money") {
+          const { data } = await fetchMoneyDetails(session.initData, abortController.signal);
+          setMoneyData(data);
+          setScreenState("ready");
+          return;
+        }
+
+        if (route === "trading") {
+          await fetchTradingDetails(session.initData, abortController.signal);
+          setScreenState("ready");
+          return;
+        }
+
+        if (route === "faq") {
+          const { data } = await fetchFaq(session.initData, abortController.signal);
+          setFaqEntries(mergeFaqEntries(data.items));
+          setScreenState(data.items.length === 0 ? "empty" : "ready");
+        }
+      } catch {
+        if (!abortController.signal.aborted) {
+          setScreenState("error");
+        }
+      }
+    };
+
+    void loadRoute();
+    return () => abortController.abort();
+  }, [initState, route, screenReloadToken, session]);
+
+  const retry = React.useCallback(() => {
+    setScreenReloadToken((current) => current + 1);
+  }, []);
+
   const content = screenData[route];
   const primaryCta = content.primaryCta;
   const secondaryCta = content.secondaryCta;
   const isDashboard = route === "dashboard";
+  const isBusy =
+    screenState === "loading" || actionState === "submitting" || confirmStep === "submitting";
 
-  if (initState === "idle") {
-    return (
-      <main className="app app-center">
-        <h1>Mini App</h1>
-        <p>Open app to start auth/init flow.</p>
-        <button onClick={startInit}>Open app</button>
-      </main>
-    );
-  }
+  const greenHeader = isGreenHeaderRoute(route);
+  const moneyRows = React.useMemo(
+    () =>
+      [
+        {
+          title: "Top up completed",
+          meta: "Today · 14:32",
+          amount: "+42.10 USDT",
+          tone: "in" as const,
+        },
+        {
+          title: "Referral reward",
+          meta: "Yesterday · 09:10",
+          amount: "+18.00 USDT",
+          tone: "in" as const,
+        },
+        {
+          title: "Withdrawal pending",
+          meta: "Processing · est. 2h",
+          amount: "−600.00 USDT",
+          tone: "pending" as const,
+        },
+        {
+          title: "Fee charge",
+          meta: "Auto · network",
+          amount: "−1.20 USDT",
+          tone: "out" as const,
+        },
+        {
+          title: "Top up completed",
+          meta: "Mon · 11:05",
+          amount: "+200.00 USDT",
+          tone: "in" as const,
+        },
+      ] as const,
+    []
+  );
+  const filteredMoneyRows = React.useMemo(() => {
+    if (moneyFilter === "all") return moneyRows;
+    if (moneyFilter === "in") return moneyRows.filter((row) => row.tone === "in");
+    return moneyRows.filter((row) => row.tone === "out" || row.tone === "pending");
+  }, [moneyFilter, moneyRows]);
+
+  const handleTopUpContinue = React.useCallback(async () => {
+    if (!session || isBusy) return;
+    setActionState("submitting");
+    setActionMessage(null);
+    try {
+      const { data, traceId } = await createTopUp(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
+      setPendingAction({
+        actionId: data.action_id,
+        kind: "top-up",
+        amountMinor: data.amount_minor,
+        status: data.status,
+        traceId,
+        recipientLabel: "TRC20 deposit wallet",
+      });
+      navigate("confirm");
+    } catch (error) {
+      setActionMessage(
+        error instanceof ApiError ? error.message : "Unable to create top up action right now."
+      );
+    } finally {
+      setActionState("idle");
+    }
+  }, [isBusy, navigate, session]);
+
+  const handleWithdrawContinue = React.useCallback(async () => {
+    if (!session || isBusy) return;
+    if (!withdrawAddress.trim()) {
+      setActionMessage("Paste a destination wallet address before continuing.");
+      return;
+    }
+    setActionState("submitting");
+    setActionMessage(null);
+    try {
+      const { data, traceId } = await createWithdraw(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
+      const compactAddress = withdrawAddress.trim();
+      setPendingAction({
+        actionId: data.request_id,
+        kind: "withdraw",
+        amountMinor: data.amount_minor,
+        status: data.status,
+        traceId,
+        recipientLabel: `TRC20 · wallet ending …${compactAddress.slice(-4).toUpperCase()}`,
+      });
+      navigate("confirm");
+    } catch (error) {
+      setActionMessage(
+        error instanceof ApiError ? error.message : "Unable to create withdraw request right now."
+      );
+    } finally {
+      setActionState("idle");
+    }
+  }, [isBusy, navigate, session, withdrawAddress]);
+
+  const handleConfirmSend = React.useCallback(async () => {
+    if (!session || !pendingAction || isBusy || confirmStep !== "review") return;
+    setConfirmStep("submitting");
+    setActionMessage(null);
+    try {
+      const { data, traceId } = await confirmAction(session.initData, pendingAction.actionId);
+      setPendingAction((current) =>
+        current
+          ? {
+              ...current,
+              status: data.status,
+              traceId,
+            }
+          : current
+      );
+      setConfirmStep("success");
+    } catch (error) {
+      setConfirmStep("review");
+      setActionMessage(
+        error instanceof ApiError ? error.message : "Unable to confirm this action right now."
+      );
+    }
+  }, [confirmStep, isBusy, pendingAction, session]);
+
+  const dashboardBalance = dashboardData ? formatMinor(dashboardData.wallet_minor) : "0.00";
+  const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
+  const moneyLockedDisplay = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
+  const showMoneyLocked = Boolean(moneyData && moneyData.locked_minor > 0);
+  const withdrawAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
+  const confirmAmount = pendingAction ? formatMinor(pendingAction.amountMinor) : formatMinor(DEFAULT_ACTION_AMOUNT_MINOR);
+  const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
 
   if (initState === "loading") {
     return (
@@ -296,10 +648,6 @@ function App() {
     );
   }
 
-  const isBusy = state === "loading";
-
-  const greenHeader = isGreenHeaderRoute(route);
-
   return (
     <main className={`app${isDashboard ? " app--dashboard-merge" : ""}`}>
       <header className={`top-bar ${greenHeader ? "top-bar-green" : "top-bar-dark"}`}>
@@ -307,7 +655,7 @@ function App() {
           <button
             type="button"
             className="ghost icon-btn top-bar-back"
-            onClick={() => window.history.back()}
+            onClick={handleBack}
             disabled={isBusy}
             aria-label="Back"
           >
@@ -324,31 +672,58 @@ function App() {
           )}
         </div>
         <div className="top-bar-end">
-          <div className="top-bar-accessories" role="toolbar" aria-label="Quick actions">
-            <button
-              type="button"
-              className="top-bar-chip top-bar-chip--notify"
-              disabled={isBusy}
-              aria-label="Notifications"
-            >
-              <img
-                className="top-bar-icon top-bar-icon--notify"
-                src={topBarNotifyIcon}
-                alt=""
-                aria-hidden="true"
-              />
-              <span className="top-bar-badge" aria-hidden="true">
-                25
-              </span>
-            </button>
-            <button type="button" className="top-bar-chip" disabled={isBusy} aria-label="Settings">
-              <img
-                className="top-bar-icon top-bar-icon--settings"
-                src={topBarSettingsIcon}
-                alt=""
-                aria-hidden="true"
-              />
-            </button>
+          <div
+            className="top-bar-accessories"
+            role="toolbar"
+            aria-label={route === "topup" ? "Close deposit" : "Quick actions"}
+          >
+            {route === "topup" ? (
+              <button
+                type="button"
+                className="top-bar-chip top-bar-chip--close"
+                disabled={isBusy}
+                aria-label="Close"
+                onClick={handleBack}
+              >
+                <span className="top-bar-close-glyph" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="top-bar-chip top-bar-chip--notify"
+                  disabled={isBusy}
+                  aria-label="Open notifications help"
+                  onClick={() => openFaqEntry("timing")}
+                >
+                  <img
+                    className="top-bar-icon top-bar-icon--notify"
+                    src={topBarNotifyIcon}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <span className="top-bar-badge" aria-hidden="true">
+                    25
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="top-bar-chip"
+                  disabled={isBusy}
+                  aria-label="Open support settings help"
+                  onClick={() => openFaqEntry("support")}
+                >
+                  <img
+                    className="top-bar-icon top-bar-icon--settings"
+                    src={topBarSettingsIcon}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -358,9 +733,12 @@ function App() {
           <div className="dashboard-top">
             <p className="dashboard-balance-label">Total Balance</p>
             <div className="dashboard-balance-row">
-              <div>
-                <p className="dashboard-balance-value">725.62</p>
-                <p className="dashboard-balance-sub">425.22 USDT</p>
+              <div className="dashboard-balance-stack">
+                <p className="dashboard-balance-value">{dashboardBalance}</p>
+                <p className="dashboard-referral-amount">
+                  {FIGMA_VISUAL_STUBS.referralAmount} <span className="dashboard-referral-unit">USDT</span>
+                </p>
+                <p className="dashboard-referral-kicker">Received by referrals</p>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -368,75 +746,124 @@ function App() {
                   onClick={() => navigate("topup")}
                   disabled={isBusy}
                 >
-                  + Top up
+                  <svg className="dashboard-pill-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path
+                      d="M12 5v14M5 12h14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Top up
                 </button>
                 <button
                   className="dashboard-pill dashboard-pill-muted"
                   onClick={() => navigate("withdraw")}
                   disabled={isBusy}
                 >
-                  ↑ Withdraw
+                  <svg className="dashboard-pill-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                    <path
+                      d="M12 5v10M8 15l4 4 4-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Withdraw
                 </button>
               </div>
             </div>
             <button className="dashboard-details-btn" onClick={() => navigate("money")} disabled={isBusy}>
-              ◫ Details
+              <svg className="dashboard-details-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path
+                  d="M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M7 10h10M9 14h4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Details
             </button>
           </div>
         ) : null}
-        <StateView state={state} onRetry={retry}>
+        <StateView state={screenState} onRetry={retry}>
           {isDashboard ? (
             <div className="dashboard-body">
-              <section className="dashboard-chart-module" aria-label="Price chart preview">
-                <div className="dashboard-chart-module-head">
-                  <span className="dashboard-chart-title">BTC / USDT</span>
-                  <span className="dashboard-chart-range">24h</span>
-                </div>
-                <div className="dashboard-chart" aria-hidden="true">
-                  <div className="dashboard-chart-y-axis">
-                    <span>70k</span>
-                    <span>69k</span>
-                    <span>68k</span>
+              <section className="dashboard-block dashboard-block--graphic" aria-label="Performance chart">
+                <div className="dashboard-perf">
+                  <div className="dashboard-perf-head">
+                    <span className="dashboard-perf-title">% Performance</span>
+                    <span className="dashboard-perf-period">{FIGMA_VISUAL_STUBS.performancePeriod}</span>
                   </div>
-                  <div className="dashboard-chart-plot">
-                    <div className="dashboard-chart-grid" />
-                    <div className="dashboard-chart-area" />
-                    <div className="dashboard-chart-line" />
+                  <div className="dashboard-perf-chart" aria-hidden="true">
+                    <div className="dashboard-perf-y-axis">
+                      <span>+4.00%</span>
+                      <span>+3.00%</span>
+                      <span>+2.00%</span>
+                      <span>+1.00%</span>
+                      <span>0.00%</span>
+                      <span>−1.00%</span>
+                      <span>−2.00%</span>
+                    </div>
+                    <div className="dashboard-perf-plot">
+                      <div className="dashboard-perf-grid" />
+                      <div className="dashboard-perf-area" />
+                      <div className="dashboard-perf-line" />
+                    </div>
+                  </div>
+                  <div className="dashboard-perf-legend">
+                    <span className="dashboard-perf-legend-item">
+                      <span className="dashboard-perf-swatch dashboard-perf-swatch--primary" />
+                      {FIGMA_VISUAL_STUBS.performanceLegendPrimary}
+                    </span>
+                    <span className="dashboard-perf-legend-item">
+                      <span className="dashboard-perf-swatch dashboard-perf-swatch--muted" />
+                      {FIGMA_VISUAL_STUBS.performanceLegendSecondary}
+                    </span>
                   </div>
                 </div>
               </section>
-              <div className="dashboard-status-card">
-                <div className="dashboard-status">
-                  <p>
-                    Bot status <strong>● Active</strong>
-                  </p>
-                  <p>
-                    Actual price <strong>69 425.22</strong> <span>USDT/BTC</span>
-                  </p>
+              <section
+                className="dashboard-block dashboard-block--status"
+                aria-label="Bot status and market price"
+              >
+                <div className="dashboard-status-card">
+                  <div className="dashboard-status">
+                    <p>
+                      Bot status <strong>● Active</strong>
+                    </p>
+                    <p>
+                      Actual price <strong>{FIGMA_VISUAL_STUBS.tradingPriceLine}</strong> <span>USDT/BTC</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="dashboard-cta-stack">
-                <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
-                  Details
-                </button>
-                <div className="dashboard-support-row">
-                  <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                    Social Media
-                  </button>
-                  <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                    Support
-                  </button>
+              </section>
+              <div className="dashboard-block dashboard-block--cta" role="group" aria-label="Dashboard actions">
+                <div className="dashboard-cta-stack">
+                  <div className="dashboard-support-row">
+                    <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                      Channel
+                    </button>
+                    <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
+                      Chat
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           ) : (
             <div className={`screen-template template-${route}`}>
-              {route === "money" && (
-                <header className="internal-hero internal-hero-money">
-                  <h2 className="internal-hero-title">Deposit</h2>
-                  <p className="internal-hero-label">dep</p>
-                </header>
-              )}
               {route === "trading" && (
                 <header className="internal-hero internal-hero-trading">
                   <h2 className="internal-hero-title">Trading</h2>
@@ -445,43 +872,49 @@ function App() {
               )}
               {route === "faq" && (
                 <header className="internal-hero internal-hero-faq">
-                  <h2 className="internal-hero-title">FAQ</h2>
-                </header>
-              )}
-              {route === "topup" && (
-                <header className="internal-hero internal-hero-topup">
-                  <h2 className="internal-hero-title">Deposit</h2>
-                  <p className="internal-hero-label">Recieve USDT</p>
+                  <h2 className="internal-hero-title">{routeTitles.faq}</h2>
+                  <p className="internal-hero-label">{screenData.faq.description}</p>
                 </header>
               )}
               {route === "withdraw" && (
                 <header className="internal-hero internal-hero-withdraw">
-                  <h2 className="internal-hero-title">Withdraw</h2>
-                  <p className="internal-hero-label">Address name</p>
+                  <h2 className="internal-hero-title">{screenData.withdraw.title}</h2>
+                  <p className="internal-hero-label">{screenData.withdraw.description}</p>
                 </header>
               )}
               {route === "confirm" && (
                 <header className="internal-hero internal-hero-confirm">
-                  <h2 className="internal-hero-title">USDT Transfer</h2>
+                  <h2 className="internal-hero-title">{screenData.confirm.title}</h2>
                   <p className="internal-hero-label">
-                    *The commission is charged from the remaining balance. We charge a 10% fee on
-                    withdrawals.
+                    *Fee is charged from the remaining balance. A 10% withdrawal fee applies.
                   </p>
                 </header>
               )}
-              {route === "money" && (
-                <>
+              {route === "money" ? (
+                <div className="money-page">
+                  <header className="internal-hero internal-hero-money">
+                    <h2 className="internal-hero-title">{routeTitles.money}</h2>
+                    <p className="internal-hero-label">{screenData.money.description}</p>
+                  </header>
                   <section className="money-overview" aria-label="Balance overview">
                     <div className="money-overview-primary">
                       <p className="money-overview-kicker">Available balance</p>
                       <p className="money-overview-figure">
-                        725.62 <span className="money-overview-unit">USDT</span>
+                        {moneyAvailable} <span className="money-overview-unit">USDT</span>
                       </p>
+                      {showMoneyLocked ? (
+                        <div className="money-overview-locked">
+                          <p className="money-overview-locked-label">Reserved / locked</p>
+                          <p className="money-overview-locked-value">
+                            {moneyLockedDisplay} <span className="money-overview-locked-unit">USDT</span>
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
-                    <div className="money-overview-side">
+                    <div className="money-overview-side" role="group" aria-label="Referral and bot status">
                       <div className="money-side-block">
                         <p className="money-side-label">Referral</p>
-                        <p className="money-side-value">425.22</p>
+                        <p className="money-side-value">{FIGMA_VISUAL_STUBS.referralAmount}</p>
                         <p className="money-side-unit">USDT</p>
                       </div>
                       <div className="money-side-block money-side-block--accent">
@@ -493,52 +926,40 @@ function App() {
                   <div className="money-activity-head">
                     <h3 className="money-activity-title">Recent activity</h3>
                     <div className="money-activity-tabs" role="tablist" aria-label="Activity filter">
-                      <button type="button" className="money-activity-tab money-activity-tab--active" disabled={isBusy}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={moneyFilter === "all"}
+                        className={`money-activity-tab${moneyFilter === "all" ? " money-activity-tab--active" : ""}`}
+                        disabled={isBusy}
+                        onClick={() => setMoneyFilter("all")}
+                      >
                         All
                       </button>
-                      <button type="button" className="money-activity-tab" disabled={isBusy}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={moneyFilter === "in"}
+                        className={`money-activity-tab${moneyFilter === "in" ? " money-activity-tab--active" : ""}`}
+                        disabled={isBusy}
+                        onClick={() => setMoneyFilter("in")}
+                      >
                         In
                       </button>
-                      <button type="button" className="money-activity-tab" disabled={isBusy}>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={moneyFilter === "out"}
+                        className={`money-activity-tab${moneyFilter === "out" ? " money-activity-tab--active" : ""}`}
+                        disabled={isBusy}
+                        onClick={() => setMoneyFilter("out")}
+                      >
                         Out
                       </button>
                     </div>
                   </div>
                   <div className="money-history-feed" role="list">
-                    {(
-                      [
-                        {
-                          title: "Top up completed",
-                          meta: "Today · 14:32",
-                          amount: "+42.10 USDT",
-                          tone: "in" as const,
-                        },
-                        {
-                          title: "Referral reward",
-                          meta: "Yesterday · 09:10",
-                          amount: "+18.00 USDT",
-                          tone: "in" as const,
-                        },
-                        {
-                          title: "Withdrawal pending",
-                          meta: "Processing · est. 2h",
-                          amount: "−600.00 USDT",
-                          tone: "pending" as const,
-                        },
-                        {
-                          title: "Fee charge",
-                          meta: "Auto · network",
-                          amount: "−1.20 USDT",
-                          tone: "out" as const,
-                        },
-                        {
-                          title: "Top up completed",
-                          meta: "Mon · 11:05",
-                          amount: "+200.00 USDT",
-                          tone: "in" as const,
-                        },
-                      ] as const
-                    ).map((row, idx) => (
+                    {filteredMoneyRows.map((row, idx) => (
                       <article
                         key={`${row.title}-${idx}`}
                         className={`money-feed-row money-feed-row--${row.tone}`}
@@ -553,66 +974,111 @@ function App() {
                       </article>
                     ))}
                   </div>
-                </>
-              )}
+                </div>
+              ) : null}
 
               {route === "trading" && (
-                <div className="trading-stack">
-                  <div className="trading-stack-head">
-                    <p className="trading-section-title">Trading bot statistics for the period:</p>
-                    <div className="stats-tabs" role="tablist" aria-label="Period">
-                      {["1d", "7d", "30d", "All"].map((label, i) => (
-                        <button
-                          key={label}
-                          type="button"
-                          className={i === 1 ? "stat-pill stat-pill-active" : "stat-pill"}
-                          disabled={isBusy}
-                        >
-                          {label}
+                <>
+                  <section className="trading-hero" aria-label="Trading bot status">
+                    <div className="trading-hero-main">
+                      <p className="trading-hero-label">Bot status</p>
+                      <p className="trading-hero-value">
+                        <span className="trading-hero-dot" aria-hidden="true" /> Active
+                      </p>
+                    </div>
+                    <div className="trading-hero-meta">
+                      <div className="trading-hero-meta-block">
+                        <p className="trading-hero-meta-label">Actual price</p>
+                        <p className="trading-hero-meta-value">
+                          {FIGMA_VISUAL_STUBS.tradingPriceLine} <span className="trading-hero-meta-unit">USDT/BTC</span>
+                        </p>
+                      </div>
+                      <div className="trading-hero-meta-actions" aria-label="Bot control">
+                        <button type="button" className="trading-hero-cta trading-hero-cta--primary" disabled>
+                          Start
                         </button>
-                      ))}
+                        <button type="button" className="trading-hero-cta trading-hero-cta--ghost" disabled>
+                          Stop
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="trading-graph" aria-hidden="true">
-                    <div className="trading-graph-line" />
-                  </div>
-                  <div className="trading-kpi-row" aria-label="Trading summary">
-                    <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Strategy</p>
-                      <p className="trading-kpi-value">Conservative</p>
+                  </section>
+                  <div className="trading-stack">
+                    <div className="trading-stack-head">
+                      <p className="trading-section-title">Trading bot statistics for the period:</p>
+                      <div className="stats-tabs" role="tablist" aria-label="Period">
+                        {["24h", "3d", "7d", "1m"].map((label, i) => (
+                          <button
+                            key={label}
+                            type="button"
+                            role="tab"
+                            aria-selected={
+                              (label === "24h" && tradingRange === "1d") ||
+                              (label === "3d" && tradingRange === "7d") ||
+                              (label === "7d" && tradingRange === "30d") ||
+                              (label === "1m" && tradingRange === "All")
+                            }
+                            className={
+                              (label === "24h" && tradingRange === "1d") ||
+                              (label === "3d" && tradingRange === "7d") ||
+                              (label === "7d" && tradingRange === "30d") ||
+                              (label === "1m" && tradingRange === "All")
+                                ? "stat-pill stat-pill-active"
+                                : "stat-pill"
+                            }
+                            disabled={isBusy}
+                            onClick={() =>
+                              setTradingRange(
+                                label === "24h" ? "1d" : label === "3d" ? "7d" : label === "7d" ? "30d" : "All"
+                              )
+                            }
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Open orders</p>
-                      <p className="trading-kpi-value">3</p>
+                    <div className="trading-graph" aria-hidden="true">
+                      <div className="trading-graph-line" />
                     </div>
-                    <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Execution</p>
-                      <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                    <div className="trading-kpi-row" aria-label="Trading summary">
+                      <div className="trading-kpi-cell">
+                        <p className="trading-kpi-label">Strategy</p>
+                        <p className="trading-kpi-value">Conservative</p>
+                      </div>
+                      <div className="trading-kpi-cell">
+                        <p className="trading-kpi-label">Open orders</p>
+                        <p className="trading-kpi-value">3</p>
+                      </div>
+                      <div className="trading-kpi-cell">
+                        <p className="trading-kpi-label">Execution</p>
+                        <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                      </div>
                     </div>
-                  </div>
-                  <article className="metric-card trading-stat-card">
-                    <p className="metric-label">Performance</p>
-                    <p className="metric-value metric-value-accent">+4.2%</p>
-                    <p className="trading-card-caption">Read-only summary</p>
-                  </article>
-                  {[
-                    ["Stats", "12 active operations"],
-                    ["Successful", "9"],
-                    ["Unsuccessful", "1"],
-                    ["New trade", "2"],
-                  ].map(([label, value]) => (
-                    <article key={label} className="metric-card trading-list-row">
-                      <p className="metric-label">{label}</p>
-                      <p className="metric-value">{value}</p>
+                    <article className="metric-card trading-stat-card">
+                      <p className="metric-label">Performance</p>
+                      <p className="metric-value metric-value-accent">+4.2%</p>
+                      <p className="trading-card-caption">Read-only summary</p>
                     </article>
-                  ))}
-                  <p className="metric-label">trading:</p>
-                </div>
+                    {[
+                      ["Stats", "12 active operations"],
+                      ["Successful", "9"],
+                      ["Unsuccessful", "1"],
+                      ["New trade", "2"],
+                    ].map(([label, value]) => (
+                      <article key={label} className="metric-card trading-list-row">
+                        <p className="metric-label">{label}</p>
+                        <p className="metric-value">{value}</p>
+                      </article>
+                    ))}
+                    <p className="metric-label">trading:</p>
+                  </div>
+                </>
               )}
 
               {route === "faq" && (
                 <div className="faq-list" role="list">
-                  {FAQ_ENTRIES.map((entry) => {
+                  {faqEntries.map((entry) => {
                     const isOpen = expandedFaqId === entry.id;
                     return (
                       <div
@@ -651,39 +1117,54 @@ function App() {
               )}
 
               {route === "topup" && (
-                <div className="topup-block">
-                  <h3 className="topup-title">Receive USDT</h3>
-                  <TopUpQrVisual />
-                  <p className="topup-qr-hint">Scan the code or copy the address below</p>
-                  <div className="topup-deposit-stack">
-                    <article className="metric-card topup-deposit-card">
-                      <div className="topup-deposit-head">
-                        <p className="metric-label">Network</p>
-                        <p className="topup-network-pill">TRC20</p>
-                      </div>
-                      <div className="topup-wallet-copy-row">
-                        <div className="topup-wallet-text-block">
-                          <p className="metric-label">Deposit address</p>
-                          <p className="topup-address-mono">{topupAddressDisplay(TOPUP_DEPOSIT_ADDRESS)}</p>
-                        </div>
-                        <button
-                          type="button"
-                          className="topup-copy-cta"
-                          disabled={isBusy}
-                          onClick={async () => {
-                            if (isBusy) return;
-                            try {
-                              await navigator.clipboard.writeText(TOPUP_DEPOSIT_ADDRESS);
-                              flashTopupCopied();
-                            } catch {
-                              /* clipboard may be unavailable */
-                            }
-                          }}
-                        >
-                          {topupCopied ? "Copied" : "Copy"}
-                        </button>
-                      </div>
-                    </article>
+                <div className="topup-page">
+                  <header className="internal-hero internal-hero-topup">
+                    <h2 className="internal-hero-title">{screenData.topup.title}</h2>
+                    <p className="internal-hero-label">{screenData.topup.description}</p>
+                  </header>
+                  <div className="topup-frame">
+                    <TopUpQrVisual />
+                    <p className="topup-qr-hint">Scan the QR or copy the address below</p>
+                    <TopupAddressPanel address={DEFAULT_TOPUP_ADDRESS} />
+                    <button
+                      type="button"
+                      className="topup-copy-row"
+                      disabled={isBusy}
+                      onClick={async () => {
+                        if (isBusy) return;
+                        try {
+                          await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
+                          flashTopupCopied();
+                        } catch {
+                          flashTopupCopyError();
+                        }
+                      }}
+                    >
+                      <span className="topup-copy-row-icon" aria-hidden="true">
+                        <svg className="topup-copy-svg" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                          <path
+                            d="M16 4h2a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2h2"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinejoin="round"
+                          />
+                          <rect
+                            x="4"
+                            y="8"
+                            width="12"
+                            height="12"
+                            rx="2"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                          />
+                        </svg>
+                      </span>
+                      {topupCopyState === "success"
+                        ? "Copied"
+                        : topupCopyState === "error"
+                          ? "Copy unavailable"
+                          : "Copy"}
+                    </button>
                   </div>
                 </div>
               )}
@@ -696,15 +1177,18 @@ function App() {
                       <span className="withdraw-network-pill">TRC20</span>
                     </div>
                     <div className="withdraw-field-wrap">
-                      <div
+                      <input
+                        type="text"
                         className="withdraw-field"
-                        role="textbox"
-                        aria-label="Wallet address (demo placeholder)"
-                        aria-readonly="true"
-                        tabIndex={0}
-                      >
-                        Paste
-                      </div>
+                        aria-label="Wallet address"
+                        placeholder="Paste"
+                        autoComplete="off"
+                        spellCheck={false}
+                        inputMode="text"
+                        value={withdrawAddress}
+                        onChange={(event) => setWithdrawAddress(event.target.value)}
+                        disabled={isBusy}
+                      />
                     </div>
                     <p className="withdraw-field-hint">
                       USDT on TRC20 only. Sending on the wrong network may result in permanent loss.
@@ -727,13 +1211,13 @@ function App() {
                     <div className="withdraw-balance-main">
                       <div>
                         <p className="metric-label">Current balance</p>
-                        <p className="withdraw-balance-figure">725.62 USDT</p>
+                        <p className="withdraw-balance-figure">{dashboardBalance} USDT</p>
                       </div>
                     </div>
                     <div className="withdraw-balance-divider" />
                     <div className="withdraw-available-block">
                       <p className="metric-label">Available for withdrawal*</p>
-                      <p className="withdraw-available-figure">653.06 USDT</p>
+                      <p className="withdraw-available-figure">{withdrawAvailable} USDT</p>
                     </div>
                     <div className="withdraw-fee-strip">
                       <p className="withdraw-fee-strip-text">
@@ -746,61 +1230,126 @@ function App() {
 
               {route === "confirm" && (
                 <div className="confirm-block">
-                  <article className="metric-card confirm-cheque-card">
-                    <header className="confirm-cheque-head">
-                      <div>
-                        <p className="confirm-cheque-kicker">Operation summary</p>
-                        <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
+                  {confirmStep === "success" ? (
+                    <article className="metric-card confirm-result-card" aria-live="polite">
+                      <div className="confirm-result-mark" aria-hidden="true">
+                        ✓
                       </div>
-                      <span className="confirm-cheque-ref" title="Trace reference">
-                        trace_02adf1
-                      </span>
-                    </header>
-                    <div className="confirm-cheque-body">
-                      <div className="confirm-cheque-row">
-                        <span className="confirm-cheque-label">Recipient</span>
-                        <span className="confirm-cheque-value">TRC20 · wallet ending …8A2F</span>
-                      </div>
-                      <div className="confirm-cheque-divider" />
-                      <div className="confirm-cheque-row confirm-cheque-row--hero">
-                        <span className="confirm-cheque-label">Amount</span>
-                        <div className="confirm-cheque-amount-block">
-                          <span className="confirm-cheque-amount">600.00</span>
-                          <span className="confirm-cheque-unit">USDT</span>
-                        </div>
-                      </div>
-                      <div className="confirm-cheque-row confirm-cheque-row--fee">
-                        <span className="confirm-cheque-label">Comission</span>
-                        <span className="confirm-cheque-fee">10%</span>
-                      </div>
-                      <p className="confirm-cheque-subline">Fee is withheld from your balance before the transfer is sent.</p>
-                    </div>
-                    <footer className="confirm-cheque-foot">
-                      <p className="confirm-cheque-disclaimer">
-                        *Review all details. Blockchain transfers are <strong>irreversible</strong> after submission.
+                      <p className="confirm-result-kicker">Transfer status</p>
+                      <h3 className="confirm-result-title">Transfer queued successfully</h3>
+                      <p className="confirm-result-body">
+                        Your transfer request was accepted. You can continue from the dashboard or review activity on
+                        the Money screen.
                       </p>
-                    </footer>
-                  </article>
+                      <div className="confirm-result-meta">
+                        <span className="confirm-result-meta-label">Trace</span>
+                        <span className="confirm-result-meta-value">{confirmTrace}</span>
+                      </div>
+                    </article>
+                  ) : (
+                    <article className="metric-card confirm-cheque-card">
+                      <header className="confirm-cheque-head">
+                        <div>
+                          <p className="confirm-cheque-kicker">Operation summary</p>
+                          <h3 className="confirm-cheque-title">
+                            {pendingAction?.kind === "top-up" ? "Confirm top up" : "Confirm withdrawal"}
+                          </h3>
+                        </div>
+                        <span className="confirm-cheque-ref" title="Trace reference">
+                          {confirmTrace}
+                        </span>
+                      </header>
+                      <div className="confirm-cheque-body">
+                        <div className="confirm-cheque-row">
+                          <span className="confirm-cheque-label">Recipient</span>
+                          <span className="confirm-cheque-value">
+                            {pendingAction?.recipientLabel ?? "TRC20 · —"}
+                          </span>
+                        </div>
+                        <div className="confirm-cheque-divider" />
+                        <div className="confirm-cheque-row confirm-cheque-row--hero">
+                          <span className="confirm-cheque-label">Amount</span>
+                          <div className="confirm-cheque-amount-block">
+                            <span className="confirm-cheque-amount">{confirmAmount}</span>
+                            <span className="confirm-cheque-unit">USDT</span>
+                          </div>
+                        </div>
+                        <div className="confirm-cheque-row confirm-cheque-row--fee">
+                          <span className="confirm-cheque-label">Commission</span>
+                          <span className="confirm-cheque-fee">{DEFAULT_ACTION_FEE_LABEL}</span>
+                        </div>
+                        <p className="confirm-cheque-subline">
+                          Fee is withheld from your balance before the transfer is sent.
+                        </p>
+                      </div>
+                      <footer className="confirm-cheque-foot">
+                        <p className="confirm-cheque-disclaimer">
+                          *Review all details. Blockchain transfers are <strong>irreversible</strong> after
+                          submission.
+                        </p>
+                      </footer>
+                    </article>
+                  )}
                 </div>
               )}
+
+              {actionMessage ? <p className="action-banner" role="alert">{actionMessage}</p> : null}
 
               <div className="cta-row">
                 {primaryCta ? (
                   <button
-                    className="btn-main"
-                    onClick={() => navigate(primaryCta.target)}
-                    disabled={isBusy}
+                    type="button"
+                    className={`btn-main${route === "topup" ? " btn-main--topup-paid" : ""}`}
+                    onClick={
+                      route === "topup"
+                        ? handleTopUpContinue
+                        : route === "withdraw"
+                          ? handleWithdrawContinue
+                          : primaryCta.action === "confirm-submit"
+                            ? handleConfirmSend
+                            : () => navigate(primaryCta.target ?? "dashboard")
+                    }
+                    disabled={isBusy || (route === "confirm" && !pendingAction)}
                   >
-                    {primaryCta.label}
+                    {route === "topup" && actionState === "submitting" ? (
+                      "Creating..."
+                    ) : route === "withdraw" && actionState === "submitting" ? (
+                      "Creating..."
+                    ) : route === "confirm" && confirmStep === "submitting" ? (
+                      "Sending..."
+                    ) : route === "topup" ? (
+                      <>
+                        <span className="btn-main-paid-glyph" aria-hidden="true">
+                          <svg className="btn-main-paid-svg" viewBox="0 0 24 24" width="15" height="15" fill="none">
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+                            <path
+                              d="M8 12.5 L11 15.5 L17 9"
+                              stroke="currentColor"
+                              strokeWidth="1.85"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              fill="none"
+                            />
+                          </svg>
+                        </span>
+                        Paid
+                      </>
+                    ) : (
+                      primaryCta.label
+                    )}
                   </button>
                 ) : null}
                 {secondaryCta ? (
                   <button
                     className="ghost btn-secondary"
-                    onClick={() => navigate(secondaryCta.target)}
+                    onClick={
+                      route === "confirm" && confirmStep === "success"
+                        ? () => navigate("dashboard")
+                        : () => navigate(secondaryCta.target)
+                    }
                     disabled={isBusy}
                   >
-                    {secondaryCta.label}
+                    {route === "confirm" && confirmStep === "success" ? "Back to Dashboard" : secondaryCta.label}
                   </button>
                 ) : null}
               </div>
