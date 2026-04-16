@@ -433,19 +433,20 @@ function App() {
             <div className={`screen-template template-${route}`}>
               {route === "money" && (
                 <header className="internal-hero internal-hero-money">
-                  <p className="internal-hero-kicker">Detail Balance</p>
-                  <h2 className="internal-hero-title">Current balance</h2>
+                  <p className="internal-hero-kicker">Current balance</p>
+                  <h2 className="internal-hero-title">TQBw8SGT.......6l48HPv4iB</h2>
+                  <p className="internal-hero-label">USDT</p>
                 </header>
               )}
               {route === "trading" && (
                 <header className="internal-hero internal-hero-trading">
-                  <p className="internal-hero-kicker">Detail Bot</p>
-                  <h2 className="internal-hero-title">Bot status / Actual price</h2>
+                  <p className="internal-hero-kicker">Bot status</p>
+                  <h2 className="internal-hero-title">Actual price</h2>
+                  <p className="internal-hero-label">Active · USDT/BTC</p>
                 </header>
               )}
               {route === "faq" && (
                 <header className="internal-hero internal-hero-faq">
-                  <p className="internal-hero-kicker">Support</p>
                   <h2 className="internal-hero-title">FAQ</h2>
                 </header>
               )}
@@ -457,14 +458,17 @@ function App() {
               )}
               {route === "withdraw" && (
                 <header className="internal-hero internal-hero-withdraw">
-                  <p className="internal-hero-kicker">USDT Transfer</p>
-                  <h2 className="internal-hero-title">Withdraw</h2>
+                  <p className="internal-hero-kicker">Withdraw</p>
+                  <h2 className="internal-hero-title">Address name</h2>
                 </header>
               )}
               {route === "confirm" && (
                 <header className="internal-hero internal-hero-confirm">
-                  <p className="internal-hero-kicker">Transfer</p>
                   <h2 className="internal-hero-title">USDT Transfer</h2>
+                  <p className="internal-hero-label">
+                    *The commission is charged from the remaining balance. We charge a 10% fee on
+                    withdrawals.
+                  </p>
                 </header>
               )}
               {route === "money" && (

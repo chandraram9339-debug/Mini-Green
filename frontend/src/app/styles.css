@@ -295,6 +295,16 @@ button:disabled {
   letter-spacing: var(--hero-title-letter-spacing);
 }
 
+.internal-hero-label {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-family: Outfit, Inter, sans-serif;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 .internal-hero-money {
   background: linear-gradient(180deg, rgba(124, 168, 255, 0.12) 0%, #131313 100%);
 }
