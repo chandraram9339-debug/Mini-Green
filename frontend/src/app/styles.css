@@ -1200,51 +1200,50 @@ button:disabled {
 }
 
 .topup-block {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
-.topup-block h3 {
-  margin: 0 0 10px;
+.topup-title {
+  margin: 0 0 12px;
   text-align: center;
-  font-size: 25px;
+  font-size: 24px;
   line-height: 28px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.96);
 }
 
 .topup-qr-shell {
-  width: 200px;
-  height: 200px;
-  margin: 0 auto 10px;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 196px;
+  height: 196px;
+  margin: 0 auto 12px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: #ffffff;
   box-sizing: border-box;
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
-.topup-qr-grid {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  gap: 1px;
-}
-
-.topup-qr-cell {
-  border-radius: 0;
-  background: transparent;
-}
-
-.topup-qr-cell--on {
-  background: #0a0a0a;
+.topup-qr-svg {
+  display: block;
+  width: 168px;
+  height: 168px;
+  margin: 0 auto;
+  shape-rendering: crispEdges;
+  border-radius: 4px;
 }
 
 .topup-qr-hint {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   text-align: center;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 13px;
+  line-height: 18px;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.58);
+  letter-spacing: 0.01em;
 }
 
 .topup-deposit-stack {
@@ -1254,34 +1253,45 @@ button:disabled {
 }
 
 .topup-deposit-card {
-  padding: 14px 16px 16px;
+  padding: 16px 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+}
+
+.topup-deposit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topup-deposit-head .metric-label {
+  margin: 0;
 }
 
 .topup-network-pill {
   margin: 0;
-  align-self: flex-start;
-  padding: 4px 10px;
+  flex-shrink: 0;
+  padding: 5px 12px;
   border-radius: 999px;
   font-size: 12px;
-  line-height: 16px;
+  line-height: 15px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.92);
-  background: rgba(124, 168, 255, 0.18);
-  border: 1px solid rgba(124, 168, 255, 0.35);
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.94);
+  background: rgba(124, 168, 255, 0.16);
+  border: 1px solid rgba(124, 168, 255, 0.38);
 }
 
 .topup-wallet-copy-row {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 2px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 14px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 .topup-wallet-text-block {
@@ -1290,29 +1300,32 @@ button:disabled {
 }
 
 .topup-address-mono {
-  margin: 4px 0 0;
-  font-size: 15px;
-  line-height: 20px;
+  margin: 5px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 16px;
+  line-height: 22px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.96);
   word-break: break-all;
 }
 
 .topup-copy-cta {
   flex-shrink: 0;
-  min-width: 76px;
-  padding: 10px 14px;
-  border-radius: 10px;
+  min-width: 80px;
+  padding: 11px 16px;
+  border-radius: 12px;
   border: none;
   font-size: 14px;
   line-height: 18px;
   font-weight: 600;
   cursor: pointer;
   color: #0b1224;
-  background: linear-gradient(180deg, #e8f0ff 0%, #c4d3ff 100%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+  background: linear-gradient(180deg, #eef4ff 0%, #c8d6ff 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 6px 14px rgba(0, 0, 0, 0.22);
 }
 
 .topup-copy-cta:hover:not(:disabled) {

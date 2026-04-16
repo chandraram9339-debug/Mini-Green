@@ -106,19 +106,31 @@ function topupQrCellOn(row: number, col: number, size: number): boolean {
 
 function TopUpQrVisual() {
   const size = 21;
-  const cells: boolean[] = [];
-  for (let r = 0; r < size; r += 1) {
-    for (let c = 0; c < size; c += 1) {
-      cells.push(topupQrCellOn(r, c, size));
+  const rects = React.useMemo(() => {
+    const out: Array<{ key: string; x: number; y: number }> = [];
+    for (let r = 0; r < size; r += 1) {
+      for (let c = 0; c < size; c += 1) {
+        if (topupQrCellOn(r, c, size)) {
+          out.push({ key: `${r}-${c}`, x: c, y: r });
+        }
+      }
     }
-  }
+    return out;
+  }, []);
   return (
     <div className="topup-qr-shell" aria-hidden="true">
-      <div className="topup-qr-grid" style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}>
-        {cells.map((on, i) => (
-          <span key={i} className={on ? "topup-qr-cell topup-qr-cell--on" : "topup-qr-cell"} />
+      <svg
+        className="topup-qr-svg"
+        viewBox={`0 0 ${size} ${size}`}
+        width={168}
+        height={168}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <rect width={size} height={size} fill="#ffffff" />
+        {rects.map(({ key, x, y }) => (
+          <rect key={key} x={x} y={y} width={1} height={1} fill="#0a0a0a" />
         ))}
-      </div>
+      </svg>
     </div>
   );
 }
@@ -650,13 +662,15 @@ function App() {
 
               {route === "topup" && (
                 <div className="topup-block">
-                  <h3>Receive USDT</h3>
+                  <h3 className="topup-title">Receive USDT</h3>
                   <TopUpQrVisual />
                   <p className="topup-qr-hint">Scan the code or copy the address below</p>
                   <div className="topup-deposit-stack">
                     <article className="metric-card topup-deposit-card">
-                      <p className="metric-label">Network</p>
-                      <p className="topup-network-pill">TRC20</p>
+                      <div className="topup-deposit-head">
+                        <p className="metric-label">Network</p>
+                        <p className="topup-network-pill">TRC20</p>
+                      </div>
                       <div className="topup-wallet-copy-row">
                         <div className="topup-wallet-text-block">
                           <p className="metric-label">Deposit address</p>
