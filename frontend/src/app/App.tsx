@@ -714,7 +714,7 @@ function App() {
           <div className="dashboard-top">
             <p className="dashboard-balance-label">Total Balance</p>
             <div className="dashboard-balance-row">
-              <div>
+              <div className="dashboard-balance-stack">
                 <p className="dashboard-balance-value">{dashboardBalance}</p>
                 <p className="dashboard-referral-kicker">Received by referrals</p>
                 <p className="dashboard-referral-amount">
@@ -754,10 +754,10 @@ function App() {
                   </div>
                   <div className="dashboard-perf-chart" aria-hidden="true">
                     <div className="dashboard-perf-y-axis">
-                      <span>+8%</span>
-                      <span>+4%</span>
+                      <span>−4%</span>
                       <span>0%</span>
-                      <span>-4%</span>
+                      <span>+4%</span>
+                      <span>+8%</span>
                     </div>
                     <div className="dashboard-perf-plot">
                       <div className="dashboard-perf-grid" />
@@ -794,9 +794,6 @@ function App() {
               </section>
               <div className="dashboard-block dashboard-block--cta" role="group" aria-label="Dashboard actions">
                 <div className="dashboard-cta-stack">
-                  <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
-                    Details
-                  </button>
                   <div className="dashboard-support-row">
                     <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
                       Channel

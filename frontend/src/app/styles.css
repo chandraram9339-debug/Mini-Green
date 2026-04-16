@@ -642,8 +642,12 @@ button:focus-visible,
   font-weight: 600;
 }
 
+.dashboard-balance-stack {
+  min-width: 0;
+}
+
 .dashboard-referral-kicker {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   font-size: 11px;
   line-height: 14px;
   font-weight: 500;
@@ -770,7 +774,7 @@ button:focus-visible,
 
 .dashboard-perf-y-axis {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   justify-content: space-between;
   padding: 8px 0 12px;
   font-size: 9px;
@@ -793,13 +797,9 @@ button:focus-visible,
 .dashboard-perf-grid {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    to top,
-    rgba(255, 255, 255, 0.07) 0,
-    rgba(255, 255, 255, 0.07) 1px,
-    transparent 1px,
-    transparent 22px
-  );
+  background-image: linear-gradient(to top, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 100% 25%;
+  background-repeat: repeat;
   pointer-events: none;
 }
 
