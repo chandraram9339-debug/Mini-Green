@@ -133,15 +133,31 @@ interface StateViewProps {
   children: React.ReactNode;
 }
 
-function topupAddressDisplay(full: string): string {
-  if (full.length <= 18) return full;
-  return `${full.slice(0, 8)}…${full.slice(-6)}`;
+function topupAddressTwoLines(full: string): readonly [string, string] {
+  if (full.length <= 20) return [full, ""] as const;
+  const mid = Math.ceil(full.length / 2);
+  return [full.slice(0, mid), full.slice(mid)] as const;
 }
 
 function TopUpQrVisual() {
   return (
     <div className="topup-qr-shell" aria-hidden="true">
       <img className="topup-qr-svg" src={topupQrAsset} alt="Deposit QR code" />
+    </div>
+  );
+}
+
+function TopupAddressPanel({ address }: { address: string }) {
+  const [first, second] = topupAddressTwoLines(address);
+  return (
+    <div className="topup-address-panel">
+      <div className="topup-address-panel-head">
+        <span className="topup-network-chip">TRC20</span>
+      </div>
+      <div className="topup-address-lines" aria-label="Deposit address">
+        <p className="topup-address-line">{first}</p>
+        {second ? <p className="topup-address-line">{second}</p> : null}
+      </div>
     </div>
   );
 }
@@ -1026,45 +1042,34 @@ function App() {
                 <div className="topup-page">
                   <header className="internal-hero internal-hero-topup">
                     <h2 className="internal-hero-title">{routeTitles.topup}</h2>
-                    <p className="internal-hero-label">Receive USDT on TRC20</p>
+                    <p className="internal-hero-label">Recieve USDT</p>
                   </header>
-                  <div className="topup-block">
+                  <div className="topup-frame">
                     <TopUpQrVisual />
-                    <p className="topup-qr-hint">Scan the code or copy the address below</p>
-                    <div className="topup-deposit-stack">
-                      <article className="metric-card topup-deposit-card">
-                        <div className="topup-deposit-head">
-                          <p className="metric-label">Network</p>
-                          <p className="topup-network-pill">TRC20</p>
-                        </div>
-                        <div className="topup-wallet-copy-row">
-                          <div className="topup-wallet-text-block">
-                            <p className="metric-label">Deposit address</p>
-                            <p className="topup-address-mono">{topupAddressDisplay(DEFAULT_TOPUP_ADDRESS)}</p>
-                          </div>
-                          <button
-                            type="button"
-                            className="topup-copy-cta"
-                            disabled={isBusy}
-                            onClick={async () => {
-                              if (isBusy) return;
-                              try {
-                                await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
-                                flashTopupCopied();
-                              } catch {
-                                flashTopupCopyError();
-                              }
-                            }}
-                          >
-                            {topupCopyState === "success"
-                              ? "Copied"
-                              : topupCopyState === "error"
-                                ? "Copy unavailable"
-                                : "Copy"}
-                          </button>
-                        </div>
-                      </article>
-                    </div>
+                    <TopupAddressPanel address={DEFAULT_TOPUP_ADDRESS} />
+                    <button
+                      type="button"
+                      className="topup-copy-row"
+                      disabled={isBusy}
+                      onClick={async () => {
+                        if (isBusy) return;
+                        try {
+                          await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
+                          flashTopupCopied();
+                        } catch {
+                          flashTopupCopyError();
+                        }
+                      }}
+                    >
+                      <span className="topup-copy-row-icon" aria-hidden="true">
+                        ⧉
+                      </span>
+                      {topupCopyState === "success"
+                        ? "Copied"
+                        : topupCopyState === "error"
+                          ? "Copy unavailable"
+                          : "Copy"}
+                    </button>
                   </div>
                 </div>
               )}
@@ -1198,7 +1203,8 @@ function App() {
               <div className="cta-row">
                 {primaryCta ? (
                   <button
-                    className="btn-main"
+                    type="button"
+                    className={`btn-main${route === "topup" ? " btn-main--topup-paid" : ""}`}
                     onClick={
                       route === "topup"
                         ? handleTopUpContinue
@@ -1210,13 +1216,22 @@ function App() {
                     }
                     disabled={isBusy || (route === "confirm" && !pendingAction)}
                   >
-                    {route === "topup" && actionState === "submitting"
-                      ? "Creating..."
-                      : route === "withdraw" && actionState === "submitting"
-                        ? "Creating..."
-                        : route === "confirm" && confirmStep === "submitting"
-                          ? "Sending..."
-                          : primaryCta.label}
+                    {route === "topup" && actionState === "submitting" ? (
+                      "Creating..."
+                    ) : route === "withdraw" && actionState === "submitting" ? (
+                      "Creating..."
+                    ) : route === "confirm" && confirmStep === "submitting" ? (
+                      "Sending..."
+                    ) : route === "topup" ? (
+                      <>
+                        <span className="btn-main-paid-glyph" aria-hidden="true">
+                          ✓
+                        </span>
+                        Paid
+                      </>
+                    ) : (
+                      primaryCta.label
+                    )}
                   </button>
                 ) : null}
                 {secondaryCta ? (
