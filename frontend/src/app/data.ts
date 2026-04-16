@@ -44,7 +44,7 @@ export const screenData: Record<RouteId, ScreenData> = {
   },
   topup: {
     title: "Deposit",
-    description: "USDT · TRC20. Scan the QR or copy the wallet, then continue.",
+    description: "Receive USDT (TRC20 only).",
     primaryCta: { label: "Continue to Confirm", action: "navigate", target: "confirm" },
     secondaryCta: { label: "Back to Dashboard", target: "dashboard" },
   },

@@ -1047,6 +1047,7 @@ function App() {
                   </header>
                   <div className="topup-frame">
                     <TopUpQrVisual />
+                    <p className="topup-qr-hint">Scan the QR or copy the address below</p>
                     <TopupAddressPanel address={DEFAULT_TOPUP_ADDRESS} />
                     <button
                       type="button"
@@ -1085,7 +1086,7 @@ function App() {
                         ? "Copied"
                         : topupCopyState === "error"
                           ? "Copy unavailable"
-                          : "Copy address"}
+                          : "Copy"}
                     </button>
                   </div>
                 </div>
@@ -1242,10 +1243,16 @@ function App() {
                     ) : route === "topup" ? (
                       <>
                         <span className="btn-main-paid-glyph" aria-hidden="true">
-                          <svg className="btn-main-paid-svg" viewBox="0 0 24 24" width="14" height="14" fill="none">
-                            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.75" />
-                            <path d="M3 10h18" stroke="currentColor" strokeWidth="1.75" />
-                            <circle cx="12" cy="15" r="1.25" fill="currentColor" />
+                          <svg className="btn-main-paid-svg" viewBox="0 0 24 24" width="15" height="15" fill="none">
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+                            <path
+                              d="M8 12.5 L11 15.5 L17 9"
+                              stroke="currentColor"
+                              strokeWidth="1.85"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              fill="none"
+                            />
                           </svg>
                         </span>
                         Paid

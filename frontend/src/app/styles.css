@@ -1512,7 +1512,7 @@ button:focus-visible,
   margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   align-items: stretch;
 }
 
@@ -1539,6 +1539,16 @@ button:focus-visible,
   margin: 0 auto;
   shape-rendering: crispEdges;
   border-radius: 8px;
+}
+
+.topup-qr-hint {
+  margin: -4px 0 0;
+  text-align: center;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.56);
+  letter-spacing: 0.01em;
 }
 
 .topup-address-panel {
