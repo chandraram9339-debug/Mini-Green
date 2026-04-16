@@ -606,6 +606,8 @@ function App() {
 
   const dashboardBalance = dashboardData ? formatMinor(dashboardData.wallet_minor) : "0.00";
   const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
+  const moneyLockedDisplay = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
+  const showMoneyLocked = Boolean(moneyData && moneyData.locked_minor > 0);
   const withdrawAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
   const confirmAmount = pendingAction ? formatMinor(pendingAction.amountMinor) : formatMinor(DEFAULT_ACTION_AMOUNT_MINOR);
   const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
@@ -854,6 +856,14 @@ function App() {
                       <p className="money-overview-figure">
                         {moneyAvailable} <span className="money-overview-unit">USDT</span>
                       </p>
+                      {showMoneyLocked ? (
+                        <div className="money-overview-locked">
+                          <p className="money-overview-locked-label">Reserved / locked</p>
+                          <p className="money-overview-locked-value">
+                            {moneyLockedDisplay} <span className="money-overview-locked-unit">USDT</span>
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
                     <div className="money-overview-side" role="group" aria-label="Referral and bot status">
                       <div className="money-side-block">

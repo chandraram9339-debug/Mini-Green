@@ -1031,6 +1031,40 @@ button:focus-visible,
   vertical-align: baseline;
 }
 
+.money-overview-locked {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.money-overview-locked-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.money-overview-locked-value {
+  margin: 4px 0 0;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.money-overview-locked-unit {
+  margin-left: 4px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  vertical-align: baseline;
+}
+
 .money-overview-side {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
