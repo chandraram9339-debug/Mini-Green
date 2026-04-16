@@ -214,11 +214,48 @@ function screenIcon(route: RouteId): string {
   return "CF";
 }
 
-function tabIcon(label: string): string {
-  if (label === "Dashboard") return "⌂";
-  if (label === "Money") return "◫";
-  if (label === "Trading") return "⌁";
-  return "☰";
+const bottomNavCaption: Partial<Record<RouteId, string>> = {
+  dashboard: "Home",
+  money: "Money",
+  trading: "Trading",
+  faq: "FAQ",
+};
+
+function TabGlyph({ route }: { route: RouteId }) {
+  const c = "tab-svg";
+  switch (route) {
+    case "dashboard":
+      return (
+        <svg className={c} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+      );
+    case "money":
+      return (
+        <svg className={c} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 7.28V5c0-1.1-.9-2-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-2.28c.6-.35 1-.98 1-1.72V9c0-.74-.4-1.38-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" />
+          <path d="M16 12c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" />
+        </svg>
+      );
+    case "trading":
+      return (
+        <svg className={c} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" />
+        </svg>
+      );
+    case "faq":
+      return (
+        <svg className={c} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={c} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      );
+  }
 }
 
 function isGreenHeaderRoute(route: RouteId): boolean {
@@ -435,27 +472,46 @@ function App() {
         <StateView state={state} onRetry={retry}>
           {isDashboard ? (
             <div className="dashboard-body">
-              <div className="dashboard-chart">
-                <div className="dashboard-chart-line" />
+              <section className="dashboard-chart-module" aria-label="Price chart preview">
+                <div className="dashboard-chart-module-head">
+                  <span className="dashboard-chart-title">BTC / USDT</span>
+                  <span className="dashboard-chart-range">24h</span>
+                </div>
+                <div className="dashboard-chart" aria-hidden="true">
+                  <div className="dashboard-chart-y-axis">
+                    <span>70k</span>
+                    <span>69k</span>
+                    <span>68k</span>
+                  </div>
+                  <div className="dashboard-chart-plot">
+                    <div className="dashboard-chart-grid" />
+                    <div className="dashboard-chart-area" />
+                    <div className="dashboard-chart-line" />
+                  </div>
+                </div>
+              </section>
+              <div className="dashboard-status-card">
+                <div className="dashboard-status">
+                  <p>
+                    Bot status <strong>● Active</strong>
+                  </p>
+                  <p>
+                    Actual price <strong>69 425.22</strong> <span>USDT/BTC</span>
+                  </p>
+                </div>
               </div>
-              <div className="dashboard-status">
-                <p>
-                  Bot status <strong>● Active</strong>
-                </p>
-                <p>
-                  Actual price <strong>69 425.22</strong> <span>USDT/BTC</span>
-                </p>
-              </div>
-              <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
-                ⌁ Details
-              </button>
-              <div className="dashboard-support-row">
-                <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                  ☍ Social Media
+              <div className="dashboard-cta-stack">
+                <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
+                  ⌁ Details
                 </button>
-                <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                  ☰ Support
-                </button>
+                <div className="dashboard-support-row">
+                  <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                    ☍ Social Media
+                  </button>
+                  <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                    ☰ Support
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -690,15 +746,18 @@ function App() {
         {topLevelRoutes.map((item) => (
           <button
             key={item.route}
+            type="button"
             onClick={() => navigate(item.route)}
             aria-current={route === item.route ? "page" : undefined}
-            className={route === item.route ? "tab-active" : "tab"}
+            className={`tab${route === item.route ? " tab-active" : ""}`}
             disabled={isBusy}
           >
-            <span className="tab-icon" aria-hidden="true">
-              {tabIcon(item.label)}
+            <span className="tab-stack">
+              <span className="tab-glyph" aria-hidden="true">
+                <TabGlyph route={item.route} />
+              </span>
+              <span className="tab-label">{bottomNavCaption[item.route] ?? item.label}</span>
             </span>
-            {item.label}
           </button>
         ))}
       </nav>
