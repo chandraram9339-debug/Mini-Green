@@ -1,0 +1,33 @@
+rule_id: release-operations-guard-v1
+enabled: true
+owner_tag: 07_REPO_ARCH/Infra
+scope: productionization-release-ops
+match:
+  failure_hop:
+    - deploy
+    - rollback
+    - release_gate
+    - regression_suite
+    - init_matrix
+  first_failing_substep:
+    - visual_gate
+    - deploy_rc
+    - rollback_quick_pass
+    - regression_full_main
+    - init_matrix_signed-secret-v1
+    - init_matrix_signed-secret-v2
+    - init_matrix_deterministic-retry
+required_payload_fields:
+  - utc_timestamp
+  - owner-tag
+  - failure_hop
+  - first_failing_substep
+  - reason
+  - workflow_run_url
+condition: status == "FAIL" OR release_close == "BLOCKED" OR rollback_status == "FAIL"
+severity: critical
+notify:
+  channel: war-room
+  sink_file: /tmp/release-operations-alerts.log
+dedupe_key: first_failing_substep + failure_hop + workflow_run_url
+action: block_release_and_page_owner
