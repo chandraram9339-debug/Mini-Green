@@ -846,61 +846,48 @@ function App() {
                 <div className="money-page">
                   <header className="internal-hero internal-hero-money">
                     <h2 className="internal-hero-title">Money</h2>
-                    <p className="internal-hero-label">{screenData.money.description}</p>
+                    <p className="internal-hero-label">
+                      USDT balances, referral earnings, and replenishment history.
+                    </p>
                   </header>
-                  <section className="money-overview" aria-label="Balance overview">
-                    <div className="money-overview-primary">
-                      <p className="money-overview-kicker">Available balance</p>
-                      <p className="money-overview-figure">
-                        {moneyAvailable} <span className="money-overview-unit">USDT</span>
+                  <section className="money-trio" aria-label="Balance summary">
+                    <article className="money-tile">
+                      <p className="money-tile-label">Available</p>
+                      <p className="money-tile-value">
+                        {moneyAvailable} <span className="money-tile-unit">USDT</span>
                       </p>
-                    </div>
-                    <div className="money-overview-side" role="group" aria-label="Referral and bot status">
-                      <div className="money-side-block">
-                        <p className="money-side-label">Referral</p>
-                        <p className="money-side-value">{FIGMA_VISUAL_STUBS.referralAmount}</p>
-                        <p className="money-side-unit">USDT</p>
-                      </div>
-                      <div className="money-side-block money-side-block--accent">
-                        <p className="money-side-label">Bot</p>
-                        <p className="money-side-status">Active</p>
-                      </div>
-                    </div>
+                    </article>
+                    <article className="money-tile">
+                      <p className="money-tile-label">Referral</p>
+                      <p className="money-tile-value">
+                        {FIGMA_VISUAL_STUBS.referralAmount} <span className="money-tile-unit">USDT</span>
+                      </p>
+                    </article>
+                    <article className="money-tile money-tile--accent">
+                      <p className="money-tile-label">Bot</p>
+                      <p className="money-tile-status">Active</p>
+                    </article>
                   </section>
-                  <div className="money-activity-head">
-                    <h3 className="money-activity-title">Recent activity</h3>
-                    <div className="money-activity-tabs" role="tablist" aria-label="Activity filter">
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={moneyFilter === "all"}
-                        className={`money-activity-tab${moneyFilter === "all" ? " money-activity-tab--active" : ""}`}
-                        disabled={isBusy}
-                        onClick={() => setMoneyFilter("all")}
-                      >
-                        All
-                      </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={moneyFilter === "in"}
-                        className={`money-activity-tab${moneyFilter === "in" ? " money-activity-tab--active" : ""}`}
-                        disabled={isBusy}
-                        onClick={() => setMoneyFilter("in")}
-                      >
-                        In
-                      </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={moneyFilter === "out"}
-                        className={`money-activity-tab${moneyFilter === "out" ? " money-activity-tab--active" : ""}`}
-                        disabled={isBusy}
-                        onClick={() => setMoneyFilter("out")}
-                      >
-                        Out
-                      </button>
-                    </div>
+                  <div className="money-page-cta" role="group" aria-label="Deposit and withdraw">
+                    <button
+                      type="button"
+                      className="money-page-cta-main"
+                      onClick={() => navigate("topup")}
+                      disabled={isBusy}
+                    >
+                      Top up
+                    </button>
+                    <button
+                      type="button"
+                      className="money-page-cta-muted"
+                      onClick={() => navigate("withdraw")}
+                      disabled={isBusy}
+                    >
+                      Withdraw
+                    </button>
+                  </div>
+                  <div className="money-activity-head money-activity-head--solo">
+                    <h3 className="money-activity-title">Replenishment</h3>
                   </div>
                   <div className="money-history-feed" role="list">
                     {filteredMoneyRows.map((row, idx) => (
@@ -1186,44 +1173,46 @@ function App() {
 
               {actionMessage ? <p className="action-banner" role="alert">{actionMessage}</p> : null}
 
-              <div className="cta-row">
-                {primaryCta ? (
-                  <button
-                    className="btn-main"
-                    onClick={
-                      route === "topup"
-                        ? handleTopUpContinue
-                        : route === "withdraw"
-                          ? handleWithdrawContinue
-                          : primaryCta.action === "confirm-submit"
-                            ? handleConfirmSend
-                            : () => navigate(primaryCta.target ?? "dashboard")
-                    }
-                    disabled={isBusy || (route === "confirm" && !pendingAction)}
-                  >
-                    {route === "topup" && actionState === "submitting"
-                      ? "Creating..."
-                      : route === "withdraw" && actionState === "submitting"
+              {route !== "money" ? (
+                <div className="cta-row">
+                  {primaryCta ? (
+                    <button
+                      className="btn-main"
+                      onClick={
+                        route === "topup"
+                          ? handleTopUpContinue
+                          : route === "withdraw"
+                            ? handleWithdrawContinue
+                            : primaryCta.action === "confirm-submit"
+                              ? handleConfirmSend
+                              : () => navigate(primaryCta.target ?? "dashboard")
+                      }
+                      disabled={isBusy || (route === "confirm" && !pendingAction)}
+                    >
+                      {route === "topup" && actionState === "submitting"
                         ? "Creating..."
-                        : route === "confirm" && confirmStep === "submitting"
-                          ? "Sending..."
-                          : primaryCta.label}
-                  </button>
-                ) : null}
-                {secondaryCta ? (
-                  <button
-                    className="ghost btn-secondary"
-                    onClick={
-                      route === "confirm" && confirmStep === "success"
-                        ? () => navigate("dashboard")
-                        : () => navigate(secondaryCta.target)
-                    }
-                    disabled={isBusy}
-                  >
-                    {route === "confirm" && confirmStep === "success" ? "Back to Dashboard" : secondaryCta.label}
-                  </button>
-                ) : null}
-              </div>
+                        : route === "withdraw" && actionState === "submitting"
+                          ? "Creating..."
+                          : route === "confirm" && confirmStep === "submitting"
+                            ? "Sending..."
+                            : primaryCta.label}
+                    </button>
+                  ) : null}
+                  {secondaryCta ? (
+                    <button
+                      className="ghost btn-secondary"
+                      onClick={
+                        route === "confirm" && confirmStep === "success"
+                          ? () => navigate("dashboard")
+                          : () => navigate(secondaryCta.target)
+                      }
+                      disabled={isBusy}
+                    >
+                      {route === "confirm" && confirmStep === "success" ? "Back to Dashboard" : secondaryCta.label}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           )}
         </StateView>
