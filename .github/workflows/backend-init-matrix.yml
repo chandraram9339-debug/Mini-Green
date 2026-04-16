@@ -1,6 +1,9 @@
 name: backend-init-matrix
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
