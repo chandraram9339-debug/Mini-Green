@@ -1,4 +1,20 @@
 import React from "react";
+import {
+  ApiError,
+  confirmAction,
+  createTopUp,
+  createWithdraw,
+  type DashboardPayload,
+  fetchDashboard,
+  fetchFaq,
+  fetchMoneyDetails,
+  fetchTradingDetails,
+  initSession,
+  type MoneyDetailsPayload,
+  resolveInitData,
+  type SessionPayload,
+  type TradingDetailsPayload,
+} from "./api";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
 import topupQrAsset from "./assets/topup-qr-1-5256.svg";
@@ -7,20 +23,12 @@ import topBarNotifyIcon from "./assets/topbar-notify-1-6436.svg";
 import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 
 const fallbackRoute: RouteId = "dashboard";
-const delayMs = 300;
 const uiStorageKey = "miniapp-frontend-ui-state";
-const DISPLAY_VALUES = {
-  totalBalance: "725.62",
-  liquidBalance: "425.22",
-  moneyAvailable: "725.62",
-  referralAmount: "425.22",
-  withdrawAvailable: "653.06",
-  confirmAmount: "600.00",
-  tradingPrice: "69 425.22",
-  traceRef: "trace_02adf1",
-} as const;
+const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
+const DEFAULT_ACTION_FEE_LABEL = "10%";
+const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
 
-const FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
+const LOCAL_FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
   {
     id: "topup",
     title: "How to top up balance?",
@@ -42,6 +50,35 @@ const FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
     body: "Open Support from the bottom navigation or use in-app FAQ. For account-specific issues, include your trace reference from the Confirm screen when contacting support.",
   },
 ];
+
+interface PendingAction {
+  actionId: string;
+  kind: "top-up" | "withdraw";
+  amountMinor: number;
+  status: string;
+  traceId: string;
+  recipientLabel: string;
+}
+
+function formatMinor(minor: number): string {
+  return (minor / 100).toFixed(2);
+}
+
+function formatSignedMinor(minor: number): string {
+  return `${minor >= 0 ? "+" : "−"}${formatMinor(Math.abs(minor))}`;
+}
+
+function mergeFaqEntries(remoteEntries: Array<{ id: string; q: string; a: string }>) {
+  const merged = new Map(LOCAL_FAQ_ENTRIES.map((entry) => [entry.id, entry]));
+  remoteEntries.forEach((entry) => {
+    merged.set(entry.id, {
+      id: entry.id,
+      title: entry.q,
+      body: entry.a,
+    });
+  });
+  return Array.from(merged.values());
+}
 
 function routeToPath(route: RouteId): string {
   return route === "dashboard" ? "/" : `/${route}`;
@@ -86,33 +123,11 @@ function readForcedState(route: RouteId): Exclude<LoadState, "ready"> | null {
   return null;
 }
 
-function useScreenState(route: RouteId) {
-  const [state, setState] = React.useState<LoadState>("loading");
-  const [token, setToken] = React.useState(0);
-
-  React.useEffect(() => {
-    setState("loading");
-    const forcedState = readForcedState(route);
-    const timer = window.setTimeout(() => {
-      setState(forcedState ?? "ready");
-    }, delayMs);
-    return () => window.clearTimeout(timer);
-  }, [route, token]);
-
-  return {
-    state,
-    retry: () => setToken((current) => current + 1),
-  };
-}
-
 interface StateViewProps {
   state: LoadState;
   onRetry: () => void;
   children: React.ReactNode;
 }
-
-/** Demo deposit address (visual only; no API). */
-const TOPUP_DEPOSIT_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
 
 function topupAddressDisplay(full: string): string {
   if (full.length <= 18) return full;
@@ -214,6 +229,7 @@ function isGreenHeaderRoute(route: RouteId): boolean {
 
 function App() {
   const storedUiState = React.useMemo(() => readUiStorage(), []);
+  const resolvedInitIdentity = React.useMemo(() => resolveInitData(), []);
   const [initState, setInitState] = React.useState<"loading" | "error" | "ready">("loading");
   const [initToken, setInitToken] = React.useState(0);
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
@@ -225,7 +241,23 @@ function App() {
   const [withdrawAddress, setWithdrawAddress] = React.useState(storedUiState.withdrawAddress ?? "");
   const [topupCopyState, setTopupCopyState] = React.useState<"idle" | "success" | "error">("idle");
   const [confirmStep, setConfirmStep] = React.useState<"review" | "submitting" | "success">("review");
-  const confirmTimerRef = React.useRef<number | null>(null);
+  const [screenState, setScreenState] = React.useState<LoadState>("loading");
+  const [screenReloadToken, setScreenReloadToken] = React.useState(0);
+  const [session, setSession] = React.useState<
+    | (SessionPayload & {
+        traceId: string;
+        initData: string;
+        resolvedInitSource: string;
+      })
+    | null
+  >(null);
+  const [dashboardData, setDashboardData] = React.useState<DashboardPayload | null>(null);
+  const [moneyData, setMoneyData] = React.useState<MoneyDetailsPayload | null>(null);
+  const [tradingData, setTradingData] = React.useState<TradingDetailsPayload | null>(null);
+  const [faqEntries, setFaqEntries] = React.useState(LOCAL_FAQ_ENTRIES);
+  const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
+  const [actionState, setActionState] = React.useState<"idle" | "submitting">("idle");
+  const [actionMessage, setActionMessage] = React.useState<string | null>(null);
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
   const flashTopupCopied = React.useCallback(() => {
@@ -249,7 +281,6 @@ function App() {
   React.useEffect(() => {
     return () => {
       if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
-      if (confirmTimerRef.current != null) window.clearTimeout(confirmTimerRef.current);
     };
   }, []);
 
@@ -330,12 +361,12 @@ function App() {
 
   React.useEffect(() => {
     if (route !== "confirm") {
-      if (confirmTimerRef.current != null) {
-        window.clearTimeout(confirmTimerRef.current);
-        confirmTimerRef.current = null;
-      }
       setConfirmStep("review");
     }
+  }, [route]);
+
+  React.useEffect(() => {
+    setActionMessage(null);
   }, [route]);
 
   React.useEffect(() => {
@@ -344,12 +375,12 @@ function App() {
       return;
     }
     const param = new URLSearchParams(window.location.search).get("faqExpand");
-    if (param && FAQ_ENTRIES.some((e) => e.id === param)) {
+    if (param && faqEntries.some((e) => e.id === param)) {
       setExpandedFaqId(param);
     } else {
       setExpandedFaqId(null);
     }
-  }, [route]);
+  }, [faqEntries, route]);
 
   const startInit = React.useCallback(() => {
     setInitToken((current) => current + 1);
@@ -357,24 +388,100 @@ function App() {
 
   React.useEffect(() => {
     setInitState("loading");
-    const forceFail = new URLSearchParams(window.location.search).get("initFail");
-    const timer = window.setTimeout(() => {
-      if (forceFail === "1") {
-        setInitState("error");
-        return;
-      }
-      setInitState("ready");
-      navigate(pathToRoute(window.location.pathname), true);
-    }, delayMs);
-    return () => window.clearTimeout(timer);
-  }, [initToken, navigate]);
+    setActionMessage(null);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("initFail") === "1") {
+      setInitState("error");
+      return;
+    }
 
-  const { state, retry } = useScreenState(route);
+    const abortController = new AbortController();
+    initSession(resolvedInitIdentity.value, abortController.signal)
+      .then(({ data, traceId }) => {
+        setSession({
+          ...data,
+          traceId,
+          initData: resolvedInitIdentity.value,
+          resolvedInitSource: resolvedInitIdentity.source,
+        });
+        setInitState("ready");
+        navigate(pathToRoute(window.location.pathname), true);
+      })
+      .catch(() => {
+        setInitState("error");
+      });
+
+    return () => abortController.abort();
+  }, [initToken, navigate, resolvedInitIdentity]);
+
+  React.useEffect(() => {
+    if (initState !== "ready" || !session) {
+      return;
+    }
+
+    const forcedState = readForcedState(route);
+    if (forcedState) {
+      setScreenState(forcedState);
+      return;
+    }
+
+    if (route === "topup" || route === "withdraw" || route === "confirm") {
+      setScreenState("ready");
+      return;
+    }
+
+    const abortController = new AbortController();
+    setScreenState("loading");
+
+    const loadRoute = async () => {
+      try {
+        if (route === "dashboard") {
+          const { data } = await fetchDashboard(session.initData, abortController.signal);
+          setDashboardData(data);
+          setScreenState("ready");
+          return;
+        }
+
+        if (route === "money") {
+          const { data } = await fetchMoneyDetails(session.initData, abortController.signal);
+          setMoneyData(data);
+          setScreenState("ready");
+          return;
+        }
+
+        if (route === "trading") {
+          const { data } = await fetchTradingDetails(session.initData, abortController.signal);
+          setTradingData(data);
+          setScreenState(data.positions.length === 0 ? "empty" : "ready");
+          return;
+        }
+
+        if (route === "faq") {
+          const { data } = await fetchFaq(session.initData, abortController.signal);
+          setFaqEntries(mergeFaqEntries(data.items));
+          setScreenState(data.items.length === 0 ? "empty" : "ready");
+        }
+      } catch {
+        if (!abortController.signal.aborted) {
+          setScreenState("error");
+        }
+      }
+    };
+
+    void loadRoute();
+    return () => abortController.abort();
+  }, [initState, route, screenReloadToken, session]);
+
+  const retry = React.useCallback(() => {
+    setScreenReloadToken((current) => current + 1);
+  }, []);
+
   const content = screenData[route];
   const primaryCta = content.primaryCta;
   const secondaryCta = content.secondaryCta;
   const isDashboard = route === "dashboard";
-  const isBusy = state === "loading";
+  const isBusy =
+    screenState === "loading" || actionState === "submitting" || confirmStep === "submitting";
 
   const greenHeader = isGreenHeaderRoute(route);
   const moneyRows = React.useMemo(
@@ -418,17 +525,104 @@ function App() {
     if (moneyFilter === "in") return moneyRows.filter((row) => row.tone === "in");
     return moneyRows.filter((row) => row.tone === "out" || row.tone === "pending");
   }, [moneyFilter, moneyRows]);
-  const handleConfirmSend = React.useCallback(() => {
-    if (isBusy || confirmStep !== "review") return;
-    setConfirmStep("submitting");
-    if (confirmTimerRef.current != null) {
-      window.clearTimeout(confirmTimerRef.current);
+
+  const handleTopUpContinue = React.useCallback(async () => {
+    if (!session || isBusy) return;
+    setActionState("submitting");
+    setActionMessage(null);
+    try {
+      const { data, traceId } = await createTopUp(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
+      setPendingAction({
+        actionId: data.action_id,
+        kind: "top-up",
+        amountMinor: data.amount_minor,
+        status: data.status,
+        traceId,
+        recipientLabel: "TRC20 deposit wallet",
+      });
+      navigate("confirm");
+    } catch (error) {
+      setActionMessage(
+        error instanceof ApiError ? error.message : "Unable to create top up action right now."
+      );
+    } finally {
+      setActionState("idle");
     }
-    confirmTimerRef.current = window.setTimeout(() => {
+  }, [isBusy, navigate, session]);
+
+  const handleWithdrawContinue = React.useCallback(async () => {
+    if (!session || isBusy) return;
+    if (!withdrawAddress.trim()) {
+      setActionMessage("Paste a destination wallet address before continuing.");
+      return;
+    }
+    setActionState("submitting");
+    setActionMessage(null);
+    try {
+      const { data, traceId } = await createWithdraw(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
+      const compactAddress = withdrawAddress.trim();
+      setPendingAction({
+        actionId: data.request_id,
+        kind: "withdraw",
+        amountMinor: data.amount_minor,
+        status: data.status,
+        traceId,
+        recipientLabel: `TRC20 · wallet ending …${compactAddress.slice(-4).toUpperCase()}`,
+      });
+      navigate("confirm");
+    } catch (error) {
+      setActionMessage(
+        error instanceof ApiError ? error.message : "Unable to create withdraw request right now."
+      );
+    } finally {
+      setActionState("idle");
+    }
+  }, [isBusy, navigate, session, withdrawAddress]);
+
+  const handleConfirmSend = React.useCallback(async () => {
+    if (!session || !pendingAction || isBusy || confirmStep !== "review") return;
+    setConfirmStep("submitting");
+    setActionMessage(null);
+    try {
+      const { data, traceId } = await confirmAction(session.initData, pendingAction.actionId);
+      setPendingAction((current) =>
+        current
+          ? {
+              ...current,
+              status: data.status,
+              traceId,
+            }
+          : current
+      );
       setConfirmStep("success");
-      confirmTimerRef.current = null;
-    }, 900);
-  }, [confirmStep, isBusy]);
+    } catch (error) {
+      setConfirmStep("review");
+      setActionMessage(
+        error instanceof ApiError ? error.message : "Unable to confirm this action right now."
+      );
+    }
+  }, [confirmStep, isBusy, pendingAction, session]);
+
+  const dashboardBalance = dashboardData ? formatMinor(dashboardData.wallet_minor) : "0.00";
+  const dashboardPnl = dashboardData ? formatSignedMinor(dashboardData.pnl_minor) : "+0.00";
+  const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
+  const moneyLocked = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
+  const withdrawAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
+  const tradingPositions = tradingData?.positions ?? [];
+  const tradingExposure = React.useMemo(
+    () => tradingPositions.reduce((sum, position) => sum + position.size_minor, 0),
+    [tradingPositions]
+  );
+  const tradingLongCount = React.useMemo(
+    () => tradingPositions.filter((position) => position.side === "long").length,
+    [tradingPositions]
+  );
+  const tradingShortCount = React.useMemo(
+    () => tradingPositions.filter((position) => position.side === "short").length,
+    [tradingPositions]
+  );
+  const confirmAmount = pendingAction ? formatMinor(pendingAction.amountMinor) : formatMinor(DEFAULT_ACTION_AMOUNT_MINOR);
+  const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
 
   if (initState === "loading") {
     return (
@@ -515,8 +709,8 @@ function App() {
             <p className="dashboard-balance-label">Total Balance</p>
             <div className="dashboard-balance-row">
               <div>
-                <p className="dashboard-balance-value">{DISPLAY_VALUES.totalBalance}</p>
-                <p className="dashboard-balance-sub">{DISPLAY_VALUES.liquidBalance} USDT</p>
+                <p className="dashboard-balance-value">{dashboardBalance}</p>
+                <p className="dashboard-balance-sub">PnL {dashboardPnl} USDT</p>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -540,7 +734,7 @@ function App() {
             </button>
           </div>
         ) : null}
-        <StateView state={state} onRetry={retry}>
+        <StateView state={screenState} onRetry={retry}>
           {isDashboard ? (
             <div className="dashboard-body">
               <section className="dashboard-chart-module" aria-label="Price chart preview">
@@ -564,10 +758,10 @@ function App() {
               <div className="dashboard-status-card">
                 <div className="dashboard-status">
                   <p>
-                    Bot status <strong>● Active</strong>
+                    Bot status <strong>● Backend-backed</strong>
                   </p>
                   <p>
-                    Actual price <strong>{DISPLAY_VALUES.tradingPrice}</strong> <span>USDT/BTC</span>
+                    Open positions <strong>{dashboardData?.open_positions ?? 0}</strong> <span>current scope</span>
                   </p>
                 </div>
               </div>
@@ -631,18 +825,18 @@ function App() {
                     <div className="money-overview-primary">
                       <p className="money-overview-kicker">Available balance</p>
                       <p className="money-overview-figure">
-                        {DISPLAY_VALUES.moneyAvailable} <span className="money-overview-unit">USDT</span>
+                        {moneyAvailable} <span className="money-overview-unit">USDT</span>
                       </p>
                     </div>
                     <div className="money-overview-side">
                       <div className="money-side-block">
-                        <p className="money-side-label">Referral</p>
-                        <p className="money-side-value">{DISPLAY_VALUES.referralAmount}</p>
+                        <p className="money-side-label">Locked</p>
+                        <p className="money-side-value">{moneyLocked}</p>
                         <p className="money-side-unit">USDT</p>
                       </div>
                       <div className="money-side-block money-side-block--accent">
-                        <p className="money-side-label">Bot</p>
-                        <p className="money-side-status">Active</p>
+                        <p className="money-side-label">Source</p>
+                        <p className="money-side-status">Backend</p>
                       </div>
                     </div>
                   </section>
@@ -725,28 +919,33 @@ function App() {
                   </div>
                   <div className="trading-kpi-row" aria-label="Trading summary">
                     <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Strategy</p>
-                      <p className="trading-kpi-value">Conservative</p>
+                      <p className="trading-kpi-label">Positions</p>
+                      <p className="trading-kpi-value">{tradingPositions.length}</p>
                     </div>
                     <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Open orders</p>
-                      <p className="trading-kpi-value">3</p>
+                      <p className="trading-kpi-label">Gross exposure</p>
+                      <p className="trading-kpi-value">{formatMinor(tradingExposure)}</p>
                     </div>
                     <div className="trading-kpi-cell">
                       <p className="trading-kpi-label">Execution</p>
-                      <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                      <p className="trading-kpi-value trading-kpi-value--muted">Backend read</p>
                     </div>
                   </div>
                   <article className="metric-card trading-stat-card">
-                    <p className="metric-label">Performance</p>
-                    <p className="metric-value metric-value-accent">+4.2%</p>
-                    <p className="trading-card-caption">Read-only summary</p>
+                    <p className="metric-label">Primary market</p>
+                    <p className="metric-value metric-value-accent">
+                      {tradingPositions[0]?.symbol ?? "No positions"}
+                    </p>
+                    <p className="trading-card-caption">Chart remains localized until market series API exists.</p>
                   </article>
                   {[
-                    ["Stats", "12 active operations"],
-                    ["Successful", "9"],
-                    ["Unsuccessful", "1"],
-                    ["New trade", "2"],
+                    ["Long", String(tradingLongCount)],
+                    ["Short", String(tradingShortCount)],
+                    [
+                      "Largest position",
+                      tradingPositions[0] ? `${formatMinor(tradingPositions[0].size_minor)} USDT` : "None",
+                    ],
+                    ["Source", "backend /api/v1/ui/trading-details"],
                   ].map(([label, value]) => (
                     <article key={label} className="metric-card trading-list-row">
                       <p className="metric-label">{label}</p>
@@ -759,7 +958,7 @@ function App() {
 
               {route === "faq" && (
                 <div className="faq-list" role="list">
-                  {FAQ_ENTRIES.map((entry) => {
+                  {faqEntries.map((entry) => {
                     const isOpen = expandedFaqId === entry.id;
                     return (
                       <div
@@ -811,7 +1010,7 @@ function App() {
                       <div className="topup-wallet-copy-row">
                         <div className="topup-wallet-text-block">
                           <p className="metric-label">Deposit address</p>
-                          <p className="topup-address-mono">{topupAddressDisplay(TOPUP_DEPOSIT_ADDRESS)}</p>
+                          <p className="topup-address-mono">{topupAddressDisplay(DEFAULT_TOPUP_ADDRESS)}</p>
                         </div>
                         <button
                           type="button"
@@ -820,7 +1019,7 @@ function App() {
                           onClick={async () => {
                             if (isBusy) return;
                             try {
-                              await navigator.clipboard.writeText(TOPUP_DEPOSIT_ADDRESS);
+                              await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
                               flashTopupCopied();
                             } catch {
                               flashTopupCopyError();
@@ -881,13 +1080,13 @@ function App() {
                     <div className="withdraw-balance-main">
                       <div>
                         <p className="metric-label">Current balance</p>
-                        <p className="withdraw-balance-figure">{DISPLAY_VALUES.totalBalance} USDT</p>
+                        <p className="withdraw-balance-figure">{dashboardBalance} USDT</p>
                       </div>
                     </div>
                     <div className="withdraw-balance-divider" />
                     <div className="withdraw-available-block">
                       <p className="metric-label">Available for withdrawal*</p>
-                      <p className="withdraw-available-figure">{DISPLAY_VALUES.withdrawAvailable} USDT</p>
+                      <p className="withdraw-available-figure">{withdrawAvailable} USDT</p>
                     </div>
                     <div className="withdraw-fee-strip">
                       <p className="withdraw-fee-strip-text">
@@ -905,14 +1104,14 @@ function App() {
                       <div className="confirm-result-mark" aria-hidden="true">
                         ✓
                       </div>
-                      <p className="confirm-result-kicker">Mocked completion</p>
-                      <h3 className="confirm-result-title">Transfer queued successfully</h3>
+                      <p className="confirm-result-kicker">Backend confirmation</p>
+                      <h3 className="confirm-result-title">Action confirmed successfully</h3>
                       <p className="confirm-result-body">
-                        Your frontend flow completed and a mocked result was shown instead of redirecting silently.
+                        The frontend completed a real backend-backed confirm request and stayed in the current flow.
                       </p>
                       <div className="confirm-result-meta">
                         <span className="confirm-result-meta-label">Trace</span>
-                        <span className="confirm-result-meta-value">{DISPLAY_VALUES.traceRef}</span>
+                        <span className="confirm-result-meta-value">{confirmTrace}</span>
                       </div>
                     </article>
                   ) : (
@@ -920,28 +1119,32 @@ function App() {
                       <header className="confirm-cheque-head">
                         <div>
                           <p className="confirm-cheque-kicker">Operation summary</p>
-                          <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
+                          <h3 className="confirm-cheque-title">
+                            {pendingAction?.kind === "top-up" ? "Confirm top up" : "Confirm withdrawal"}
+                          </h3>
                         </div>
                         <span className="confirm-cheque-ref" title="Trace reference">
-                          {DISPLAY_VALUES.traceRef}
+                          {confirmTrace}
                         </span>
                       </header>
                       <div className="confirm-cheque-body">
                         <div className="confirm-cheque-row">
                           <span className="confirm-cheque-label">Recipient</span>
-                          <span className="confirm-cheque-value">TRC20 · wallet ending …8A2F</span>
+                          <span className="confirm-cheque-value">
+                            {pendingAction?.recipientLabel ?? "Create a top up or withdraw action first"}
+                          </span>
                         </div>
                         <div className="confirm-cheque-divider" />
                         <div className="confirm-cheque-row confirm-cheque-row--hero">
                           <span className="confirm-cheque-label">Amount</span>
                           <div className="confirm-cheque-amount-block">
-                            <span className="confirm-cheque-amount">{DISPLAY_VALUES.confirmAmount}</span>
+                            <span className="confirm-cheque-amount">{confirmAmount}</span>
                             <span className="confirm-cheque-unit">USDT</span>
                           </div>
                         </div>
                         <div className="confirm-cheque-row confirm-cheque-row--fee">
                           <span className="confirm-cheque-label">Comission</span>
-                          <span className="confirm-cheque-fee">10%</span>
+                          <span className="confirm-cheque-fee">{DEFAULT_ACTION_FEE_LABEL}</span>
                         </div>
                         <p className="confirm-cheque-subline">
                           Fee is withheld from your balance before the transfer is sent.
@@ -958,18 +1161,30 @@ function App() {
                 </div>
               )}
 
+              {actionMessage ? <p className="action-banner" role="alert">{actionMessage}</p> : null}
+
               <div className="cta-row">
                 {primaryCta ? (
                   <button
                     className="btn-main"
                     onClick={
-                      primaryCta.action === "confirm-submit"
-                        ? handleConfirmSend
-                        : () => navigate(primaryCta.target ?? "dashboard")
+                      route === "topup"
+                        ? handleTopUpContinue
+                        : route === "withdraw"
+                          ? handleWithdrawContinue
+                          : primaryCta.action === "confirm-submit"
+                            ? handleConfirmSend
+                            : () => navigate(primaryCta.target ?? "dashboard")
                     }
-                    disabled={isBusy || (route === "confirm" && confirmStep === "submitting")}
+                    disabled={isBusy || (route === "confirm" && !pendingAction)}
                   >
-                    {route === "confirm" && confirmStep === "submitting" ? "Sending..." : primaryCta.label}
+                    {route === "topup" && actionState === "submitting"
+                      ? "Creating..."
+                      : route === "withdraw" && actionState === "submitting"
+                        ? "Creating..."
+                        : route === "confirm" && confirmStep === "submitting"
+                          ? "Sending..."
+                          : primaryCta.label}
                   </button>
                 ) : null}
                 {secondaryCta ? (
