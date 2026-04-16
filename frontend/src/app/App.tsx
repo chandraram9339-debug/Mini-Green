@@ -433,16 +433,14 @@ function App() {
             <div className={`screen-template template-${route}`}>
               {route === "money" && (
                 <header className="internal-hero internal-hero-money">
-                  <h2 className="internal-hero-title">Current balance</h2>
-                  <p className="internal-hero-label">USDT</p>
+                  <h2 className="internal-hero-title">Deposit</h2>
+                  <p className="internal-hero-label">dep</p>
                 </header>
               )}
               {route === "trading" && (
                 <header className="internal-hero internal-hero-trading">
-                  <p className="internal-hero-kicker">Bot status</p>
-                  <h2 className="internal-hero-title">Actual price</h2>
-                  <p className="internal-hero-label">Active</p>
-                  <p className="internal-hero-label">USDT/BTC</p>
+                  <h2 className="internal-hero-title">Trading</h2>
+                  <p className="internal-hero-label">Trading bot statistics for the period:</p>
                 </header>
               )}
               {route === "faq" && (
@@ -561,7 +559,7 @@ function App() {
               {route === "trading" && (
                 <div className="trading-stack">
                   <div className="trading-stack-head">
-                    <p className="trading-section-title">Trading bot statistics for the period</p>
+                    <p className="trading-section-title">Trading bot statistics for the period:</p>
                     <div className="stats-tabs" role="tablist" aria-label="Period">
                       {["1d", "7d", "30d", "All"].map((label, i) => (
                         <button
@@ -698,7 +696,7 @@ function App() {
                     </div>
                     <div className="withdraw-field-wrap">
                       <div className="withdraw-field" role="textbox" aria-label="Wallet address (demo placeholder)">
-                        Paste TRC20 wallet address
+                        Paste
                       </div>
                     </div>
                     <p className="withdraw-field-hint">
@@ -753,19 +751,19 @@ function App() {
                     </header>
                     <div className="confirm-cheque-body">
                       <div className="confirm-cheque-row">
-                        <span className="confirm-cheque-label">Destination</span>
+                        <span className="confirm-cheque-label">Recipient</span>
                         <span className="confirm-cheque-value">TRC20 · wallet ending …8A2F</span>
                       </div>
                       <div className="confirm-cheque-divider" />
                       <div className="confirm-cheque-row confirm-cheque-row--hero">
-                        <span className="confirm-cheque-label">You send</span>
+                        <span className="confirm-cheque-label">Amount</span>
                         <div className="confirm-cheque-amount-block">
                           <span className="confirm-cheque-amount">600.00</span>
                           <span className="confirm-cheque-unit">USDT</span>
                         </div>
                       </div>
                       <div className="confirm-cheque-row confirm-cheque-row--fee">
-                        <span className="confirm-cheque-label">Service fee</span>
+                        <span className="confirm-cheque-label">Comission</span>
                         <span className="confirm-cheque-fee">10%</span>
                       </div>
                       <p className="confirm-cheque-subline">Fee is withheld from your balance before the transfer is sent.</p>

@@ -57,7 +57,7 @@ export const screenData: Record<RouteId, ScreenData> = {
   confirm: {
     title: "Confirm",
     description: "Final review screen before operation completion.",
-    primaryCta: { label: "Return to Dashboard", target: "dashboard" },
+    primaryCta: { label: "Confirm and Send", target: "dashboard" },
     secondaryCta: { label: "Back to Withdraw", target: "withdraw" },
   },
 };
