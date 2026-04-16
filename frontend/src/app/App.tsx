@@ -8,6 +8,17 @@ import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 
 const fallbackRoute: RouteId = "dashboard";
 const delayMs = 300;
+const uiStorageKey = "miniapp-frontend-ui-state";
+const DISPLAY_VALUES = {
+  totalBalance: "725.62",
+  liquidBalance: "425.22",
+  moneyAvailable: "725.62",
+  referralAmount: "425.22",
+  withdrawAvailable: "653.06",
+  confirmAmount: "600.00",
+  tradingPrice: "69 425.22",
+  traceRef: "trace_02adf1",
+} as const;
 
 const FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
   {
@@ -50,6 +61,20 @@ function pathToRoute(pathname: string): RouteId {
     return key;
   }
   return fallbackRoute;
+}
+
+function readUiStorage() {
+  try {
+    const raw = window.sessionStorage.getItem(uiStorageKey);
+    if (!raw) return {};
+    return JSON.parse(raw) as Partial<{
+      moneyFilter: "all" | "in" | "out";
+      tradingRange: "1d" | "7d" | "30d" | "All";
+      withdrawAddress: string;
+    }>;
+  } catch {
+    return {};
+  }
 }
 
 function readForcedState(route: RouteId): Exclude<LoadState, "ready"> | null {
@@ -188,24 +213,35 @@ function isGreenHeaderRoute(route: RouteId): boolean {
 }
 
 function App() {
-  const [initState, setInitState] = React.useState<"idle" | "loading" | "error" | "ready">(
-    "idle"
-  );
+  const storedUiState = React.useMemo(() => readUiStorage(), []);
+  const [initState, setInitState] = React.useState<"loading" | "error" | "ready">("loading");
+  const [initToken, setInitToken] = React.useState(0);
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
-  const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">("all");
-  const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">("7d");
-  const [withdrawAddress, setWithdrawAddress] = React.useState("");
-  const [topupCopied, setTopupCopied] = React.useState(false);
+  const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">(storedUiState.moneyFilter ?? "all");
+  const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">(
+    storedUiState.tradingRange ?? "7d"
+  );
+  const [withdrawAddress, setWithdrawAddress] = React.useState(storedUiState.withdrawAddress ?? "");
+  const [topupCopyState, setTopupCopyState] = React.useState<"idle" | "success" | "error">("idle");
   const [confirmStep, setConfirmStep] = React.useState<"review" | "submitting" | "success">("review");
   const confirmTimerRef = React.useRef<number | null>(null);
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
   const flashTopupCopied = React.useCallback(() => {
     if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
-    setTopupCopied(true);
+    setTopupCopyState("success");
     topupCopyTimerRef.current = window.setTimeout(() => {
-      setTopupCopied(false);
+      setTopupCopyState("idle");
+      topupCopyTimerRef.current = null;
+    }, 2000);
+  }, []);
+
+  const flashTopupCopyError = React.useCallback(() => {
+    if (topupCopyTimerRef.current != null) window.clearTimeout(topupCopyTimerRef.current);
+    setTopupCopyState("error");
+    topupCopyTimerRef.current = window.setTimeout(() => {
+      setTopupCopyState("idle");
       topupCopyTimerRef.current = null;
     }, 2000);
   }, []);
@@ -278,6 +314,21 @@ function App() {
   }, []);
 
   React.useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        uiStorageKey,
+        JSON.stringify({
+          moneyFilter,
+          tradingRange,
+          withdrawAddress,
+        })
+      );
+    } catch {
+      /* session storage may be unavailable */
+    }
+  }, [moneyFilter, tradingRange, withdrawAddress]);
+
+  React.useEffect(() => {
     if (route !== "confirm") {
       if (confirmTimerRef.current != null) {
         window.clearTimeout(confirmTimerRef.current);
@@ -301,9 +352,13 @@ function App() {
   }, [route]);
 
   const startInit = React.useCallback(() => {
+    setInitToken((current) => current + 1);
+  }, []);
+
+  React.useEffect(() => {
     setInitState("loading");
     const forceFail = new URLSearchParams(window.location.search).get("initFail");
-    window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       if (forceFail === "1") {
         setInitState("error");
         return;
@@ -311,13 +366,8 @@ function App() {
       setInitState("ready");
       navigate(pathToRoute(window.location.pathname), true);
     }, delayMs);
-  }, [navigate]);
-
-  React.useEffect(() => {
-    if (initState === "idle" && window.location.pathname !== "/") {
-      startInit();
-    }
-  }, [initState, startInit]);
+    return () => window.clearTimeout(timer);
+  }, [initToken, navigate]);
 
   const { state, retry } = useScreenState(route);
   const content = screenData[route];
@@ -379,16 +429,6 @@ function App() {
       confirmTimerRef.current = null;
     }, 900);
   }, [confirmStep, isBusy]);
-
-  if (initState === "idle") {
-    return (
-      <main className="app app-center">
-        <h1>Mini App</h1>
-        <p>Open app to start auth/init flow.</p>
-        <button onClick={startInit}>Open app</button>
-      </main>
-    );
-  }
 
   if (initState === "loading") {
     return (
@@ -475,8 +515,8 @@ function App() {
             <p className="dashboard-balance-label">Total Balance</p>
             <div className="dashboard-balance-row">
               <div>
-                <p className="dashboard-balance-value">725.62</p>
-                <p className="dashboard-balance-sub">425.22 USDT</p>
+                <p className="dashboard-balance-value">{DISPLAY_VALUES.totalBalance}</p>
+                <p className="dashboard-balance-sub">{DISPLAY_VALUES.liquidBalance} USDT</p>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -527,7 +567,7 @@ function App() {
                     Bot status <strong>● Active</strong>
                   </p>
                   <p>
-                    Actual price <strong>69 425.22</strong> <span>USDT/BTC</span>
+                    Actual price <strong>{DISPLAY_VALUES.tradingPrice}</strong> <span>USDT/BTC</span>
                   </p>
                 </div>
               </div>
@@ -591,13 +631,13 @@ function App() {
                     <div className="money-overview-primary">
                       <p className="money-overview-kicker">Available balance</p>
                       <p className="money-overview-figure">
-                        725.62 <span className="money-overview-unit">USDT</span>
+                        {DISPLAY_VALUES.moneyAvailable} <span className="money-overview-unit">USDT</span>
                       </p>
                     </div>
                     <div className="money-overview-side">
                       <div className="money-side-block">
                         <p className="money-side-label">Referral</p>
-                        <p className="money-side-value">425.22</p>
+                        <p className="money-side-value">{DISPLAY_VALUES.referralAmount}</p>
                         <p className="money-side-unit">USDT</p>
                       </div>
                       <div className="money-side-block money-side-block--accent">
@@ -783,11 +823,15 @@ function App() {
                               await navigator.clipboard.writeText(TOPUP_DEPOSIT_ADDRESS);
                               flashTopupCopied();
                             } catch {
-                              /* clipboard may be unavailable */
+                              flashTopupCopyError();
                             }
                           }}
                         >
-                          {topupCopied ? "Copied" : "Copy"}
+                          {topupCopyState === "success"
+                            ? "Copied"
+                            : topupCopyState === "error"
+                              ? "Copy unavailable"
+                              : "Copy"}
                         </button>
                       </div>
                     </article>
@@ -837,13 +881,13 @@ function App() {
                     <div className="withdraw-balance-main">
                       <div>
                         <p className="metric-label">Current balance</p>
-                        <p className="withdraw-balance-figure">725.62 USDT</p>
+                        <p className="withdraw-balance-figure">{DISPLAY_VALUES.totalBalance} USDT</p>
                       </div>
                     </div>
                     <div className="withdraw-balance-divider" />
                     <div className="withdraw-available-block">
                       <p className="metric-label">Available for withdrawal*</p>
-                      <p className="withdraw-available-figure">653.06 USDT</p>
+                      <p className="withdraw-available-figure">{DISPLAY_VALUES.withdrawAvailable} USDT</p>
                     </div>
                     <div className="withdraw-fee-strip">
                       <p className="withdraw-fee-strip-text">
@@ -868,7 +912,7 @@ function App() {
                       </p>
                       <div className="confirm-result-meta">
                         <span className="confirm-result-meta-label">Trace</span>
-                        <span className="confirm-result-meta-value">trace_02adf1</span>
+                        <span className="confirm-result-meta-value">{DISPLAY_VALUES.traceRef}</span>
                       </div>
                     </article>
                   ) : (
@@ -879,7 +923,7 @@ function App() {
                           <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
                         </div>
                         <span className="confirm-cheque-ref" title="Trace reference">
-                          trace_02adf1
+                          {DISPLAY_VALUES.traceRef}
                         </span>
                       </header>
                       <div className="confirm-cheque-body">
@@ -891,7 +935,7 @@ function App() {
                         <div className="confirm-cheque-row confirm-cheque-row--hero">
                           <span className="confirm-cheque-label">Amount</span>
                           <div className="confirm-cheque-amount-block">
-                            <span className="confirm-cheque-amount">600.00</span>
+                            <span className="confirm-cheque-amount">{DISPLAY_VALUES.confirmAmount}</span>
                             <span className="confirm-cheque-unit">USDT</span>
                           </div>
                         </div>
