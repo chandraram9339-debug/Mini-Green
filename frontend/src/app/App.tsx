@@ -434,7 +434,6 @@ function App() {
               {route === "money" && (
                 <header className="internal-hero internal-hero-money">
                   <h2 className="internal-hero-title">Current balance</h2>
-                  <p className="internal-hero-label">TQBw8SGT.......6l48HPv4iB</p>
                   <p className="internal-hero-label">USDT</p>
                 </header>
               )}
