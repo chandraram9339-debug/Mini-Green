@@ -914,7 +914,11 @@ function App() {
                 {primaryCta ? (
                   <button
                     className="btn-main"
-                    onClick={route === "confirm" ? handleConfirmSend : () => navigate(primaryCta.target)}
+                    onClick={
+                      primaryCta.action === "confirm-submit"
+                        ? handleConfirmSend
+                        : () => navigate(primaryCta.target ?? "dashboard")
+                    }
                     disabled={isBusy || (route === "confirm" && confirmStep === "submitting")}
                   >
                     {route === "confirm" && confirmStep === "submitting" ? "Sending..." : primaryCta.label}
