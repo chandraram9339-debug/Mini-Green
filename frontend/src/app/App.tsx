@@ -517,7 +517,7 @@ function App() {
           ) : (
             <div className={`screen-template template-${route}`}>
               <p className="body-copy">{content.description}</p>
-              {(route === "money" || route === "trading") && (
+              {route === "trading" && (
                 <div className="metrics-grid metrics-grid-tabs">
                   <article className="metric-card metric-tab">
                     <p className="metric-label">Deposit</p>
@@ -535,20 +535,90 @@ function App() {
               )}
 
               {route === "money" && (
-                <div className="money-history">
-                  {[
-                    "Top up completed",
-                    "Referral reward",
-                    "Withdrawal pending",
-                    "Fee charge",
-                    "Top up completed",
-                  ].map((row, idx) => (
-                    <article key={`${row}-${idx}`} className="metric-card money-row">
-                      <p className="metric-label">{row}</p>
-                      <p className="metric-value">+42.10 USDT</p>
-                    </article>
-                  ))}
-                </div>
+                <>
+                  <section className="money-overview" aria-label="Balance overview">
+                    <div className="money-overview-primary">
+                      <p className="money-overview-kicker">Available balance</p>
+                      <p className="money-overview-figure">
+                        725.62 <span className="money-overview-unit">USDT</span>
+                      </p>
+                    </div>
+                    <div className="money-overview-side">
+                      <div className="money-side-block">
+                        <p className="money-side-label">Referral</p>
+                        <p className="money-side-value">425.22</p>
+                        <p className="money-side-unit">USDT</p>
+                      </div>
+                      <div className="money-side-block money-side-block--accent">
+                        <p className="money-side-label">Bot</p>
+                        <p className="money-side-status">Active</p>
+                      </div>
+                    </div>
+                  </section>
+                  <div className="money-activity-head">
+                    <h3 className="money-activity-title">Recent activity</h3>
+                    <div className="money-activity-tabs" role="tablist" aria-label="Activity filter">
+                      <button type="button" className="money-activity-tab money-activity-tab--active" disabled={isBusy}>
+                        All
+                      </button>
+                      <button type="button" className="money-activity-tab" disabled={isBusy}>
+                        In
+                      </button>
+                      <button type="button" className="money-activity-tab" disabled={isBusy}>
+                        Out
+                      </button>
+                    </div>
+                  </div>
+                  <div className="money-history-feed" role="list">
+                    {(
+                      [
+                        {
+                          title: "Top up completed",
+                          meta: "Today · 14:32",
+                          amount: "+42.10 USDT",
+                          tone: "in" as const,
+                        },
+                        {
+                          title: "Referral reward",
+                          meta: "Yesterday · 09:10",
+                          amount: "+18.00 USDT",
+                          tone: "in" as const,
+                        },
+                        {
+                          title: "Withdrawal pending",
+                          meta: "Processing · est. 2h",
+                          amount: "−600.00 USDT",
+                          tone: "pending" as const,
+                        },
+                        {
+                          title: "Fee charge",
+                          meta: "Auto · network",
+                          amount: "−1.20 USDT",
+                          tone: "out" as const,
+                        },
+                        {
+                          title: "Top up completed",
+                          meta: "Mon · 11:05",
+                          amount: "+200.00 USDT",
+                          tone: "in" as const,
+                        },
+                      ] as const
+                    ).map((row, idx) => (
+                      <article
+                        key={`${row.title}-${idx}`}
+                        className={`money-feed-row money-feed-row--${row.tone}`}
+                        role="listitem"
+                      >
+                        <div className="money-feed-icon" aria-hidden="true" />
+                        <div className="money-feed-main">
+                          <p className="money-feed-title">{row.title}</p>
+                          <p className="money-feed-meta">{row.meta}</p>
+                        </div>
+                        <p className="money-feed-amount">{row.amount}</p>
+                      </article>
+                    ))}
+                  </div>
+                </>
               )}
 
               {route === "trading" && (
