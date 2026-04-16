@@ -5,3 +5,7 @@ dist
 .DS_Store
 coverage
 pnpm-lock.yaml
+
+# Local QA captures / build info (not part of source bundle)
+frontend/artifacts/
+frontend/tsconfig.tsbuildinfo

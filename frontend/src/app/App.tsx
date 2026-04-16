@@ -1,0 +1,607 @@
+import React from "react";
+import { routeTitles, screenData, topLevelRoutes } from "./data";
+import type { LoadState, RouteId } from "./types";
+
+const fallbackRoute: RouteId = "dashboard";
+const delayMs = 300;
+
+const FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
+  {
+    id: "topup",
+    title: "How to top up balance?",
+    body: "Use Dashboard → Top Up, choose USDT TRC20, copy the deposit address or scan the QR code, then send funds from your external wallet. Deposits are credited after network confirmation.",
+  },
+  {
+    id: "withdraw",
+    title: "How to withdraw money?",
+    body: 'To withdraw money, go to the menu section "My account" - "Withdrawal of funds" - "Withdrawal request" enter the required available amount and the USDT TRC20 wallet. The withdrawal process is automatic and takes from 10 minutes to 2-3 hours. The maximum withdrawal time is up to 7 days. During the consideration, trading for your account will be stopped. Attention! Replenishment is realized only to the USDT TRC20 wallet! The minimum amount is 5 USDT!',
+  },
+  {
+    id: "timing",
+    title: "How long does withdrawal take?",
+    body: "Usually from 10 minutes to 2–3 hours. In edge cases processing can take up to 7 days while the system finalizes open operations. You will see status updates on the Withdraw and Confirm screens.",
+  },
+  {
+    id: "support",
+    title: "Where to find support?",
+    body: "Open Support from the bottom navigation or use in-app FAQ. For account-specific issues, include your trace reference from the Confirm screen when contacting support.",
+  },
+];
+
+function routeToPath(route: RouteId): string {
+  return route === "dashboard" ? "/" : `/${route}`;
+}
+
+function pathToRoute(pathname: string): RouteId {
+  const key = pathname.replace(/^\/+/, "").toLowerCase();
+  if (
+    key === "dashboard" ||
+    key === "money" ||
+    key === "trading" ||
+    key === "faq" ||
+    key === "topup" ||
+    key === "withdraw" ||
+    key === "confirm"
+  ) {
+    return key;
+  }
+  return fallbackRoute;
+}
+
+function readForcedState(route: RouteId): Exclude<LoadState, "ready"> | null {
+  const params = new URLSearchParams(window.location.search);
+  const state = params.get(`${route}State`);
+  if (state === "loading" || state === "empty" || state === "error") {
+    return state;
+  }
+  return null;
+}
+
+function useScreenState(route: RouteId) {
+  const [state, setState] = React.useState<LoadState>("loading");
+  const [token, setToken] = React.useState(0);
+
+  React.useEffect(() => {
+    setState("loading");
+    const forcedState = readForcedState(route);
+    const timer = window.setTimeout(() => {
+      setState(forcedState ?? "ready");
+    }, delayMs);
+    return () => window.clearTimeout(timer);
+  }, [route, token]);
+
+  return {
+    state,
+    retry: () => setToken((current) => current + 1),
+  };
+}
+
+interface StateViewProps {
+  state: LoadState;
+  onRetry: () => void;
+  children: React.ReactNode;
+}
+
+function StateView({ state, onRetry, children }: StateViewProps) {
+  if (state === "loading") {
+    return (
+      <div className="state-box">
+        <div className="spinner" aria-hidden="true" />
+        <p className="state-text">Loading screen data...</p>
+      </div>
+    );
+  }
+
+  if (state === "empty") {
+    return (
+      <div className="state-box">
+        <p className="state-text">No data to show yet.</p>
+        <button onClick={onRetry}>Reload</button>
+      </div>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <div className="state-box">
+        <p className="state-text">Unable to load this screen.</p>
+        <button onClick={onRetry}>Retry</button>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function metricRows(route: RouteId): Array<{ label: string; value: string }> {
+  if (route === "dashboard") {
+    return [
+      { label: "Total balance", value: "$12,480.20" },
+      { label: "Today's pnl", value: "+$248.10" },
+      { label: "Pending ops", value: "2" },
+    ];
+  }
+  if (route === "money") {
+    return [
+      { label: "Available", value: "$8,540.00" },
+      { label: "Locked", value: "$1,250.00" },
+      { label: "Recent fee", value: "$4.80" },
+    ];
+  }
+  if (route === "trading") {
+    return [
+      { label: "Strategy", value: "Conservative" },
+      { label: "Open orders", value: "3" },
+      { label: "Execution", value: "Read-only status" },
+    ];
+  }
+  if (route === "topup") {
+    return [
+      { label: "Method", value: "USDT transfer" },
+      { label: "Network", value: "TRC20" },
+      { label: "Est. arrival", value: "2-5 min" },
+    ];
+  }
+  if (route === "withdraw") {
+    return [
+      { label: "Destination", value: "Wallet ending ...8A2F" },
+      { label: "Amount", value: "$600.00" },
+      { label: "Fee", value: "$1.20" },
+    ];
+  }
+  if (route === "confirm") {
+    return [
+      { label: "Action", value: "Withdraw" },
+      { label: "Trace", value: "trace_02adf1" },
+      { label: "Policy", value: "allow" },
+    ];
+  }
+  return [
+    { label: "How to top up", value: "From Dashboard > Top Up" },
+    { label: "How to withdraw", value: "Money Details > Withdraw" },
+    { label: "Support", value: "In-app FAQ ticket flow" },
+  ];
+}
+
+function screenIcon(route: RouteId): string {
+  if (route === "dashboard") return "DB";
+  if (route === "money") return "MD";
+  if (route === "trading") return "TD";
+  if (route === "faq") return "FQ";
+  if (route === "topup") return "TU";
+  if (route === "withdraw") return "WD";
+  return "CF";
+}
+
+function tabIcon(label: string): string {
+  if (label === "Dashboard") return "⌂";
+  if (label === "Money") return "◫";
+  if (label === "Trading") return "⌁";
+  return "☰";
+}
+
+function isGreenHeaderRoute(route: RouteId): boolean {
+  return (
+    route === "dashboard" ||
+    route === "trading" ||
+    route === "withdraw" ||
+    route === "confirm" ||
+    route === "topup"
+  );
+}
+
+function App() {
+  const [initState, setInitState] = React.useState<"idle" | "loading" | "error" | "ready">(
+    "idle"
+  );
+  const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
+  const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
+
+  const navigate = React.useCallback((nextRoute: RouteId, replace = false) => {
+    const nextUrl = `${routeToPath(nextRoute)}${window.location.search}`;
+    if (replace) {
+      window.history.replaceState({ route: nextRoute }, "", nextUrl);
+    } else {
+      window.history.pushState({ route: nextRoute }, "", nextUrl);
+    }
+    setRoute(nextRoute);
+  }, []);
+
+  React.useEffect(() => {
+    const onPopState = () => {
+      setRoute(pathToRoute(window.location.pathname));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  React.useEffect(() => {
+    if (route !== "faq") {
+      setExpandedFaqId(null);
+      return;
+    }
+    const param = new URLSearchParams(window.location.search).get("faqExpand");
+    if (param && FAQ_ENTRIES.some((e) => e.id === param)) {
+      setExpandedFaqId(param);
+    } else {
+      setExpandedFaqId(null);
+    }
+  }, [route]);
+
+  const startInit = React.useCallback(() => {
+    setInitState("loading");
+    const forceFail = new URLSearchParams(window.location.search).get("initFail");
+    window.setTimeout(() => {
+      if (forceFail === "1") {
+        setInitState("error");
+        return;
+      }
+      setInitState("ready");
+      navigate(pathToRoute(window.location.pathname), true);
+    }, delayMs);
+  }, [navigate]);
+
+  React.useEffect(() => {
+    if (initState === "idle" && window.location.pathname !== "/") {
+      startInit();
+    }
+  }, [initState, startInit]);
+
+  const { state, retry } = useScreenState(route);
+  const content = screenData[route];
+  const primaryCta = content.primaryCta;
+  const secondaryCta = content.secondaryCta;
+  const isDashboard = route === "dashboard";
+
+  if (initState === "idle") {
+    return (
+      <main className="app app-center">
+        <h1>Mini App</h1>
+        <p>Open app to start auth/init flow.</p>
+        <button onClick={startInit}>Open app</button>
+      </main>
+    );
+  }
+
+  if (initState === "loading") {
+    return (
+      <main className="app app-center">
+        <h1>Initializing</h1>
+        <p>Checking auth/init status...</p>
+      </main>
+    );
+  }
+
+  if (initState === "error") {
+    return (
+      <main className="app app-center">
+        <h1>Init failed</h1>
+        <p>Session initialization failed.</p>
+        <button onClick={startInit}>Retry init</button>
+      </main>
+    );
+  }
+
+  const isBusy = state === "loading";
+
+  return (
+    <main className="app">
+      <header className={`top-bar ${isGreenHeaderRoute(route) ? "top-bar-green" : "top-bar-dark"}`}>
+        <button className="ghost icon-btn" onClick={() => window.history.back()} disabled={isBusy}>
+          ←
+        </button>
+        <h1 className="top-title">{routeTitles[route]}</h1>
+        <button className="ghost icon-btn" onClick={() => window.history.forward()} disabled={isBusy}>
+          →
+        </button>
+      </header>
+
+      <section className={`screen-card screen-${route}`}>
+        {isDashboard ? (
+          <div className="dashboard-top">
+            <div className="dashboard-appbar">
+              <button
+                className="ghost icon-btn dashboard-appbar-btn"
+                onClick={() => window.history.back()}
+                disabled={isBusy}
+              >
+                ←
+              </button>
+              <div className="dashboard-logo">dEP</div>
+              <div className="dashboard-appbar-icons">
+                <button className="dashboard-icon-chip" disabled={isBusy}>
+                  ◌
+                </button>
+                <button className="dashboard-icon-chip" disabled={isBusy}>
+                  ⚙
+                </button>
+              </div>
+            </div>
+            <p className="dashboard-balance-label">Total Balance</p>
+            <div className="dashboard-balance-row">
+              <div>
+                <p className="dashboard-balance-value">725.62</p>
+                <p className="dashboard-balance-sub">425.22 USDT</p>
+              </div>
+              <div className="dashboard-actions">
+                <button
+                  className="dashboard-pill dashboard-pill-main"
+                  onClick={() => navigate("topup")}
+                  disabled={isBusy}
+                >
+                  + Top up
+                </button>
+                <button
+                  className="dashboard-pill dashboard-pill-muted"
+                  onClick={() => navigate("withdraw")}
+                  disabled={isBusy}
+                >
+                  ↑ Withdraw
+                </button>
+              </div>
+            </div>
+            <button className="dashboard-details-btn" onClick={() => navigate("money")} disabled={isBusy}>
+              ◫ Details
+            </button>
+          </div>
+        ) : (
+          <div className="screen-header">
+            <span className="screen-icon" aria-hidden="true">
+              {screenIcon(route)}
+            </span>
+            <div>
+              <h2>{content.title}</h2>
+              <p className="screen-subtitle">{routeTitles[route]}</p>
+            </div>
+          </div>
+        )}
+        <StateView state={state} onRetry={retry}>
+          {isDashboard ? (
+            <div className="dashboard-body">
+              <div className="dashboard-chart">
+                <div className="dashboard-chart-line" />
+              </div>
+              <div className="dashboard-status">
+                <p>
+                  Bot status <strong>● Active</strong>
+                </p>
+                <p>
+                  Actual price <strong>69 425.22</strong> <span>USDT/BTC</span>
+                </p>
+              </div>
+              <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
+                ⌁ Details
+              </button>
+              <div className="dashboard-support-row">
+                <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                  ☍ Social Media
+                </button>
+                <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                  ☰ Support
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className={`screen-template template-${route}`}>
+              <p className="body-copy">{content.description}</p>
+              {(route === "money" || route === "trading") && (
+                <div className="metrics-grid metrics-grid-tabs">
+                  <article className="metric-card metric-tab">
+                    <p className="metric-label">Deposit</p>
+                    <p className="metric-value">725.62 USDT</p>
+                  </article>
+                  <article className="metric-card metric-tab">
+                    <p className="metric-label">Referral</p>
+                    <p className="metric-value">425.22 USDT</p>
+                  </article>
+                  <article className="metric-card metric-tab">
+                    <p className="metric-label">Bot</p>
+                    <p className="metric-value">Active</p>
+                  </article>
+                </div>
+              )}
+
+              {route === "money" && (
+                <div className="money-history">
+                  {[
+                    "Top up completed",
+                    "Referral reward",
+                    "Withdrawal pending",
+                    "Fee charge",
+                    "Top up completed",
+                  ].map((row, idx) => (
+                    <article key={`${row}-${idx}`} className="metric-card money-row">
+                      <p className="metric-label">{row}</p>
+                      <p className="metric-value">+42.10 USDT</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {route === "trading" && (
+                <div className="trading-stack">
+                  <div className="trading-graph" aria-hidden="true">
+                    <div className="trading-graph-line" />
+                  </div>
+                  <p className="trading-section-title">Trading bot statistics for the period:</p>
+                  <div className="stats-tabs" role="tablist" aria-label="Period">
+                    {["1d", "7d", "30d", "All"].map((label, i) => (
+                      <button
+                        key={label}
+                        type="button"
+                        className={i === 1 ? "stat-pill stat-pill-active" : "stat-pill"}
+                        disabled={isBusy}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <article className="metric-card trading-stat-card">
+                    <p className="metric-label">Performance</p>
+                    <p className="metric-value metric-value-accent">+4.2%</p>
+                    <p className="trading-card-caption">Read-only summary</p>
+                  </article>
+                  {[
+                    ["Stats", "12 active operations"],
+                    ["Successful", "9"],
+                    ["Unsuccessful", "1"],
+                    ["New trade", "2"],
+                  ].map(([label, value]) => (
+                    <article key={label} className="metric-card trading-list-row">
+                      <p className="metric-label">{label}</p>
+                      <p className="metric-value">{value}</p>
+                    </article>
+                  ))}
+                  <p className="trading-footer-label">trading:</p>
+                </div>
+              )}
+
+              {route === "faq" && (
+                <div className="faq-list" role="list">
+                  {FAQ_ENTRIES.map((entry) => {
+                    const isOpen = expandedFaqId === entry.id;
+                    return (
+                      <div
+                        key={entry.id}
+                        className={`faq-accordion-item${isOpen ? " faq-accordion-item--open" : ""}`}
+                        role="listitem"
+                      >
+                        <button
+                          type="button"
+                          className="faq-item-trigger"
+                          aria-expanded={isOpen}
+                          aria-controls={`faq-panel-${entry.id}`}
+                          id={`faq-trigger-${entry.id}`}
+                          disabled={isBusy}
+                          onClick={() => setExpandedFaqId(isOpen ? null : entry.id)}
+                        >
+                          <span className="faq-item-title">{entry.title}</span>
+                          <span className="faq-chevron-wrap" aria-hidden="true">
+                            <span className={`faq-chevron-icon${isOpen ? " faq-chevron-icon--open" : ""}`} />
+                          </span>
+                        </button>
+                        {isOpen ? (
+                          <div
+                            className="faq-expanded"
+                            id={`faq-panel-${entry.id}`}
+                            role="region"
+                            aria-labelledby={`faq-trigger-${entry.id}`}
+                          >
+                            <p className="faq-expanded-body">{entry.body}</p>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {route === "topup" && (
+                <div className="topup-block">
+                  <h3>Receive USDT</h3>
+                  <div className="qr-placeholder">QR</div>
+                  <article className="metric-card topup-wallet-row">
+                    <p className="metric-label">Wallet</p>
+                    <p className="metric-value">TRC20 • A1B2...9Z8Y</p>
+                  </article>
+                </div>
+              )}
+
+              {route === "withdraw" && (
+                <div className="withdraw-block">
+                  <article className="metric-card withdraw-address-row">
+                    <p className="metric-label">Address name</p>
+                    <p className="metric-value">Paste wallet address</p>
+                  </article>
+                  <p className="note-text">
+                    The withdrawal process is automatic and may take from 10 minutes to 2-3 hours.
+                  </p>
+                  <article className="metric-card withdraw-balance-panel">
+                    <p className="metric-label">Current balance</p>
+                    <p className="metric-value">725.62 USDT</p>
+                    <p className="metric-label withdraw-subline">Available for withdrawal*</p>
+                    <p className="metric-value metric-value-accent">653.06 USDT</p>
+                    <p className="note-text withdraw-fee-note">
+                      *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
+                    </p>
+                  </article>
+                </div>
+              )}
+
+              {route === "confirm" && (
+                <div className="confirm-block">
+                  <div className="confirm-cheque">
+                    {[
+                      ["Address", "TRC20 wallet"],
+                      ["Amount", "600.00 USDT"],
+                      ["Fee", "10%"],
+                    ].map(([label, value]) => (
+                      <article className="metric-card confirm-row" key={label}>
+                        <p className="metric-label">{label}</p>
+                        <p className="metric-value">{value}</p>
+                      </article>
+                    ))}
+                  </div>
+                  <p className="note-text confirm-fee-note">
+                    *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
+                  </p>
+                </div>
+              )}
+
+              {(route === "money" || route === "trading") && (
+                <div className="metrics-grid">
+                  {metricRows(route).map((item) => (
+                    <article key={item.label} className="metric-card">
+                      <p className="metric-label">{item.label}</p>
+                      <p className="metric-value">{item.value}</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              <div className="cta-row">
+                {primaryCta ? (
+                  <button
+                    className="btn-main"
+                    onClick={() => navigate(primaryCta.target)}
+                    disabled={isBusy}
+                  >
+                    {primaryCta.label}
+                  </button>
+                ) : null}
+                {secondaryCta ? (
+                  <button
+                    className="ghost btn-secondary"
+                    onClick={() => navigate(secondaryCta.target)}
+                    disabled={isBusy}
+                  >
+                    {secondaryCta.label}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </StateView>
+      </section>
+
+      <nav className="bottom-bar" aria-label="Bottom navigation">
+        {topLevelRoutes.map((item) => (
+          <button
+            key={item.route}
+            onClick={() => navigate(item.route)}
+            aria-current={route === item.route ? "page" : undefined}
+            className={route === item.route ? "tab-active" : "tab"}
+            disabled={isBusy}
+          >
+            <span className="tab-icon" aria-hidden="true">
+              {tabIcon(item.label)}
+            </span>
+            {item.label}
+          </button>
+        ))}
+      </nav>
+    </main>
+  );
+}
+
+export default App;
