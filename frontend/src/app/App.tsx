@@ -741,45 +741,57 @@ function App() {
         <StateView state={screenState} onRetry={retry}>
           {isDashboard ? (
             <div className="dashboard-body">
-              <section className="dashboard-chart-module" aria-label="Price chart preview">
-                <div className="dashboard-chart-module-head">
-                  <span className="dashboard-chart-title">BTC / USDT</span>
-                  <span className="dashboard-chart-range">24h</span>
-                </div>
-                <div className="dashboard-chart" aria-hidden="true">
-                  <div className="dashboard-chart-y-axis">
-                    <span>70k</span>
-                    <span>69k</span>
-                    <span>68k</span>
+              <section
+                className="dashboard-block dashboard-block--graphic"
+                aria-label="Price chart"
+              >
+                <div className="dashboard-chart-module">
+                  <div className="dashboard-chart-module-head">
+                    <span className="dashboard-chart-title">BTC / USDT</span>
+                    <span className="dashboard-chart-range">24h</span>
                   </div>
-                  <div className="dashboard-chart-plot">
-                    <div className="dashboard-chart-grid" />
-                    <div className="dashboard-chart-area" />
-                    <div className="dashboard-chart-line" />
+                  <div className="dashboard-chart" aria-hidden="true">
+                    <div className="dashboard-chart-y-axis">
+                      <span>70k</span>
+                      <span>69k</span>
+                      <span>68k</span>
+                    </div>
+                    <div className="dashboard-chart-plot">
+                      <div className="dashboard-chart-grid" />
+                      <div className="dashboard-chart-area" />
+                      <div className="dashboard-chart-line" />
+                    </div>
                   </div>
                 </div>
               </section>
-              <div className="dashboard-status-card">
-                <div className="dashboard-status">
-                  <p>
-                    Bot status <strong>● Active</strong>
-                  </p>
-                  <p>
-                    Actual price <strong>{FIGMA_VISUAL_STUBS.tradingPriceLine}</strong> <span>USDT/BTC</span>
-                  </p>
+              <section
+                className="dashboard-block dashboard-block--status"
+                aria-label="Bot status and market price"
+              >
+                <div className="dashboard-status-card">
+                  <div className="dashboard-status">
+                    <p>
+                      Bot status <strong>● Active</strong>
+                    </p>
+                    <p>
+                      Actual price <strong>{FIGMA_VISUAL_STUBS.tradingPriceLine}</strong> <span>USDT/BTC</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="dashboard-cta-stack">
-                <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
-                  Details
-                </button>
-                <div className="dashboard-support-row">
-                  <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("topup")} disabled={isBusy}>
-                    Top Up Help
+              </section>
+              <div className="dashboard-block dashboard-block--cta" role="group" aria-label="Dashboard actions">
+                <div className="dashboard-cta-stack">
+                  <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
+                    Details
                   </button>
-                  <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
-                    Support
-                  </button>
+                  <div className="dashboard-support-row">
+                    <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("topup")} disabled={isBusy}>
+                      Top Up Help
+                    </button>
+                    <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
+                      Support
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
