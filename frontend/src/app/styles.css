@@ -72,40 +72,55 @@ button:focus-visible,
   position: sticky;
   top: 0;
   z-index: 2;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  column-gap: 6px;
   border-radius: 0;
   padding: 0 12px 0 14px;
   height: 56px;
   min-height: 56px;
 }
 
-.top-bar-start,
-.top-bar-end {
-  flex: 0 0 auto;
+.top-bar-start {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  justify-self: start;
+  min-width: 0;
 }
 
 .top-bar-center {
-  flex: 1 1 auto;
-  min-width: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  justify-self: center;
+  min-width: 0;
+  max-width: min(220px, 56vw);
 }
 
 .top-bar-end {
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
-  min-width: 88px;
+  justify-self: end;
+  min-width: 0;
 }
 
 .top-bar-accessories {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+
+.top-bar .top-bar-back.icon-btn {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
 }
 
 .top-bar-back {
@@ -128,9 +143,9 @@ button:focus-visible,
 
 .top-bar-chip {
   position: relative;
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
   padding: 0;
   margin: 0;
   border: 0 !important;
@@ -139,7 +154,7 @@ button:focus-visible,
   flex-shrink: 0;
   font-size: 0;
   line-height: 0;
-  transition: transform 120ms ease, filter 120ms ease;
+  transition: transform 120ms ease, filter 120ms ease, background 140ms ease;
 }
 
 .top-bar-icon {
@@ -161,16 +176,16 @@ button:focus-visible,
 
 .top-bar-badge {
   position: absolute;
-  top: -3px;
-  right: -4px;
+  top: -2px;
+  right: -2px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
   border-radius: 999px;
   background: #40ff96;
   color: #0a0a0a;
-  font-size: 7px;
-  font-weight: 500;
+  font-size: 8px;
+  font-weight: 600;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
@@ -178,6 +193,7 @@ button:focus-visible,
   line-height: 1;
   border: 0;
   pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.12);
 }
 
 .top-bar-green {
@@ -203,6 +219,43 @@ button:focus-visible,
 
 .top-bar-green .top-bar-badge {
   border-color: #2edd7d;
+  box-shadow: 0 0 0 1px rgba(46, 221, 125, 0.85);
+}
+
+.top-bar-green .top-bar-chip:not(:disabled):hover {
+  background: rgba(10, 10, 10, 0.2);
+}
+
+.top-bar-green .top-bar-chip:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.top-bar-dark .top-bar-chip:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.top-bar-dark .top-bar-chip:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.top-bar-green .top-bar-back:not(:disabled):hover {
+  background: rgba(10, 10, 10, 0.14);
+}
+
+.top-bar-dark .top-bar-back:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.top-bar-green .top-bar-chip:focus-visible,
+.top-bar-green .top-bar-back:focus-visible {
+  outline: 2px solid #0a0a0a;
+  outline-offset: 2px;
+}
+
+.top-bar-dark .top-bar-chip:focus-visible,
+.top-bar-dark .top-bar-back:focus-visible {
+  outline: 2px solid #40ff96;
+  outline-offset: 2px;
 }
 
 .top-bar-dark {
