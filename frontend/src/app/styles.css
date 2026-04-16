@@ -391,9 +391,9 @@ button:focus-visible,
 }
 
 .internal-hero-money {
-  background: linear-gradient(180deg, rgba(46, 221, 125, 0.2) 0%, rgba(19, 19, 19, 1) 52%);
-  border-radius: 18px 18px 22px 22px;
-  padding-bottom: 16px;
+  background: #131313;
+  border-radius: 14px;
+  padding-bottom: 14px;
 }
 
 .internal-hero-money > .internal-hero-title:first-child {
@@ -983,94 +983,109 @@ button:focus-visible,
   margin-top: 2px;
 }
 
-.money-trio {
+.money-overview {
   margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.money-tile {
-  min-height: 88px;
-  padding: 12px 8px 14px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #171717 0%, #111 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  gap: 6px;
+  gap: 16px;
+  padding: 16px 16px 18px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #161616 0%, #101010 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.money-overview-primary {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
 }
 
-.money-tile--accent {
-  background: rgba(64, 255, 150, 0.07);
-  border-color: rgba(64, 255, 150, 0.28);
-}
-
-.money-tile-label {
+.money-overview-kicker {
   margin: 0;
-  font-size: 9px;
-  line-height: 12px;
+  font-size: 11px;
+  line-height: 14px;
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.45);
 }
 
-.money-tile-value {
+.money-overview-figure {
   margin: 0;
-  font-size: 16px;
-  line-height: 20px;
+  font-size: 32px;
+  line-height: 36px;
   font-weight: 600;
   letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.94);
+  color: #f5f8ff;
 }
 
-.money-tile-unit {
-  margin-left: 2px;
-  font-size: 10px;
-  line-height: 14px;
+.money-overview-unit {
+  margin-left: 4px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.55);
   vertical-align: baseline;
 }
 
-.money-tile-status {
+.money-overview-side {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.money-side-block {
+  flex: 1;
+  min-height: 76px;
+  padding: 12px 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: 2px;
+  align-content: center;
+}
+
+.money-side-block--accent {
+  background: rgba(64, 255, 150, 0.08);
+  border-color: rgba(64, 255, 150, 0.22);
+}
+
+.money-side-label {
   margin: 0;
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.money-side-value {
+  margin: 0;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.money-side-unit {
+  margin: 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.money-side-status {
+  margin: 0;
+  font-size: 15px;
+  line-height: 20px;
   font-weight: 600;
   color: #40ff96;
-}
-
-.money-page-cta {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.money-page-cta-main,
-.money-page-cta-muted {
-  height: 44px;
-  border-radius: 54px;
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: 500;
-}
-
-.money-page-cta-main {
-  background: #40ff96;
-  color: #0a0a0a;
-  border: none;
-}
-
-.money-page-cta-muted {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .money-activity-head {
@@ -1079,11 +1094,6 @@ button:focus-visible,
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
-}
-
-.money-activity-head--solo {
-  align-items: center;
-  justify-content: flex-start;
 }
 
 .money-activity-title {
