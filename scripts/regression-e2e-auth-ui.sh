@@ -11,7 +11,7 @@ LOG_FILE="${LOG_DIR}/${RUN_CONTEXT}.log"
 
 mkdir -p "$LOG_DIR"
 
-if pnpm --dir backend run regression:e2e 2>&1 | tee "$LOG_FILE"; then
+if node scripts/backend-regression-e2e-auth-ui.mjs 2>&1 | tee "$LOG_FILE"; then
   echo "owner-tag=${OWNER_TAG}"
   echo "run_context=${RUN_CONTEXT}"
   echo "result=PASS"
