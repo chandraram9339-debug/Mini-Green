@@ -1,0 +1,90 @@
+name: backend-init-matrix
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "15 */12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-init-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  init-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case_id: signed-secret-v1
+            owner_tag: 07_REPO_ARCH/Infra
+            execution_mode: mock
+            init_data: demo-smoke-init
+            init_data_second: demo-smoke-init-2
+            init_secret: mock-init-secret-v1
+          - case_id: signed-secret-v2
+            owner_tag: 07_REPO_ARCH/Infra
+            execution_mode: mock
+            init_data: demo-smoke-init-v2
+            init_data_second: demo-smoke-init-v2-b
+            init_secret: mock-init-secret-v2
+          - case_id: deterministic-retry
+            owner_tag: 07_REPO_ARCH/Infra
+            execution_mode: mock
+            init_data: demo-smoke-init-retry
+            init_data_second: demo-smoke-init-retry-2
+            init_secret: mock-init-secret-v1
+    env:
+      OWNER_TAG: ${{ matrix.owner_tag }}
+      RUN_CONTEXT: init-matrix-${{ matrix.case_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - name: Install backend dependencies
+        run: pnpm --dir backend install --frozen-lockfile
+
+      - name: Run init matrix case
+        env:
+          EXECUTION_MODE: ${{ matrix.execution_mode }}
+          E2E_INIT_DATA: ${{ matrix.init_data }}
+          E2E_INIT_DATA_SECOND: ${{ matrix.init_data_second }}
+          MOCK_INITDATA_SECRET: ${{ matrix.init_secret }}
+          OWNER_TAG: ${{ env.OWNER_TAG }}
+          RUN_CONTEXT: ${{ env.RUN_CONTEXT }}
+        run: scripts/regression-e2e-auth-ui.sh
+
+      - name: Emit failure mode metadata
+        if: failure()
+        run: |
+          echo "owner-tag=${OWNER_TAG}"
+          echo "first_failing_substep=init_matrix_${{ matrix.case_id }}"
+          echo "failure_hop=init_matrix_runtime"
+
+      - name: Upload init matrix artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-init-matrix-${{ matrix.case_id }}-${{ github.run_id }}
+          path: |
+            backend/reports/regression-e2e-auth-ui.json
+            backend/reports/ci-logs/init-matrix-${{ matrix.case_id }}.log
