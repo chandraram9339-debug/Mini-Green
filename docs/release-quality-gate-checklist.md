@@ -23,3 +23,5 @@ This checklist is mandatory for release close.
 - Workflow: `.github/workflows/release-deploy.yml`
 - Gate step: `Enforce visual quality gate (06_SECURITY_QA)`
 - Blocking behavior: run exits with non-zero status when `visual_fidelity_pass != true`.
+
+infra-required-checks-proof
