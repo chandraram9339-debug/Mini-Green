@@ -14,10 +14,13 @@ const startedAt = new Date().toISOString();
 const executionMode = process.env.EXECUTION_MODE ?? "mock";
 const demoUserId = String(process.env.DEMO_INIT_USER_ID ?? "10001");
 const allowedDemoTokens = new Set(
-  String(process.env.DEMO_INIT_TOKENS ?? "demo-smoke-init,demo-smoke-init-2")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean)
+  [
+    ...String(process.env.DEMO_INIT_TOKENS ?? "demo-smoke-init,demo-smoke-init-2")
+      .split(",")
+      .map((t) => t.trim()),
+    initToken,
+    secondInitToken
+  ].filter(Boolean)
 );
 
 const checks = [];
