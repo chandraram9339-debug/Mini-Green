@@ -1,6 +1,10 @@
 import React from "react";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
+import topupQrAsset from "./assets/topup-qr-1-5256.svg";
+import topBarBackIcon from "./assets/topbar-back-1-6437.svg";
+import topBarNotifyIcon from "./assets/topbar-notify-1-6436.svg";
+import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 
 const fallbackRoute: RouteId = "dashboard";
 const delayMs = 300;
@@ -90,47 +94,10 @@ function topupAddressDisplay(full: string): string {
   return `${full.slice(0, 8)}…${full.slice(-6)}`;
 }
 
-function topupQrCellOn(row: number, col: number, size: number): boolean {
-  const inTl = row < 7 && col < 7;
-  const inTr = row < 7 && col >= size - 7;
-  const inBl = row >= size - 7 && col < 7;
-  if (inTl || inTr || inBl) {
-    const fr = inTl ? row : inTr ? row : row - (size - 7);
-    const fc = inTl ? col : inTr ? col - (size - 7) : col;
-    if (fr === 0 || fr === 6 || fc === 0 || fc === 6) return true;
-    if (fr >= 2 && fr <= 4 && fc >= 2 && fc <= 4) return true;
-    return false;
-  }
-  return ((row * 31 + col * 17 + (row >> 1)) % 11) < 5;
-}
-
 function TopUpQrVisual() {
-  const size = 21;
-  const rects = React.useMemo(() => {
-    const out: Array<{ key: string; x: number; y: number }> = [];
-    for (let r = 0; r < size; r += 1) {
-      for (let c = 0; c < size; c += 1) {
-        if (topupQrCellOn(r, c, size)) {
-          out.push({ key: `${r}-${c}`, x: c, y: r });
-        }
-      }
-    }
-    return out;
-  }, []);
   return (
     <div className="topup-qr-shell" aria-hidden="true">
-      <svg
-        className="topup-qr-svg"
-        viewBox={`0 0 ${size} ${size}`}
-        width={168}
-        height={168}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <rect width={size} height={size} fill="#ffffff" />
-        {rects.map(({ key, x, y }) => (
-          <rect key={key} x={x} y={y} width={1} height={1} fill="#0a0a0a" />
-        ))}
-      </svg>
+      <img className="topup-qr-svg" src={topupQrAsset} alt="Deposit QR code" />
     </div>
   );
 }
@@ -344,7 +311,7 @@ function App() {
             disabled={isBusy}
             aria-label="Back"
           >
-            ←
+            <img className="top-bar-icon top-bar-icon--back" src={topBarBackIcon} alt="" aria-hidden="true" />
           </button>
         </div>
         <div className="top-bar-center">
@@ -364,17 +331,23 @@ function App() {
               disabled={isBusy}
               aria-label="Notifications"
             >
-              <span className="top-bar-chip-icon" aria-hidden="true">
-                ◌
-              </span>
+              <img
+                className="top-bar-icon top-bar-icon--notify"
+                src={topBarNotifyIcon}
+                alt=""
+                aria-hidden="true"
+              />
               <span className="top-bar-badge" aria-hidden="true">
-                2
+                25
               </span>
             </button>
             <button type="button" className="top-bar-chip" disabled={isBusy} aria-label="Settings">
-              <span className="top-bar-chip-icon" aria-hidden="true">
-                ⚙
-              </span>
+              <img
+                className="top-bar-icon top-bar-icon--settings"
+                src={topBarSettingsIcon}
+                alt=""
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
