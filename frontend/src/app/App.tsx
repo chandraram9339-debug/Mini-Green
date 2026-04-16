@@ -616,7 +616,6 @@ function App() {
                       <p className="metric-value">{value}</p>
                     </article>
                   ))}
-                  <p className="trading-footer-label">trading:</p>
                 </div>
               )}
 

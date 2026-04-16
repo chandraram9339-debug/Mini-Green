@@ -1105,14 +1105,6 @@ button:disabled {
   padding: 12px 16px;
 }
 
-.trading-footer-label {
-  margin: 4px 0 0;
-  font-size: 15px;
-  line-height: 20px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
-}
-
 .metric-value-accent {
   color: #40ff96;
 }
