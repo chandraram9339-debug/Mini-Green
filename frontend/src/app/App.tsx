@@ -606,6 +606,7 @@ function App() {
                       <p className="metric-value">{value}</p>
                     </article>
                   ))}
+                  <p className="metric-label">trading:</p>
                 </div>
               )}
 
