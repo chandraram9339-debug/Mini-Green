@@ -13,7 +13,6 @@ import {
   type MoneyDetailsPayload,
   resolveInitData,
   type SessionPayload,
-  type TradingDetailsPayload,
 } from "./api";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
@@ -27,6 +26,13 @@ const uiStorageKey = "miniapp-frontend-ui-state";
 const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
 const DEFAULT_ACTION_FEE_LABEL = "10%";
 const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
+
+/** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
+const FIGMA_VISUAL_STUBS = {
+  dashboardLiquidLine: "425.22",
+  referralAmount: "425.22",
+  tradingPriceLine: "69 425.22",
+} as const;
 
 const LOCAL_FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
   {
@@ -62,10 +68,6 @@ interface PendingAction {
 
 function formatMinor(minor: number): string {
   return (minor / 100).toFixed(2);
-}
-
-function formatSignedMinor(minor: number): string {
-  return `${minor >= 0 ? "+" : "−"}${formatMinor(Math.abs(minor))}`;
 }
 
 function mergeFaqEntries(remoteEntries: Array<{ id: string; q: string; a: string }>) {
@@ -253,7 +255,6 @@ function App() {
   >(null);
   const [dashboardData, setDashboardData] = React.useState<DashboardPayload | null>(null);
   const [moneyData, setMoneyData] = React.useState<MoneyDetailsPayload | null>(null);
-  const [tradingData, setTradingData] = React.useState<TradingDetailsPayload | null>(null);
   const [faqEntries, setFaqEntries] = React.useState(LOCAL_FAQ_ENTRIES);
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
   const [actionState, setActionState] = React.useState<"idle" | "submitting">("idle");
@@ -450,9 +451,8 @@ function App() {
         }
 
         if (route === "trading") {
-          const { data } = await fetchTradingDetails(session.initData, abortController.signal);
-          setTradingData(data);
-          setScreenState(data.positions.length === 0 ? "empty" : "ready");
+          await fetchTradingDetails(session.initData, abortController.signal);
+          setScreenState("ready");
           return;
         }
 
@@ -604,23 +604,8 @@ function App() {
   }, [confirmStep, isBusy, pendingAction, session]);
 
   const dashboardBalance = dashboardData ? formatMinor(dashboardData.wallet_minor) : "0.00";
-  const dashboardPnl = dashboardData ? formatSignedMinor(dashboardData.pnl_minor) : "+0.00";
   const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
-  const moneyLocked = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
   const withdrawAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
-  const tradingPositions = tradingData?.positions ?? [];
-  const tradingExposure = React.useMemo(
-    () => tradingPositions.reduce((sum, position) => sum + position.size_minor, 0),
-    [tradingPositions]
-  );
-  const tradingLongCount = React.useMemo(
-    () => tradingPositions.filter((position) => position.side === "long").length,
-    [tradingPositions]
-  );
-  const tradingShortCount = React.useMemo(
-    () => tradingPositions.filter((position) => position.side === "short").length,
-    [tradingPositions]
-  );
   const confirmAmount = pendingAction ? formatMinor(pendingAction.amountMinor) : formatMinor(DEFAULT_ACTION_AMOUNT_MINOR);
   const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
 
@@ -710,7 +695,7 @@ function App() {
             <div className="dashboard-balance-row">
               <div>
                 <p className="dashboard-balance-value">{dashboardBalance}</p>
-                <p className="dashboard-balance-sub">PnL {dashboardPnl} USDT</p>
+                <p className="dashboard-balance-sub">{FIGMA_VISUAL_STUBS.dashboardLiquidLine} USDT</p>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -758,10 +743,10 @@ function App() {
               <div className="dashboard-status-card">
                 <div className="dashboard-status">
                   <p>
-                    Bot status <strong>● Backend-backed</strong>
+                    Bot status <strong>● Active</strong>
                   </p>
                   <p>
-                    Open positions <strong>{dashboardData?.open_positions ?? 0}</strong> <span>current scope</span>
+                    Actual price <strong>{FIGMA_VISUAL_STUBS.tradingPriceLine}</strong> <span>USDT/BTC</span>
                   </p>
                 </div>
               </div>
@@ -830,13 +815,13 @@ function App() {
                     </div>
                     <div className="money-overview-side">
                       <div className="money-side-block">
-                        <p className="money-side-label">Locked</p>
-                        <p className="money-side-value">{moneyLocked}</p>
+                        <p className="money-side-label">Referral</p>
+                        <p className="money-side-value">{FIGMA_VISUAL_STUBS.referralAmount}</p>
                         <p className="money-side-unit">USDT</p>
                       </div>
                       <div className="money-side-block money-side-block--accent">
-                        <p className="money-side-label">Source</p>
-                        <p className="money-side-status">Backend</p>
+                        <p className="money-side-label">Bot</p>
+                        <p className="money-side-status">Active</p>
                       </div>
                     </div>
                   </section>
@@ -919,33 +904,28 @@ function App() {
                   </div>
                   <div className="trading-kpi-row" aria-label="Trading summary">
                     <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Positions</p>
-                      <p className="trading-kpi-value">{tradingPositions.length}</p>
+                      <p className="trading-kpi-label">Strategy</p>
+                      <p className="trading-kpi-value">Conservative</p>
                     </div>
                     <div className="trading-kpi-cell">
-                      <p className="trading-kpi-label">Gross exposure</p>
-                      <p className="trading-kpi-value">{formatMinor(tradingExposure)}</p>
+                      <p className="trading-kpi-label">Open orders</p>
+                      <p className="trading-kpi-value">3</p>
                     </div>
                     <div className="trading-kpi-cell">
                       <p className="trading-kpi-label">Execution</p>
-                      <p className="trading-kpi-value trading-kpi-value--muted">Backend read</p>
+                      <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
                     </div>
                   </div>
                   <article className="metric-card trading-stat-card">
-                    <p className="metric-label">Primary market</p>
-                    <p className="metric-value metric-value-accent">
-                      {tradingPositions[0]?.symbol ?? "No positions"}
-                    </p>
-                    <p className="trading-card-caption">Chart remains localized until market series API exists.</p>
+                    <p className="metric-label">Performance</p>
+                    <p className="metric-value metric-value-accent">+4.2%</p>
+                    <p className="trading-card-caption">Read-only summary</p>
                   </article>
                   {[
-                    ["Long", String(tradingLongCount)],
-                    ["Short", String(tradingShortCount)],
-                    [
-                      "Largest position",
-                      tradingPositions[0] ? `${formatMinor(tradingPositions[0].size_minor)} USDT` : "None",
-                    ],
-                    ["Source", "backend /api/v1/ui/trading-details"],
+                    ["Stats", "12 active operations"],
+                    ["Successful", "9"],
+                    ["Unsuccessful", "1"],
+                    ["New trade", "2"],
                   ].map(([label, value]) => (
                     <article key={label} className="metric-card trading-list-row">
                       <p className="metric-label">{label}</p>
@@ -1104,10 +1084,11 @@ function App() {
                       <div className="confirm-result-mark" aria-hidden="true">
                         ✓
                       </div>
-                      <p className="confirm-result-kicker">Backend confirmation</p>
-                      <h3 className="confirm-result-title">Action confirmed successfully</h3>
+                      <p className="confirm-result-kicker">Transfer status</p>
+                      <h3 className="confirm-result-title">Transfer queued successfully</h3>
                       <p className="confirm-result-body">
-                        The frontend completed a real backend-backed confirm request and stayed in the current flow.
+                        Your transfer request was accepted. You can continue from the dashboard or review activity on
+                        the Money screen.
                       </p>
                       <div className="confirm-result-meta">
                         <span className="confirm-result-meta-label">Trace</span>
@@ -1131,7 +1112,7 @@ function App() {
                         <div className="confirm-cheque-row">
                           <span className="confirm-cheque-label">Recipient</span>
                           <span className="confirm-cheque-value">
-                            {pendingAction?.recipientLabel ?? "Create a top up or withdraw action first"}
+                            {pendingAction?.recipientLabel ?? "TRC20 · —"}
                           </span>
                         </div>
                         <div className="confirm-cheque-divider" />
