@@ -433,8 +433,8 @@ function App() {
             <div className={`screen-template template-${route}`}>
               {route === "money" && (
                 <header className="internal-hero internal-hero-money">
-                  <p className="internal-hero-kicker">Current balance</p>
-                  <h2 className="internal-hero-title">TQBw8SGT.......6l48HPv4iB</h2>
+                  <h2 className="internal-hero-title">Current balance</h2>
+                  <p className="internal-hero-label">TQBw8SGT.......6l48HPv4iB</p>
                   <p className="internal-hero-label">USDT</p>
                 </header>
               )}
@@ -442,7 +442,8 @@ function App() {
                 <header className="internal-hero internal-hero-trading">
                   <p className="internal-hero-kicker">Bot status</p>
                   <h2 className="internal-hero-title">Actual price</h2>
-                  <p className="internal-hero-label">Active · USDT/BTC</p>
+                  <p className="internal-hero-label">Active</p>
+                  <p className="internal-hero-label">USDT/BTC</p>
                 </header>
               )}
               {route === "faq" && (
@@ -452,14 +453,14 @@ function App() {
               )}
               {route === "topup" && (
                 <header className="internal-hero internal-hero-topup">
-                  <p className="internal-hero-kicker">Deposit</p>
-                  <h2 className="internal-hero-title">Recieve USDT</h2>
+                  <h2 className="internal-hero-title">Deposit</h2>
+                  <p className="internal-hero-label">Recieve USDT</p>
                 </header>
               )}
               {route === "withdraw" && (
                 <header className="internal-hero internal-hero-withdraw">
-                  <p className="internal-hero-kicker">Withdraw</p>
-                  <h2 className="internal-hero-title">Address name</h2>
+                  <h2 className="internal-hero-title">Withdraw</h2>
+                  <p className="internal-hero-label">Address name</p>
                 </header>
               )}
               {route === "confirm" && (
