@@ -454,11 +454,13 @@ button:focus-visible,
 }
 
 .tab-glyph {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
+  isolation: isolate;
 }
 
 .tab-svg {
@@ -491,17 +493,32 @@ button:focus-visible,
 }
 
 .tab.tab-active {
-  background: #40ff96;
+  background: transparent;
+  border-color: transparent;
   color: #0a0a0a;
+  box-shadow: none;
+}
+
+.tab.tab-active .tab-glyph::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: #40ff96;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset;
+  z-index: -1;
 }
 
 .tab.tab-active .tab-label {
-  color: #0a0a0a;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.tab.tab-active:not(:disabled):hover {
-  filter: brightness(1.04);
+.tab.tab-active:not(:disabled):hover .tab-glyph::before {
+  filter: brightness(1.06);
 }
 
 .btn-main {
