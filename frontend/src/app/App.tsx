@@ -29,9 +29,11 @@ const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
 
 /** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
 const FIGMA_VISUAL_STUBS = {
-  dashboardLiquidLine: "425.22",
   referralAmount: "425.22",
   tradingPriceLine: "69 425.22",
+  performancePeriod: "7D",
+  performanceLegendPrimary: "Bot yield",
+  performanceLegendSecondary: "Benchmark",
 } as const;
 
 const LOCAL_FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
@@ -714,20 +716,10 @@ function App() {
             <div className="dashboard-balance-row">
               <div>
                 <p className="dashboard-balance-value">{dashboardBalance}</p>
-                <div className="dashboard-metric-strip" aria-label="Available and referral balances">
-                  <div className="dashboard-metric-cell">
-                    <p className="dashboard-metric-label">Available</p>
-                    <p className="dashboard-metric-value">
-                      {FIGMA_VISUAL_STUBS.dashboardLiquidLine} <span className="dashboard-metric-unit">USDT</span>
-                    </p>
-                  </div>
-                  <div className="dashboard-metric-cell">
-                    <p className="dashboard-metric-label">Referral</p>
-                    <p className="dashboard-metric-value">
-                      {FIGMA_VISUAL_STUBS.referralAmount} <span className="dashboard-metric-unit">USDT</span>
-                    </p>
-                  </div>
-                </div>
+                <p className="dashboard-referral-kicker">Received by referrals</p>
+                <p className="dashboard-referral-amount">
+                  {FIGMA_VISUAL_STUBS.referralAmount} <span className="dashboard-referral-unit">USDT</span>
+                </p>
               </div>
               <div className="dashboard-actions">
                 <button
@@ -754,26 +746,34 @@ function App() {
         <StateView state={screenState} onRetry={retry}>
           {isDashboard ? (
             <div className="dashboard-body">
-              <section
-                className="dashboard-block dashboard-block--graphic"
-                aria-label="Price chart"
-              >
-                <div className="dashboard-chart-module">
-                  <div className="dashboard-chart-module-head">
-                    <span className="dashboard-chart-title">BTC / USDT</span>
-                    <span className="dashboard-chart-range">24H</span>
+              <section className="dashboard-block dashboard-block--graphic" aria-label="Performance chart">
+                <div className="dashboard-perf">
+                  <div className="dashboard-perf-head">
+                    <span className="dashboard-perf-title">% Performance</span>
+                    <span className="dashboard-perf-period">{FIGMA_VISUAL_STUBS.performancePeriod}</span>
                   </div>
-                  <div className="dashboard-chart" aria-hidden="true">
-                    <div className="dashboard-chart-y-axis">
-                      <span>70k</span>
-                      <span>69k</span>
-                      <span>68k</span>
+                  <div className="dashboard-perf-chart" aria-hidden="true">
+                    <div className="dashboard-perf-y-axis">
+                      <span>+8%</span>
+                      <span>+4%</span>
+                      <span>0%</span>
+                      <span>-4%</span>
                     </div>
-                    <div className="dashboard-chart-plot">
-                      <div className="dashboard-chart-grid" />
-                      <div className="dashboard-chart-area" />
-                      <div className="dashboard-chart-line" />
+                    <div className="dashboard-perf-plot">
+                      <div className="dashboard-perf-grid" />
+                      <div className="dashboard-perf-area" />
+                      <div className="dashboard-perf-line" />
                     </div>
+                  </div>
+                  <div className="dashboard-perf-legend">
+                    <span className="dashboard-perf-legend-item">
+                      <span className="dashboard-perf-swatch dashboard-perf-swatch--primary" />
+                      {FIGMA_VISUAL_STUBS.performanceLegendPrimary}
+                    </span>
+                    <span className="dashboard-perf-legend-item">
+                      <span className="dashboard-perf-swatch dashboard-perf-swatch--muted" />
+                      {FIGMA_VISUAL_STUBS.performanceLegendSecondary}
+                    </span>
                   </div>
                 </div>
               </section>
@@ -798,11 +798,11 @@ function App() {
                     Details
                   </button>
                   <div className="dashboard-support-row">
-                    <button className="dashboard-secondary-btn" onClick={() => navigate("money")} disabled={isBusy}>
-                      Referral
+                    <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                      Channel
                     </button>
                     <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
-                      Support
+                      Chat
                     </button>
                   </div>
                 </div>
