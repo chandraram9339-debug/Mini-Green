@@ -1134,7 +1134,7 @@ function App() {
                         <div className="money-feed-icon" aria-hidden="true" />
                         <div className="money-feed-main">
                           <p className="money-feed-title">{row.title}</p>
-                          <p className="money-feed-meta">Commission</p>
+                          <p className="money-feed-meta">{row.fee ? "Commission" : "No commission"}</p>
                           <p className="money-feed-wallet">{row.walletMask}</p>
                         </div>
                         <div className="money-feed-side">

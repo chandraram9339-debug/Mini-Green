@@ -1268,14 +1268,11 @@ button:focus-visible,
   position: relative;
 }
 
+.money-feed-icon::before,
 .money-feed-icon::after {
   content: "";
   position: absolute;
-  inset: 7px;
-  border: 2px solid #0a0a0a;
-  border-top: 0;
-  border-right: 0;
-  transform: rotate(45deg);
+  display: none;
 }
 
 .money-feed-row--in .money-feed-icon {
@@ -1283,14 +1280,79 @@ button:focus-visible,
   box-shadow: 0 0 0 3px rgba(64, 255, 150, 0.2);
 }
 
+.money-feed-row--in .money-feed-icon::before,
+.money-feed-row--in .money-feed-icon::after {
+  display: block;
+  background: #0a0a0a;
+  border-radius: 2px;
+}
+
+.money-feed-row--in .money-feed-icon::before {
+  width: 10px;
+  height: 2px;
+  left: 7px;
+  top: 11px;
+}
+
+.money-feed-row--in .money-feed-icon::after {
+  width: 2px;
+  height: 10px;
+  left: 11px;
+  top: 7px;
+}
+
 .money-feed-row--out .money-feed-icon {
   background: rgba(255, 120, 120, 0.95);
   box-shadow: 0 0 0 3px rgba(255, 120, 120, 0.15);
 }
 
+.money-feed-row--out .money-feed-icon::before,
+.money-feed-row--out .money-feed-icon::after {
+  display: block;
+}
+
+.money-feed-row--out .money-feed-icon::before {
+  width: 10px;
+  height: 2px;
+  left: 7px;
+  top: 11px;
+  background: #0a0a0a;
+}
+
+.money-feed-row--out .money-feed-icon::after {
+  width: 6px;
+  height: 6px;
+  left: 10px;
+  top: 8px;
+  border-top: 2px solid #0a0a0a;
+  border-right: 2px solid #0a0a0a;
+  transform: rotate(45deg);
+}
+
 .money-feed-row--pending .money-feed-icon {
   background: #ffc14d;
   box-shadow: 0 0 0 3px rgba(255, 193, 77, 0.18);
+}
+
+.money-feed-row--pending .money-feed-icon::before {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #0a0a0a;
+  border-radius: 50%;
+  left: 6px;
+  top: 6px;
+}
+
+.money-feed-row--pending .money-feed-icon::after {
+  display: block;
+  width: 2px;
+  height: 5px;
+  left: 11px;
+  top: 8px;
+  background: #0a0a0a;
+  transform: rotate(20deg);
+  transform-origin: bottom center;
 }
 
 .money-feed-main {
