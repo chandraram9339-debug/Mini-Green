@@ -537,35 +537,45 @@ function App() {
       [
         {
           kind: "deposit" as const,
-          dateTimeText: "Today · 14:32",
+          title: "Replenishment",
+          walletMask: "UQBw8....SGTF",
+          dateTimeText: "31.12.2024 00:00",
           amount: "+42.10 USDT",
-          fee: null,
+          fee: "10.00 USDT",
           tone: "in" as const,
         },
         {
           kind: "referral" as const,
-          dateTimeText: "Yesterday · 09:10",
+          title: "Referral reward",
+          walletMask: "TG referral",
+          dateTimeText: "30.12.2024 09:10",
           amount: "+18.00 USDT",
           fee: null,
           tone: "in" as const,
         },
         {
           kind: "withdraw" as const,
-          dateTimeText: "Today · 12:05",
+          title: "Withdrawal",
+          walletMask: "TQx4d....91AF",
+          dateTimeText: "29.12.2024 12:05",
           amount: "−600.00 USDT",
           fee: "1.20 USDT",
           tone: "pending" as const,
         },
         {
           kind: "withdraw" as const,
-          dateTimeText: "Tue · 16:47",
+          title: "Withdrawal",
+          walletMask: "TQx4d....91AF",
+          dateTimeText: "28.12.2024 16:47",
           amount: "−120.00 USDT",
           fee: "0.24 USDT",
           tone: "out" as const,
         },
         {
           kind: "deposit" as const,
-          dateTimeText: "Mon · 11:05",
+          title: "Replenishment",
+          walletMask: "UQBw8....SGTF",
+          dateTimeText: "27.12.2024 11:05",
           amount: "+200.00 USDT",
           fee: null,
           tone: "in" as const,
@@ -1123,11 +1133,15 @@ function App() {
                       >
                         <div className="money-feed-icon" aria-hidden="true" />
                         <div className="money-feed-main">
-                          <p className="money-feed-title">{row.amount}</p>
-                          {row.fee ? <p className="money-feed-meta">Fee: {row.fee}</p> : null}
-                          <p className="money-feed-meta">{row.dateTimeText}</p>
+                          <p className="money-feed-title">{row.title}</p>
+                          <p className="money-feed-meta">Commission</p>
+                          <p className="money-feed-wallet">{row.walletMask}</p>
                         </div>
-                        <p className="money-feed-amount">{row.kind[0].toUpperCase() + row.kind.slice(1)}</p>
+                        <div className="money-feed-side">
+                          <p className="money-feed-amount">{row.amount}</p>
+                          {row.fee ? <p className="money-feed-fee">-{row.fee.replace("-", "")}</p> : null}
+                          <p className="money-feed-date">{row.dateTimeText}</p>
+                        </div>
                       </article>
                     ))}
                   </div>
@@ -1214,23 +1228,50 @@ function App() {
                         <p className="trading-kpi-value trading-kpi-value--muted">{tradingStats.result}</p>
                       </div>
                     </div>
-                    <article className="metric-card trading-stat-card">
-                      <p className="metric-label">Trades for selected period</p>
-                      <p className="metric-value metric-value-accent">{tradingTotalLabel}</p>
-                      <p className="trading-card-caption">{tradingStats.sourceLabel}</p>
-                    </article>
                     {[
-                      ["Total", tradingTotalLabel],
-                      ["Positive", String(tradingStats.positive)],
-                      ["Negative", String(tradingStats.negative)],
-                      ["Result", tradingStats.result],
-                    ].map(([label, value]) => (
-                      <article key={label} className="metric-card trading-list-row">
-                        <p className="metric-label">{label}</p>
-                        <p className="metric-value">{value}</p>
+                      {
+                        tone: "success",
+                        title: "Prediction was successful!",
+                        priceLabel: "Price is DOWN",
+                        amountLabel: "to 69569.32",
+                        resultLabel: "Profit of trade is:",
+                        resultValue: "0.13 %",
+                      },
+                      {
+                        tone: "danger",
+                        title: "Prediction was unsuccessful.",
+                        priceLabel: "Price is UP",
+                        amountLabel: "to 69569.32",
+                        resultLabel: "Loss of trade is:",
+                        resultValue: "0.16 %",
+                      },
+                      {
+                        tone: "new",
+                        title: "Opening new trade...",
+                        priceLabel: "Actual price:",
+                        amountLabel: "69 425.22",
+                        resultLabel: "Source:",
+                        resultValue: tradingStats.sourceLabel,
+                      },
+                    ].map((item) => (
+                      <article key={item.title} className={`metric-card trading-list-row trading-list-row--${item.tone}`}>
+                        <div className="trading-list-line">
+                          <span className="trading-list-dot" aria-hidden="true" />
+                          <p className="trading-list-title">{item.title}</p>
+                        </div>
+                        <div className="trading-list-line">
+                          <span className="trading-list-arrow" aria-hidden="true" />
+                          <p className="trading-list-body">{item.priceLabel}</p>
+                          <p className="trading-list-amount">{item.amountLabel}</p>
+                          <p className="trading-list-unit">USDT/BTC</p>
+                        </div>
+                        <div className="trading-list-line">
+                          <span className="trading-list-wave" aria-hidden="true" />
+                          <p className="trading-list-body">{item.resultLabel}</p>
+                          <p className="trading-list-result">{item.resultValue}</p>
+                        </div>
                       </article>
                     ))}
-                    <p className="metric-label">trading:</p>
                   </div>
                 </>
               )}
