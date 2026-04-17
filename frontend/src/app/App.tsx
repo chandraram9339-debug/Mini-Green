@@ -58,29 +58,6 @@ const FIGMA_VISUAL_STUBS = {
   performanceLegendSecondary: "Benchmark",
 } as const;
 
-const LOCAL_FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
-  {
-    id: "topup",
-    title: "How to top up balance?",
-    body: "Use Dashboard → Top Up, choose USDT TRC20, copy the deposit address or scan the QR code, then send funds from your external wallet. Deposits are credited after network confirmation.",
-  },
-  {
-    id: "withdraw",
-    title: "How to withdraw money?",
-    body: 'To withdraw money, go to the menu section "My account" - "Withdrawal of funds" - "Withdrawal request" enter the required available amount and the USDT TRC20 wallet. The withdrawal process is automatic and takes from 10 minutes to 2-3 hours. The maximum withdrawal time is up to 7 days. During the consideration, trading for your account will be stopped. Attention! Replenishment is realized only to the USDT TRC20 wallet! The minimum amount is 5 USDT!',
-  },
-  {
-    id: "timing",
-    title: "How long does withdrawal take?",
-    body: "Usually from 10 minutes to 2–3 hours. In edge cases processing can take up to 7 days while the system finalizes open operations. You will see status updates on the Withdraw and Confirm screens.",
-  },
-  {
-    id: "support",
-    title: "Where to find support?",
-    body: "Open Support from the bottom navigation or use in-app FAQ. For account-specific issues, include your trace reference from the Confirm screen when contacting support.",
-  },
-];
-
 interface PendingAction {
   actionId: string;
   kind: "withdraw";
@@ -106,18 +83,6 @@ function parseAmountMinor(raw: string): number | null {
 
 function isBasicTronAddress(address: string): boolean {
   return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address.trim());
-}
-
-function mergeFaqEntries(remoteEntries: Array<{ id: string; q: string; a: string }>) {
-  const merged = new Map(LOCAL_FAQ_ENTRIES.map((entry) => [entry.id, entry]));
-  remoteEntries.forEach((entry) => {
-    merged.set(entry.id, {
-      id: entry.id,
-      title: entry.q,
-      body: entry.a,
-    });
-  });
-  return Array.from(merged.values());
 }
 
 type TradingRange = "24h" | "7d" | "1m" | "3m";
@@ -339,7 +304,8 @@ function App() {
   const [dashboardData, setDashboardData] = React.useState<DashboardPayload | null>(null);
   const [dashboardUsesFallback, setDashboardUsesFallback] = React.useState(false);
   const [moneyData, setMoneyData] = React.useState<MoneyDetailsPayload | null>(null);
-  const [faqEntries, setFaqEntries] = React.useState(LOCAL_FAQ_ENTRIES);
+  const [tradingOpenOrders, setTradingOpenOrders] = React.useState(0);
+  const [faqEntries, setFaqEntries] = React.useState<Array<{ id: string; title: string; body: string }>>([]);
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
   const [actionState, setActionState] = React.useState<"idle" | "submitting">("idle");
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
@@ -526,14 +492,15 @@ function App() {
         }
 
         if (route === "trading") {
-          await fetchTradingDetails(session.initData, abortController.signal);
+          const { data } = await fetchTradingDetails(session.initData, abortController.signal);
+          setTradingOpenOrders(data.positions.length);
           setScreenState("ready");
           return;
         }
 
         if (route === "faq") {
           const { data } = await fetchFaq(session.initData, abortController.signal);
-          setFaqEntries(mergeFaqEntries(data.items));
+          setFaqEntries(data.items.map((entry) => ({ id: entry.id, title: entry.q, body: entry.a })));
           setScreenState(data.items.length === 0 ? "empty" : "ready");
         }
       } catch {
@@ -762,6 +729,7 @@ function App() {
           };
     return { sourceLabel, ...byRange[tradingRange] };
   }, [dashboardHasBalance, tradingRange]);
+  const tradingTotalLabel = tradingOpenOrders > 0 ? String(tradingOpenOrders) : String(tradingStats.total);
 
   if (initState === "loading") {
     return (
@@ -935,13 +903,31 @@ function App() {
           state={screenState}
           onRetry={retry}
           messages={
-            isDashboard
+            route === "dashboard"
               ? {
                   loading: "Loading dashboard data...",
                   empty: "Dashboard is empty. Top up to start tracking activity.",
                   error: "Dashboard is temporarily unavailable.",
                 }
-              : undefined
+              : route === "money"
+                ? {
+                    loading: "Loading money operations...",
+                    empty: "No money operations for this filter yet.",
+                    error: "Money details are temporarily unavailable.",
+                  }
+                : route === "trading"
+                  ? {
+                      loading: "Loading trading metrics...",
+                      empty: "Trading metrics are empty for this period.",
+                      error: "Trading details are temporarily unavailable.",
+                    }
+                  : route === "faq"
+                    ? {
+                        loading: "Loading FAQ entries...",
+                        empty: "No FAQ entries published yet.",
+                        error: "FAQ is temporarily unavailable.",
+                      }
+                    : undefined
           }
         >
           {isDashboard ? (
@@ -1221,7 +1207,7 @@ function App() {
                       </div>
                       <div className="trading-kpi-cell">
                         <p className="trading-kpi-label">Total trades</p>
-                        <p className="trading-kpi-value">{tradingStats.total}</p>
+                        <p className="trading-kpi-value">{tradingTotalLabel}</p>
                       </div>
                       <div className="trading-kpi-cell">
                         <p className="trading-kpi-label">Result</p>
@@ -1230,11 +1216,11 @@ function App() {
                     </div>
                     <article className="metric-card trading-stat-card">
                       <p className="metric-label">Trades for selected period</p>
-                      <p className="metric-value metric-value-accent">{tradingStats.total}</p>
+                      <p className="metric-value metric-value-accent">{tradingTotalLabel}</p>
                       <p className="trading-card-caption">{tradingStats.sourceLabel}</p>
                     </article>
                     {[
-                      ["Total", String(tradingStats.total)],
+                      ["Total", tradingTotalLabel],
                       ["Positive", String(tradingStats.positive)],
                       ["Negative", String(tradingStats.negative)],
                       ["Result", tradingStats.result],
@@ -1339,6 +1325,17 @@ function App() {
                       </button>
                       <button type="button" className="settings-link-btn">
                         Vibration: Enabled
+                      </button>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                        FAQ
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => setActionMessage("Referral link will be added soon.")}
+                        disabled={isBusy}
+                      >
+                        Referral link
                       </button>
                       <button type="button" className="settings-link-btn" onClick={() => navigate("seed")} disabled={isBusy}>
                         Seed
