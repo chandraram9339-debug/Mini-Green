@@ -1,5 +1,9 @@
+export const CHANNEL_URL = "TODO";
+export const CHAT_URL = "TODO";
+export const SUPPORT_URL = "TODO";
+export const REFERRAL_URL = "TODO";
+
 export const DASHBOARD_EXTERNAL_LINKS = {
-  // Keep null until final Telegram URLs are approved.
-  channelUrl: null as string | null,
-  chatUrl: null as string | null,
+  channelUrl: CHANNEL_URL,
+  chatUrl: CHAT_URL,
 } as const;

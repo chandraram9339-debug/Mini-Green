@@ -14,7 +14,7 @@ import {
   resolveInitData,
   type SessionPayload,
 } from "./api";
-import { DASHBOARD_EXTERNAL_LINKS } from "./config";
+import { DASHBOARD_EXTERNAL_LINKS, REFERRAL_URL, SUPPORT_URL } from "./config";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
 import topupQrAsset from "./assets/topup-qr-1-5256.svg";
@@ -345,9 +345,9 @@ function App() {
     setRoute(nextRoute);
   }, []);
 
-  const openExternalDashboardLink = React.useCallback((url: string | null, label: "Channel" | "Chat") => {
+  const openExternalLink = React.useCallback((url: string, label: string) => {
     setActionMessage(null);
-    if (!url) {
+    if (!url || url === "TODO") {
       setActionMessage(`${label} link will be added soon.`);
       return;
     }
@@ -1002,14 +1002,14 @@ function App() {
                   <div className="dashboard-support-row">
                     <button
                       className="dashboard-secondary-btn"
-                      onClick={() => openExternalDashboardLink(DASHBOARD_EXTERNAL_LINKS.channelUrl, "Channel")}
+                      onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.channelUrl, "Channel")}
                       disabled={isBusy}
                     >
                       Channel
                     </button>
                     <button
                       className="dashboard-secondary-btn"
-                      onClick={() => openExternalDashboardLink(DASHBOARD_EXTERNAL_LINKS.chatUrl, "Chat")}
+                      onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.chatUrl, "Chat")}
                       disabled={isBusy}
                     >
                       Chat
@@ -1332,7 +1332,15 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => setActionMessage("Referral link will be added soon.")}
+                        onClick={() => openExternalLink(SUPPORT_URL, "Support")}
+                        disabled={isBusy}
+                      >
+                        Support
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => openExternalLink(REFERRAL_URL, "Referral")}
                         disabled={isBusy}
                       >
                         Referral link
