@@ -14,6 +14,7 @@ import {
   resolveInitData,
   type SessionPayload,
 } from "./api";
+import { DASHBOARD_EXTERNAL_LINKS } from "./config";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
 import topupQrAsset from "./assets/topup-qr-1-5256.svg";
@@ -40,6 +41,12 @@ const DEFAULT_SEED_WORDS = [
   "socket",
   "mango",
 ] as const;
+const DASHBOARD_MOCK_FALLBACK: DashboardPayload = {
+  screen: "dashboard",
+  wallet_minor: 0,
+  pnl_minor: 0,
+  open_positions: 0,
+};
 
 /** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
 const FIGMA_VISUAL_STUBS = {
@@ -112,6 +119,8 @@ function mergeFaqEntries(remoteEntries: Array<{ id: string; q: string; a: string
   return Array.from(merged.values());
 }
 
+type TradingRange = "24h" | "7d" | "1m" | "3m";
+
 function routeToPath(route: RouteId): string {
   return route === "dashboard" ? "/" : `/${route}`;
 }
@@ -141,8 +150,8 @@ function readUiStorage() {
     const raw = window.sessionStorage.getItem(uiStorageKey);
     if (!raw) return {};
     return JSON.parse(raw) as Partial<{
-      moneyFilter: "all" | "in" | "out";
-      tradingRange: "1d" | "7d" | "30d" | "All";
+      moneyFilter: "deposit" | "withdraw" | "referral" | "all" | "in" | "out";
+      tradingRange: TradingRange | "1d" | "30d" | "All";
       withdrawAddress: string;
     }>;
   } catch {
@@ -163,6 +172,7 @@ interface StateViewProps {
   state: LoadState;
   onRetry: () => void;
   children: React.ReactNode;
+  messages?: Partial<Record<Exclude<LoadState, "ready">, string>>;
 }
 
 function topupAddressTwoLines(full: string): readonly [string, string] {
@@ -195,12 +205,15 @@ function TopupAddressPanel({ address }: { address: string }) {
   );
 }
 
-function StateView({ state, onRetry, children }: StateViewProps) {
+function StateView({ state, onRetry, children, messages }: StateViewProps) {
+  const loadingText = messages?.loading ?? "Loading screen data...";
+  const emptyText = messages?.empty ?? "No data to show yet.";
+  const errorText = messages?.error ?? "Unable to load this screen.";
   if (state === "loading") {
     return (
       <div className="state-box">
         <div className="spinner" aria-hidden="true" />
-        <p className="state-text">Loading screen data...</p>
+        <p className="state-text">{loadingText}</p>
       </div>
     );
   }
@@ -208,7 +221,7 @@ function StateView({ state, onRetry, children }: StateViewProps) {
   if (state === "empty") {
     return (
       <div className="state-box">
-        <p className="state-text">No data to show yet.</p>
+        <p className="state-text">{emptyText}</p>
         <button onClick={onRetry}>Reload</button>
       </div>
     );
@@ -217,7 +230,7 @@ function StateView({ state, onRetry, children }: StateViewProps) {
   if (state === "error") {
     return (
       <div className="state-box">
-        <p className="state-text">Unable to load this screen.</p>
+        <p className="state-text">{errorText}</p>
         <button onClick={onRetry}>Retry</button>
       </div>
     );
@@ -286,10 +299,28 @@ function App() {
   const [initToken, setInitToken] = React.useState(0);
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
-  const [moneyFilter, setMoneyFilter] = React.useState<"all" | "in" | "out">(storedUiState.moneyFilter ?? "all");
-  const [tradingRange, setTradingRange] = React.useState<"1d" | "7d" | "30d" | "All">(
-    storedUiState.tradingRange ?? "7d"
-  );
+  const [moneyFilter, setMoneyFilter] = React.useState<"deposit" | "withdraw" | "referral">(() => {
+    if (storedUiState.moneyFilter === "deposit" || storedUiState.moneyFilter === "withdraw" || storedUiState.moneyFilter === "referral") {
+      return storedUiState.moneyFilter;
+    }
+    if (storedUiState.moneyFilter === "in") return "deposit";
+    if (storedUiState.moneyFilter === "out") return "withdraw";
+    return "deposit";
+  });
+  const [tradingRange, setTradingRange] = React.useState<TradingRange>(() => {
+    if (
+      storedUiState.tradingRange === "24h" ||
+      storedUiState.tradingRange === "7d" ||
+      storedUiState.tradingRange === "1m" ||
+      storedUiState.tradingRange === "3m"
+    ) {
+      return storedUiState.tradingRange;
+    }
+    if (storedUiState.tradingRange === "1d") return "24h";
+    if (storedUiState.tradingRange === "30d") return "1m";
+    if (storedUiState.tradingRange === "All") return "3m";
+    return "7d";
+  });
   const [withdrawAddress, setWithdrawAddress] = React.useState(storedUiState.withdrawAddress ?? "");
   const [withdrawAmount, setWithdrawAmount] = React.useState("");
   const [topupCopyState, setTopupCopyState] = React.useState<"idle" | "success" | "error">("idle");
@@ -305,6 +336,7 @@ function App() {
     | null
   >(null);
   const [dashboardData, setDashboardData] = React.useState<DashboardPayload | null>(null);
+  const [dashboardUsesFallback, setDashboardUsesFallback] = React.useState(false);
   const [moneyData, setMoneyData] = React.useState<MoneyDetailsPayload | null>(null);
   const [faqEntries, setFaqEntries] = React.useState(LOCAL_FAQ_ENTRIES);
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
@@ -346,35 +378,17 @@ function App() {
     setRoute(nextRoute);
   }, []);
 
-  const navigateWithParams = React.useCallback(
-    (nextRoute: RouteId, updates: Record<string, string | null>, replace = false) => {
-      const params = new URLSearchParams(window.location.search);
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value == null || value === "") {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
-      });
-      const query = params.toString();
-      const nextUrl = `${routeToPath(nextRoute)}${query ? `?${query}` : ""}`;
-      if (replace) {
-        window.history.replaceState({ route: nextRoute }, "", nextUrl);
-      } else {
-        window.history.pushState({ route: nextRoute }, "", nextUrl);
-      }
-      setRoute(nextRoute);
-    },
-    []
-  );
-
-  const openFaqEntry = React.useCallback(
-    (entryId: string) => {
-      navigateWithParams("faq", { faqExpand: entryId });
-      setExpandedFaqId(entryId);
-    },
-    [navigateWithParams]
-  );
+  const openExternalDashboardLink = React.useCallback((url: string | null, label: "Channel" | "Chat") => {
+    setActionMessage(null);
+    if (!url) {
+      setActionMessage(`${label} link will be added soon.`);
+      return;
+    }
+    const opened = window.open(url, "_blank", "noopener,noreferrer");
+    if (!opened) {
+      window.location.assign(url);
+    }
+  }, []);
 
   const handleBack = React.useCallback(() => {
     if (route === "dashboard") {
@@ -498,6 +512,7 @@ function App() {
         if (route === "dashboard") {
           const { data } = await fetchDashboard(session.initData, abortController.signal);
           setDashboardData(data);
+          setDashboardUsesFallback(false);
           setScreenState("ready");
           return;
         }
@@ -522,6 +537,12 @@ function App() {
         }
       } catch {
         if (!abortController.signal.aborted) {
+          if (route === "dashboard") {
+            setDashboardData(DASHBOARD_MOCK_FALLBACK);
+            setDashboardUsesFallback(true);
+            setScreenState("ready");
+            return;
+          }
           setScreenState("error");
         }
       }
@@ -547,42 +568,45 @@ function App() {
     () =>
       [
         {
-          title: "Top up completed",
-          meta: "Today · 14:32",
+          kind: "deposit" as const,
+          dateTimeText: "Today · 14:32",
           amount: "+42.10 USDT",
+          fee: null,
           tone: "in" as const,
         },
         {
-          title: "Referral reward",
-          meta: "Yesterday · 09:10",
+          kind: "referral" as const,
+          dateTimeText: "Yesterday · 09:10",
           amount: "+18.00 USDT",
+          fee: null,
           tone: "in" as const,
         },
         {
-          title: "Withdrawal pending",
-          meta: "Processing · est. 2h",
+          kind: "withdraw" as const,
+          dateTimeText: "Today · 12:05",
           amount: "−600.00 USDT",
+          fee: "1.20 USDT",
           tone: "pending" as const,
         },
         {
-          title: "Fee charge",
-          meta: "Auto · network",
-          amount: "−1.20 USDT",
+          kind: "withdraw" as const,
+          dateTimeText: "Tue · 16:47",
+          amount: "−120.00 USDT",
+          fee: "0.24 USDT",
           tone: "out" as const,
         },
         {
-          title: "Top up completed",
-          meta: "Mon · 11:05",
+          kind: "deposit" as const,
+          dateTimeText: "Mon · 11:05",
           amount: "+200.00 USDT",
+          fee: null,
           tone: "in" as const,
         },
       ] as const,
     []
   );
   const filteredMoneyRows = React.useMemo(() => {
-    if (moneyFilter === "all") return moneyRows;
-    if (moneyFilter === "in") return moneyRows.filter((row) => row.tone === "in");
-    return moneyRows.filter((row) => row.tone === "out" || row.tone === "pending");
+    return moneyRows.filter((row) => row.kind === moneyFilter);
   }, [moneyFilter, moneyRows]);
 
   const handleTopUpContinue = React.useCallback(async () => {
@@ -676,7 +700,17 @@ function App() {
     }
   }, [confirmStep, isBusy, pendingAction, session]);
 
-  const dashboardBalance = dashboardData ? formatMinor(dashboardData.wallet_minor) : "0.00";
+  const dashboardSnapshot = dashboardData ?? DASHBOARD_MOCK_FALLBACK;
+  const dashboardHasBalance = dashboardSnapshot.wallet_minor > 0;
+  const dashboardMode = dashboardHasBalance ? "funded" : "empty";
+  const dashboardBalance = formatMinor(dashboardSnapshot.wallet_minor);
+  const dashboardGraphTitle = dashboardMode === "funded" ? "Balance history" : "% Performance (3M)";
+  const dashboardGraphLegendPrimary =
+    dashboardMode === "funded" ? "Wallet balance" : FIGMA_VISUAL_STUBS.performanceLegendPrimary;
+  const dashboardGraphLegendSecondary =
+    dashboardMode === "funded" ? "Net cashflow" : "Trade journal";
+  const dashboardStatusText = dashboardMode === "funded" ? "● Active" : "● Awaiting funds";
+  const dashboardPriceLine = dashboardMode === "funded" ? FIGMA_VISUAL_STUBS.tradingPriceLine : "Awaiting top up";
   const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
   const moneyLockedDisplay = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
   const showMoneyLocked = Boolean(moneyData && moneyData.locked_minor > 0);
@@ -875,13 +909,30 @@ function App() {
             </button>
           </div>
         ) : null}
-        <StateView state={screenState} onRetry={retry}>
+        <StateView
+          state={screenState}
+          onRetry={retry}
+          messages={
+            isDashboard
+              ? {
+                  loading: "Loading dashboard data...",
+                  empty: "Dashboard is empty. Top up to start tracking activity.",
+                  error: "Dashboard is temporarily unavailable.",
+                }
+              : undefined
+          }
+        >
           {isDashboard ? (
             <div className="dashboard-body">
+              {dashboardUsesFallback ? (
+                <p className="dashboard-inline-alert" role="status">
+                  Live dashboard data is unavailable. Showing fallback preview values.
+                </p>
+              ) : null}
               <section className="dashboard-block dashboard-block--graphic" aria-label="Performance chart">
                 <div className="dashboard-perf">
                   <div className="dashboard-perf-head">
-                    <span className="dashboard-perf-title">% Performance</span>
+                    <span className="dashboard-perf-title">{dashboardGraphTitle}</span>
                     <span className="dashboard-perf-period">{FIGMA_VISUAL_STUBS.performancePeriod}</span>
                   </div>
                   <div className="dashboard-perf-chart" aria-hidden="true">
@@ -894,20 +945,31 @@ function App() {
                       <span>−1.00%</span>
                       <span>−2.00%</span>
                     </div>
-                    <div className="dashboard-perf-plot">
-                      <div className="dashboard-perf-grid" />
-                      <div className="dashboard-perf-area" />
-                      <div className="dashboard-perf-line" />
+                    <div className={`dashboard-perf-plot${dashboardHasBalance ? "" : " dashboard-perf-plot--empty"}`}>
+                      {dashboardHasBalance ? (
+                        <>
+                          <div className="dashboard-perf-grid" />
+                          <div className="dashboard-perf-area" />
+                          <div className="dashboard-perf-line" />
+                        </>
+                      ) : (
+                        <div className="dashboard-perf-empty">
+                          <p className="dashboard-perf-empty-title">Balance is 0 USDT</p>
+                          <p className="dashboard-perf-empty-body">
+                            Top up to unlock balance history and cashflow tracking.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="dashboard-perf-legend">
                     <span className="dashboard-perf-legend-item">
                       <span className="dashboard-perf-swatch dashboard-perf-swatch--primary" />
-                      {FIGMA_VISUAL_STUBS.performanceLegendPrimary}
+                      {dashboardGraphLegendPrimary}
                     </span>
                     <span className="dashboard-perf-legend-item">
                       <span className="dashboard-perf-swatch dashboard-perf-swatch--muted" />
-                      {FIGMA_VISUAL_STUBS.performanceLegendSecondary}
+                      {dashboardGraphLegendSecondary}
                     </span>
                   </div>
                 </div>
@@ -916,13 +978,13 @@ function App() {
                 className="dashboard-block dashboard-block--status"
                 aria-label="Bot status and market price"
               >
-                <div className="dashboard-status-card">
+                <div className={`dashboard-status-card${dashboardHasBalance ? "" : " dashboard-status-card--muted"}`}>
                   <div className="dashboard-status">
                     <p>
-                      Bot status <strong>● Active</strong>
+                      Bot status <strong>{dashboardStatusText}</strong>
                     </p>
                     <p>
-                      Actual price <strong>{FIGMA_VISUAL_STUBS.tradingPriceLine}</strong> <span>USDT/BTC</span>
+                      Actual price <strong>{dashboardPriceLine}</strong> <span>USDT/BTC</span>
                     </p>
                   </div>
                 </div>
@@ -930,10 +992,18 @@ function App() {
               <div className="dashboard-block dashboard-block--cta" role="group" aria-label="Dashboard actions">
                 <div className="dashboard-cta-stack">
                   <div className="dashboard-support-row">
-                    <button className="dashboard-secondary-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                    <button
+                      className="dashboard-secondary-btn"
+                      onClick={() => openExternalDashboardLink(DASHBOARD_EXTERNAL_LINKS.channelUrl, "Channel")}
+                      disabled={isBusy}
+                    >
                       Channel
                     </button>
-                    <button className="dashboard-secondary-btn" onClick={() => openFaqEntry("support")} disabled={isBusy}>
+                    <button
+                      className="dashboard-secondary-btn"
+                      onClick={() => openExternalDashboardLink(DASHBOARD_EXTERNAL_LINKS.chatUrl, "Chat")}
+                      disabled={isBusy}
+                    >
                       Chat
                     </button>
                   </div>
@@ -1007,48 +1077,49 @@ function App() {
                       <button
                         type="button"
                         role="tab"
-                        aria-selected={moneyFilter === "all"}
-                        className={`money-activity-tab${moneyFilter === "all" ? " money-activity-tab--active" : ""}`}
+                        aria-selected={moneyFilter === "deposit"}
+                        className={`money-activity-tab${moneyFilter === "deposit" ? " money-activity-tab--active" : ""}`}
                         disabled={isBusy}
-                        onClick={() => setMoneyFilter("all")}
+                        onClick={() => setMoneyFilter("deposit")}
                       >
-                        All
+                        Deposit
                       </button>
                       <button
                         type="button"
                         role="tab"
-                        aria-selected={moneyFilter === "in"}
-                        className={`money-activity-tab${moneyFilter === "in" ? " money-activity-tab--active" : ""}`}
+                        aria-selected={moneyFilter === "withdraw"}
+                        className={`money-activity-tab${moneyFilter === "withdraw" ? " money-activity-tab--active" : ""}`}
                         disabled={isBusy}
-                        onClick={() => setMoneyFilter("in")}
+                        onClick={() => setMoneyFilter("withdraw")}
                       >
-                        In
+                        Withdraw
                       </button>
                       <button
                         type="button"
                         role="tab"
-                        aria-selected={moneyFilter === "out"}
-                        className={`money-activity-tab${moneyFilter === "out" ? " money-activity-tab--active" : ""}`}
+                        aria-selected={moneyFilter === "referral"}
+                        className={`money-activity-tab${moneyFilter === "referral" ? " money-activity-tab--active" : ""}`}
                         disabled={isBusy}
-                        onClick={() => setMoneyFilter("out")}
+                        onClick={() => setMoneyFilter("referral")}
                       >
-                        Out
+                        Referral
                       </button>
                     </div>
                   </div>
                   <div className="money-history-feed" role="list">
                     {filteredMoneyRows.map((row, idx) => (
                       <article
-                        key={`${row.title}-${idx}`}
+                        key={`${row.kind}-${row.dateTimeText}-${idx}`}
                         className={`money-feed-row money-feed-row--${row.tone}`}
                         role="listitem"
                       >
                         <div className="money-feed-icon" aria-hidden="true" />
                         <div className="money-feed-main">
-                          <p className="money-feed-title">{row.title}</p>
-                          <p className="money-feed-meta">{row.meta}</p>
+                          <p className="money-feed-title">{row.amount}</p>
+                          {row.fee ? <p className="money-feed-meta">Fee: {row.fee}</p> : null}
+                          <p className="money-feed-meta">{row.dateTimeText}</p>
                         </div>
-                        <p className="money-feed-amount">{row.amount}</p>
+                        <p className="money-feed-amount">{row.kind[0].toUpperCase() + row.kind.slice(1)}</p>
                       </article>
                     ))}
                   </div>
@@ -1085,31 +1156,15 @@ function App() {
                     <div className="trading-stack-head">
                       <p className="trading-section-title">Trading bot statistics for the period:</p>
                       <div className="stats-tabs" role="tablist" aria-label="Period">
-                        {["24h", "3d", "7d", "1m"].map((label, i) => (
+                        {(["24h", "7d", "1m", "3m"] as const).map((label) => (
                           <button
                             key={label}
                             type="button"
                             role="tab"
-                            aria-selected={
-                              (label === "24h" && tradingRange === "1d") ||
-                              (label === "3d" && tradingRange === "7d") ||
-                              (label === "7d" && tradingRange === "30d") ||
-                              (label === "1m" && tradingRange === "All")
-                            }
-                            className={
-                              (label === "24h" && tradingRange === "1d") ||
-                              (label === "3d" && tradingRange === "7d") ||
-                              (label === "7d" && tradingRange === "30d") ||
-                              (label === "1m" && tradingRange === "All")
-                                ? "stat-pill stat-pill-active"
-                                : "stat-pill"
-                            }
+                            aria-selected={tradingRange === label}
+                            className={tradingRange === label ? "stat-pill stat-pill-active" : "stat-pill"}
                             disabled={isBusy}
-                            onClick={() =>
-                              setTradingRange(
-                                label === "24h" ? "1d" : label === "3d" ? "7d" : label === "7d" ? "30d" : "All"
-                              )
-                            }
+                            onClick={() => setTradingRange(label)}
                           >
                             {label}
                           </button>
