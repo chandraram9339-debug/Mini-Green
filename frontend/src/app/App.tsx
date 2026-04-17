@@ -1096,6 +1096,7 @@ function App() {
                         type="button"
                         role="tab"
                         aria-selected={moneyFilter === "deposit"}
+                        aria-controls="money-feed-panel"
                         className={`money-activity-tab${moneyFilter === "deposit" ? " money-activity-tab--active" : ""}`}
                         disabled={isBusy}
                         onClick={() => setMoneyFilter("deposit")}
@@ -1106,6 +1107,7 @@ function App() {
                         type="button"
                         role="tab"
                         aria-selected={moneyFilter === "withdraw"}
+                        aria-controls="money-feed-panel"
                         className={`money-activity-tab${moneyFilter === "withdraw" ? " money-activity-tab--active" : ""}`}
                         disabled={isBusy}
                         onClick={() => setMoneyFilter("withdraw")}
@@ -1116,6 +1118,7 @@ function App() {
                         type="button"
                         role="tab"
                         aria-selected={moneyFilter === "referral"}
+                        aria-controls="money-feed-panel"
                         className={`money-activity-tab${moneyFilter === "referral" ? " money-activity-tab--active" : ""}`}
                         disabled={isBusy}
                         onClick={() => setMoneyFilter("referral")}
@@ -1124,26 +1127,33 @@ function App() {
                       </button>
                     </div>
                   </div>
-                  <div className="money-history-feed" role="list">
-                    {filteredMoneyRows.map((row, idx) => (
-                      <article
-                        key={`${row.kind}-${row.dateTimeText}-${idx}`}
-                        className={`money-feed-row money-feed-row--${row.tone}`}
-                        role="listitem"
-                      >
-                        <div className="money-feed-icon" aria-hidden="true" />
-                        <div className="money-feed-main">
-                          <p className="money-feed-title">{row.title}</p>
-                          <p className="money-feed-meta">{row.fee ? "Commission" : "No commission"}</p>
-                          <p className="money-feed-wallet">{row.walletMask}</p>
-                        </div>
-                        <div className="money-feed-side">
-                          <p className="money-feed-amount">{row.amount}</p>
-                          {row.fee ? <p className="money-feed-fee">-{row.fee.replace("-", "")}</p> : null}
-                          <p className="money-feed-date">{row.dateTimeText}</p>
-                        </div>
-                      </article>
-                    ))}
+                  <div className="money-history-feed" id="money-feed-panel" role="tabpanel">
+                    {filteredMoneyRows.length > 0 ? (
+                      filteredMoneyRows.map((row, idx) => (
+                        <article
+                          key={`${row.kind}-${row.dateTimeText}-${idx}`}
+                          className={`money-feed-row money-feed-row--${row.tone}`}
+                          role="listitem"
+                        >
+                          <div className="money-feed-icon" aria-hidden="true" />
+                          <div className="money-feed-main">
+                            <p className="money-feed-title">{row.title}</p>
+                            <p className="money-feed-meta">{row.fee ? "Commission" : "No commission"}</p>
+                            <p className="money-feed-wallet">{row.walletMask}</p>
+                          </div>
+                          <div className="money-feed-side">
+                            <p className="money-feed-amount">{row.amount}</p>
+                            {row.fee ? <p className="money-feed-fee">-{row.fee.replace("-", "")}</p> : null}
+                            <p className="money-feed-date">{row.dateTimeText}</p>
+                          </div>
+                        </article>
+                      ))
+                    ) : (
+                      <div className="money-feed-empty" role="status">
+                        <p className="money-feed-empty-title">No operations in this section yet</p>
+                        <p className="money-feed-empty-body">Switch tab or wait for new transactions.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : null}
