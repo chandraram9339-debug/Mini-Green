@@ -1046,7 +1046,7 @@ function App() {
                   </header>
                   <section className="money-overview" aria-label="Balance overview">
                     <div className="money-overview-primary">
-                      <p className="money-overview-kicker">Available balance</p>
+                      <p className="money-overview-kicker">Current Balance</p>
                       <p className="money-overview-figure">
                         {moneyAvailable} <span className="money-overview-unit">USDT</span>
                       </p>
@@ -1142,12 +1142,30 @@ function App() {
                           {FIGMA_VISUAL_STUBS.tradingPriceLine} <span className="trading-hero-meta-unit">USDT/BTC</span>
                         </p>
                       </div>
-                      <div className="trading-hero-meta-actions" aria-label="Bot control">
-                        <button type="button" className="trading-hero-cta trading-hero-cta--primary" disabled>
-                          Start
-                        </button>
-                        <button type="button" className="trading-hero-cta trading-hero-cta--ghost" disabled>
-                          Stop
+                      <div className="trading-hero-meta-actions" aria-label="Trading details action">
+                        <button
+                          type="button"
+                          className="trading-hero-cta trading-hero-cta--details"
+                          onClick={() => navigate("money")}
+                          disabled={isBusy}
+                        >
+                          <svg className="trading-hero-cta-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path
+                              d="M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.75"
+                              strokeLinejoin="round"
+                            />
+                            <path
+                              d="M7 10h10M9 14h4"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.75"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          Details
                         </button>
                       </div>
                     </div>
