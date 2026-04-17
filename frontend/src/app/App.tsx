@@ -26,6 +26,20 @@ const uiStorageKey = "miniapp-frontend-ui-state";
 const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
 const WITHDRAW_FEE_BPS = 1000;
 const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
+const DEFAULT_SEED_WORDS = [
+  "apple",
+  "carpet",
+  "vapor",
+  "harbor",
+  "engine",
+  "fabric",
+  "silver",
+  "orchid",
+  "planet",
+  "yellow",
+  "socket",
+  "mango",
+] as const;
 
 /** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
 const FIGMA_VISUAL_STUBS = {
@@ -109,6 +123,10 @@ function pathToRoute(pathname: string): RouteId {
     key === "money" ||
     key === "trading" ||
     key === "faq" ||
+    key === "notifications" ||
+    key === "settings" ||
+    key === "seed" ||
+    key === "agreement" ||
     key === "topup" ||
     key === "withdraw" ||
     key === "confirm"
@@ -459,7 +477,15 @@ function App() {
       return;
     }
 
-    if (route === "topup" || route === "withdraw" || route === "confirm") {
+    if (
+      route === "topup" ||
+      route === "withdraw" ||
+      route === "confirm" ||
+      route === "notifications" ||
+      route === "settings" ||
+      route === "seed" ||
+      route === "agreement"
+    ) {
       setScreenState("ready");
       return;
     }
@@ -747,8 +773,8 @@ function App() {
                   type="button"
                   className="top-bar-chip top-bar-chip--notify"
                   disabled={isBusy}
-                  aria-label="Open notifications help"
-                  onClick={() => openFaqEntry("timing")}
+                  aria-label="Open notifications"
+                  onClick={() => navigate("notifications")}
                 >
                   <img
                     className="top-bar-icon top-bar-icon--notify"
@@ -764,8 +790,8 @@ function App() {
                   type="button"
                   className="top-bar-chip"
                   disabled={isBusy}
-                  aria-label="Open support settings help"
-                  onClick={() => openFaqEntry("support")}
+                  aria-label="Open settings"
+                  onClick={() => navigate("settings")}
                 >
                   <img
                     className="top-bar-icon top-bar-icon--settings"
@@ -1165,6 +1191,117 @@ function App() {
                       </div>
                     );
                   })}
+                </div>
+              )}
+
+              {route === "notifications" && (
+                <div className="notifications-page">
+                  <header className="internal-hero internal-hero-notifications">
+                    <h2 className="internal-hero-title">{screenData.notifications.title}</h2>
+                    <p className="internal-hero-label">{screenData.notifications.description}</p>
+                  </header>
+                  <div className="notifications-list" role="list">
+                    {[
+                      ["Top up confirmed", "A 42.10 USDT deposit was credited.", "Today · 14:32"],
+                      ["Withdrawal queued", "Your withdrawal is being processed.", "Today · 12:05"],
+                      ["Bot status update", "Trading bot switched to active mode.", "Yesterday · 09:42"],
+                    ].map(([title, body, meta], idx) => (
+                      <article
+                        key={`${title}-${idx}`}
+                        className={`notification-row${idx === 0 ? " notification-row--new" : ""}`}
+                        role="listitem"
+                      >
+                        <p className="notification-title">{title}</p>
+                        <p className="notification-body">{body}</p>
+                        <p className="notification-meta">{meta}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {route === "settings" && (
+                <div className="settings-page">
+                  <header className="internal-hero internal-hero-settings">
+                    <h2 className="internal-hero-title">{screenData.settings.title}</h2>
+                    <p className="internal-hero-label">{screenData.settings.description}</p>
+                  </header>
+                  <div className="settings-stack">
+                    <article className="metric-card settings-card">
+                      <p className="metric-label">Theme</p>
+                      <div className="settings-segmented">
+                        <button type="button" className="settings-segment settings-segment--active">
+                          Black
+                        </button>
+                        <button type="button" className="settings-segment">
+                          Light
+                        </button>
+                      </div>
+                    </article>
+                    <article className="metric-card settings-card settings-links">
+                      <button type="button" className="settings-link-btn">
+                        Push: Enabled
+                      </button>
+                      <button type="button" className="settings-link-btn">
+                        Vibration: Enabled
+                      </button>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("seed")} disabled={isBusy}>
+                        Seed
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => navigate("agreement")}
+                        disabled={isBusy}
+                      >
+                        User Agreement
+                      </button>
+                    </article>
+                  </div>
+                </div>
+              )}
+
+              {route === "seed" && (
+                <div className="seed-page">
+                  <header className="internal-hero internal-hero-seed">
+                    <h2 className="internal-hero-title">{screenData.seed.title}</h2>
+                    <p className="internal-hero-label">{screenData.seed.description}</p>
+                  </header>
+                  <article className="metric-card seed-card">
+                    <ol className="seed-grid" aria-label="Recovery words">
+                      {DEFAULT_SEED_WORDS.map((word, index) => (
+                        <li key={word} className="seed-item">
+                          <span className="seed-index">{index + 1}.</span>
+                          <span className="seed-word">{word}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <button
+                      type="button"
+                      className="seed-copy-btn"
+                      onClick={async () => navigator.clipboard.writeText(DEFAULT_SEED_WORDS.join(" "))}
+                      disabled={isBusy}
+                    >
+                      Copy
+                    </button>
+                  </article>
+                </div>
+              )}
+
+              {route === "agreement" && (
+                <div className="agreement-page">
+                  <header className="internal-hero internal-hero-agreement">
+                    <h2 className="internal-hero-title">{screenData.agreement.title}</h2>
+                    <p className="internal-hero-label">{screenData.agreement.description}</p>
+                  </header>
+                  <article className="metric-card agreement-card">
+                    <p>
+                      By using this mini app you agree that blockchain operations are final and account access is your
+                      responsibility.
+                    </p>
+                    <p>Keep your recovery phrase private and do not share private keys with third parties.</p>
+                    <p>Continued usage confirms acceptance of updated terms published in the app.</p>
+                  </article>
                 </div>
               )}
 

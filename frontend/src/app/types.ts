@@ -3,6 +3,10 @@ export type RouteId =
   | "money"
   | "trading"
   | "faq"
+  | "notifications"
+  | "settings"
+  | "seed"
+  | "agreement"
   | "topup"
   | "withdraw"
   | "confirm";
