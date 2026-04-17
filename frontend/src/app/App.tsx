@@ -24,7 +24,7 @@ import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 const fallbackRoute: RouteId = "dashboard";
 const uiStorageKey = "miniapp-frontend-ui-state";
 const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
-const DEFAULT_ACTION_FEE_LABEL = "10%";
+const WITHDRAW_FEE_BPS = 1000;
 const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
 
 /** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
@@ -63,13 +63,27 @@ interface PendingAction {
   actionId: string;
   kind: "top-up" | "withdraw";
   amountMinor: number;
+  feeMinor: number;
   status: string;
   traceId: string;
   recipientLabel: string;
+  recipientAddress?: string;
 }
 
 function formatMinor(minor: number): string {
   return (minor / 100).toFixed(2);
+}
+
+function parseAmountMinor(raw: string): number | null {
+  const normalized = raw.trim().replace(",", ".");
+  if (!normalized || !/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  const value = Number(normalized);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return Math.round(value * 100);
+}
+
+function isBasicTronAddress(address: string): boolean {
+  return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address.trim());
 }
 
 function mergeFaqEntries(remoteEntries: Array<{ id: string; q: string; a: string }>) {
@@ -90,10 +104,6 @@ function routeToPath(route: RouteId): string {
 
 function pathToRoute(pathname: string): RouteId {
   const key = pathname.replace(/^\/+/, "").toLowerCase();
-  // Legacy / mistaken paths: there is no separate "amount" or "recipient" screen (ТЗ — один экран вывода).
-  if (key === "amount" || key === "recipient") {
-    return "withdraw";
-  }
   if (
     key === "dashboard" ||
     key === "money" ||
@@ -263,6 +273,7 @@ function App() {
     storedUiState.tradingRange ?? "7d"
   );
   const [withdrawAddress, setWithdrawAddress] = React.useState(storedUiState.withdrawAddress ?? "");
+  const [withdrawAmount, setWithdrawAmount] = React.useState("");
   const [topupCopyState, setTopupCopyState] = React.useState<"idle" | "success" | "error">("idle");
   const [confirmStep, setConfirmStep] = React.useState<"review" | "submitting" | "success">("review");
   const [screenState, setScreenState] = React.useState<LoadState>("loading");
@@ -558,6 +569,7 @@ function App() {
         actionId: data.action_id,
         kind: "top-up",
         amountMinor: data.amount_minor,
+        feeMinor: 0,
         status: data.status,
         traceId,
         recipientLabel: "TRC20 deposit wallet",
@@ -574,22 +586,35 @@ function App() {
 
   const handleWithdrawContinue = React.useCallback(async () => {
     if (!session || isBusy) return;
-    if (!withdrawAddress.trim()) {
-      setActionMessage("Paste a destination wallet address before continuing.");
+    const compactAddress = withdrawAddress.trim();
+    const amountMinor = parseAmountMinor(withdrawAmount);
+    const feeMinor = amountMinor == null ? 0 : Math.ceil((amountMinor * WITHDRAW_FEE_BPS) / 10000);
+    const availableMinor = moneyData?.available_minor ?? 0;
+    if (!isBasicTronAddress(compactAddress)) {
+      setActionMessage("Enter a valid TRON (TRC20) address.");
+      return;
+    }
+    if (amountMinor == null) {
+      setActionMessage("Enter a valid withdrawal amount greater than 0.");
+      return;
+    }
+    if (amountMinor + feeMinor > availableMinor) {
+      setActionMessage("Amount exceeds available balance after fee.");
       return;
     }
     setActionState("submitting");
     setActionMessage(null);
     try {
-      const { data, traceId } = await createWithdraw(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
-      const compactAddress = withdrawAddress.trim();
+      const { data, traceId } = await createWithdraw(session.initData, amountMinor);
       setPendingAction({
         actionId: data.request_id,
         kind: "withdraw",
-        amountMinor: data.amount_minor,
+        amountMinor,
+        feeMinor,
         status: data.status,
         traceId,
         recipientLabel: `TRC20 · wallet ending …${compactAddress.slice(-4).toUpperCase()}`,
+        recipientAddress: compactAddress,
       });
       navigate("confirm");
     } catch (error) {
@@ -599,7 +624,7 @@ function App() {
     } finally {
       setActionState("idle");
     }
-  }, [isBusy, navigate, session, withdrawAddress]);
+  }, [isBusy, moneyData?.available_minor, navigate, session, withdrawAddress, withdrawAmount]);
 
   const handleConfirmSend = React.useCallback(async () => {
     if (!session || !pendingAction || isBusy || confirmStep !== "review") return;
@@ -631,6 +656,29 @@ function App() {
   const showMoneyLocked = Boolean(moneyData && moneyData.locked_minor > 0);
   const withdrawAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
   const confirmAmount = pendingAction ? formatMinor(pendingAction.amountMinor) : formatMinor(DEFAULT_ACTION_AMOUNT_MINOR);
+  const confirmFeeMinor =
+    pendingAction?.feeMinor ??
+    Math.ceil((Math.round(DEFAULT_ACTION_AMOUNT_MINOR) * WITHDRAW_FEE_BPS) / 10000);
+  const confirmFeeAmount = formatMinor(confirmFeeMinor);
+  const withdrawAmountMinor = parseAmountMinor(withdrawAmount);
+  const withdrawFeeMinor =
+    withdrawAmountMinor == null ? null : Math.ceil((withdrawAmountMinor * WITHDRAW_FEE_BPS) / 10000);
+  const withdrawMaxMinor = moneyData ? Math.floor(moneyData.available_minor / (1 + WITHDRAW_FEE_BPS / 10000)) : 0;
+  const withdrawValidationMessage =
+    !withdrawAddress.trim() || !withdrawAmount.trim()
+      ? null
+      : !isBasicTronAddress(withdrawAddress)
+        ? "TRON address format looks invalid."
+        : withdrawAmountMinor == null
+          ? "Amount must be numeric and greater than 0."
+          : withdrawAmountMinor + (withdrawFeeMinor ?? 0) > (moneyData?.available_minor ?? 0)
+            ? "Amount + fee exceeds available balance."
+            : null;
+  const isWithdrawReady =
+    Boolean(withdrawAddress.trim()) &&
+    withdrawAmountMinor != null &&
+    isBasicTronAddress(withdrawAddress) &&
+    withdrawAmountMinor + (withdrawFeeMinor ?? 0) <= (moneyData?.available_minor ?? 0);
   const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
 
   if (initState === "loading") {
@@ -1194,9 +1242,28 @@ function App() {
                         disabled={isBusy}
                       />
                     </div>
+                    <div className="withdraw-field-wrap">
+                      <input
+                        type="text"
+                        className="withdraw-field"
+                        aria-label="Withdrawal amount"
+                        placeholder="Amount (USDT)"
+                        autoComplete="off"
+                        spellCheck={false}
+                        inputMode="decimal"
+                        value={withdrawAmount}
+                        onChange={(event) => setWithdrawAmount(event.target.value)}
+                        disabled={isBusy}
+                      />
+                    </div>
                     <p className="withdraw-field-hint">
                       USDT on TRC20 only. Sending on the wrong network may result in permanent loss.
                     </p>
+                    {withdrawValidationMessage ? (
+                      <p className="withdraw-validation-message" role="alert">
+                        {withdrawValidationMessage}
+                      </p>
+                    ) : null}
                   </article>
                   <div className="withdraw-callout" role="note">
                     <span className="withdraw-callout-mark" aria-hidden="true">
@@ -1226,6 +1293,9 @@ function App() {
                     <div className="withdraw-fee-strip">
                       <p className="withdraw-fee-strip-text">
                         *Fee charged from remaining balance — <strong>10%</strong> withdrawal fee applies.
+                      </p>
+                      <p className="withdraw-fee-strip-text">
+                        Max amount considering fee: <strong>{formatMinor(withdrawMaxMinor)} USDT</strong>
                       </p>
                     </div>
                   </article>
@@ -1265,9 +1335,9 @@ function App() {
                       </header>
                       <div className="confirm-cheque-body">
                         <div className="confirm-cheque-row">
-                          <span className="confirm-cheque-label">Recipient</span>
+                          <span className="confirm-cheque-label">Address</span>
                           <span className="confirm-cheque-value">
-                            {pendingAction?.recipientLabel ?? "TRC20 · —"}
+                            {pendingAction?.recipientAddress ?? pendingAction?.recipientLabel ?? "TRC20 · —"}
                           </span>
                         </div>
                         <div className="confirm-cheque-divider" />
@@ -1279,8 +1349,8 @@ function App() {
                           </div>
                         </div>
                         <div className="confirm-cheque-row confirm-cheque-row--fee">
-                          <span className="confirm-cheque-label">Commission</span>
-                          <span className="confirm-cheque-fee">{DEFAULT_ACTION_FEE_LABEL}</span>
+                          <span className="confirm-cheque-label">Fee</span>
+                          <span className="confirm-cheque-fee">{confirmFeeAmount} USDT</span>
                         </div>
                         <p className="confirm-cheque-subline">
                           Fee is withheld from your balance before the transfer is sent.
@@ -1313,7 +1383,9 @@ function App() {
                             ? handleConfirmSend
                             : () => navigate(primaryCta.target ?? "dashboard")
                     }
-                    disabled={isBusy || (route === "confirm" && !pendingAction)}
+                    disabled={
+                      isBusy || (route === "confirm" && !pendingAction) || (route === "withdraw" && !isWithdrawReady)
+                    }
                   >
                     {route === "topup" && actionState === "submitting" ? (
                       "Creating..."
