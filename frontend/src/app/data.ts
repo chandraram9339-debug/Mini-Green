@@ -37,7 +37,7 @@ export const screenData: Record<RouteId, ScreenData> = {
   trading: {
     title: "Trading Details",
     description: "Read-only summary of strategy and order execution status from backend.",
-    primaryCta: { label: "Open Confirm", action: "navigate", target: "confirm" },
+    primaryCta: { label: "Open Money Details", action: "navigate", target: "money" },
     secondaryCta: { label: "Back to Dashboard", target: "dashboard" },
   },
   faq: {

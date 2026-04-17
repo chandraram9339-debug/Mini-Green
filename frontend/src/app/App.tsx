@@ -25,6 +25,7 @@ import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 const fallbackRoute: RouteId = "dashboard";
 const uiStorageKey = "miniapp-frontend-ui-state";
 const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
+const MIN_WITHDRAW_AMOUNT_MINOR = 500;
 const WITHDRAW_FEE_BPS = 1000;
 const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
 const DEFAULT_SEED_WORDS = [
@@ -82,7 +83,7 @@ const LOCAL_FAQ_ENTRIES: Array<{ id: string; title: string; body: string }> = [
 
 interface PendingAction {
   actionId: string;
-  kind: "top-up" | "withdraw";
+  kind: "withdraw";
   amountMinor: number;
   feeMinor: number;
   status: string;
@@ -614,17 +615,13 @@ function App() {
     setActionState("submitting");
     setActionMessage(null);
     try {
-      const { data, traceId } = await createTopUp(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
-      setPendingAction({
-        actionId: data.action_id,
-        kind: "top-up",
-        amountMinor: data.amount_minor,
-        feeMinor: 0,
-        status: data.status,
-        traceId,
-        recipientLabel: "TRC20 deposit wallet",
-      });
-      navigate("confirm");
+      const { data } = await createTopUp(session.initData, DEFAULT_ACTION_AMOUNT_MINOR);
+      if (data.status.toLowerCase() === "failed") {
+        setActionMessage("Payment was not detected yet. Please complete transfer and tap Paid again.");
+        return;
+      }
+      setActionMessage("Top up request accepted. Returning to Dashboard.");
+      navigate("dashboard");
     } catch (error) {
       setActionMessage(
         error instanceof ApiError ? error.message : "Unable to create top up action right now."
@@ -646,6 +643,10 @@ function App() {
     }
     if (amountMinor == null) {
       setActionMessage("Enter a valid withdrawal amount greater than 0.");
+      return;
+    }
+    if (amountMinor < MIN_WITHDRAW_AMOUNT_MINOR) {
+      setActionMessage(`Minimum withdrawal amount is ${formatMinor(MIN_WITHDRAW_AMOUNT_MINOR)} USDT.`);
       return;
     }
     if (amountMinor + feeMinor > availableMinor) {
@@ -731,15 +732,36 @@ function App() {
         ? "TRON address format looks invalid."
         : withdrawAmountMinor == null
           ? "Amount must be numeric and greater than 0."
+        : withdrawAmountMinor < MIN_WITHDRAW_AMOUNT_MINOR
+          ? `Minimum withdrawal amount is ${formatMinor(MIN_WITHDRAW_AMOUNT_MINOR)} USDT.`
           : withdrawAmountMinor + (withdrawFeeMinor ?? 0) > (moneyData?.available_minor ?? 0)
             ? "Amount + fee exceeds available balance."
             : null;
   const isWithdrawReady =
     Boolean(withdrawAddress.trim()) &&
     withdrawAmountMinor != null &&
+    withdrawAmountMinor >= MIN_WITHDRAW_AMOUNT_MINOR &&
     isBasicTronAddress(withdrawAddress) &&
     withdrawAmountMinor + (withdrawFeeMinor ?? 0) <= (moneyData?.available_minor ?? 0);
   const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
+  const tradingStats = React.useMemo(() => {
+    const sourceLabel = dashboardHasBalance ? "Algorithm system data" : "Trade journal data";
+    const byRange: Record<TradingRange, { total: number; positive: number; negative: number; result: string }> =
+      dashboardHasBalance
+        ? {
+            "24h": { total: 8, positive: 6, negative: 2, result: "+1.2%" },
+            "7d": { total: 29, positive: 21, negative: 8, result: "+4.6%" },
+            "1m": { total: 94, positive: 69, negative: 25, result: "+12.1%" },
+            "3m": { total: 254, positive: 184, negative: 70, result: "+28.4%" },
+          }
+        : {
+            "24h": { total: 5, positive: 3, negative: 2, result: "+0.7%" },
+            "7d": { total: 17, positive: 11, negative: 6, result: "+2.9%" },
+            "1m": { total: 68, positive: 44, negative: 24, result: "+9.3%" },
+            "3m": { total: 201, positive: 132, negative: 69, result: "+24.8%" },
+          };
+    return { sourceLabel, ...byRange[tradingRange] };
+  }, [dashboardHasBalance, tradingRange]);
 
   if (initState === "loading") {
     return (
@@ -1194,28 +1216,28 @@ function App() {
                     </div>
                     <div className="trading-kpi-row" aria-label="Trading summary">
                       <div className="trading-kpi-cell">
-                        <p className="trading-kpi-label">Strategy</p>
-                        <p className="trading-kpi-value">Conservative</p>
+                        <p className="trading-kpi-label">Source</p>
+                        <p className="trading-kpi-value">{tradingStats.sourceLabel}</p>
                       </div>
                       <div className="trading-kpi-cell">
-                        <p className="trading-kpi-label">Open orders</p>
-                        <p className="trading-kpi-value">3</p>
+                        <p className="trading-kpi-label">Total trades</p>
+                        <p className="trading-kpi-value">{tradingStats.total}</p>
                       </div>
                       <div className="trading-kpi-cell">
-                        <p className="trading-kpi-label">Execution</p>
-                        <p className="trading-kpi-value trading-kpi-value--muted">Read-only</p>
+                        <p className="trading-kpi-label">Result</p>
+                        <p className="trading-kpi-value trading-kpi-value--muted">{tradingStats.result}</p>
                       </div>
                     </div>
                     <article className="metric-card trading-stat-card">
-                      <p className="metric-label">Performance</p>
-                      <p className="metric-value metric-value-accent">+4.2%</p>
-                      <p className="trading-card-caption">Read-only summary</p>
+                      <p className="metric-label">Trades for selected period</p>
+                      <p className="metric-value metric-value-accent">{tradingStats.total}</p>
+                      <p className="trading-card-caption">{tradingStats.sourceLabel}</p>
                     </article>
                     {[
-                      ["Stats", "12 active operations"],
-                      ["Successful", "9"],
-                      ["Unsuccessful", "1"],
-                      ["New trade", "2"],
+                      ["Total", String(tradingStats.total)],
+                      ["Positive", String(tradingStats.positive)],
+                      ["Negative", String(tradingStats.negative)],
+                      ["Result", tradingStats.result],
                     ].map(([label, value]) => (
                       <article key={label} className="metric-card trading-list-row">
                         <p className="metric-label">{label}</p>
@@ -1535,9 +1557,7 @@ function App() {
                       <header className="confirm-cheque-head">
                         <div>
                           <p className="confirm-cheque-kicker">Operation summary</p>
-                          <h3 className="confirm-cheque-title">
-                            {pendingAction?.kind === "top-up" ? "Confirm top up" : "Confirm withdrawal"}
-                          </h3>
+                          <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
                         </div>
                         <span className="confirm-cheque-ref" title="Trace reference">
                           {confirmTrace}
