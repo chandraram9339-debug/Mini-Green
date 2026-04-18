@@ -1,0 +1,105 @@
+/**
+ * Токены из Figma Variables для узла 1:3643 (секция «Ready»).
+ * Источник: get_variable_defs — fileKey BBrbpnfGElX0afHLm7ccxP, nodeId 1:3643
+ * Значения — как в ответе Figma MCP для этого узла (полный набор переменных в этой секции).
+ *
+ * Имена в комментариях = точные имена переменных в Figma.
+ * Имена custom properties — валидный CSS (пробелы/slash заменены на дефис).
+ */
+
+:root {
+  /* --- Color variables (порядок и hex из MCP для 1:3643) --- */
+
+  /* White */
+  --color-white: #ffffff;
+  /* Blue dark */
+  --color-blue-dark: #2d6e93;
+  /* Grey Dark */
+  --color-grey-dark: #55647b;
+  /* Black */
+  --color-black: #192b48;
+  /* Green Light */
+  --color-green-light: #b5ddd5;
+  /* Green */
+  --color-green: #73c1b1;
+  /* Grey Medium */
+  --color-grey-medium: #8494af;
+  /* Grey line */
+  --color-grey-line: #d3dae5;
+  /* Blue Light */
+  --color-blue-light: #759ac6;
+  /* Bg */
+  --color-bg: #ecf1f4;
+  /* Grey Super Light */
+  --color-grey-super-light: #e3e6eb;
+  /* Grey light */
+  --color-grey-light: #cfd9e9;
+  /* Red */
+  --color-red: #df7f7f;
+
+  /* --- Font variables (значения из MCP для узла 1:3643) --- */
+
+  /* Btn — Font(family: "Outfit", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0) */
+  --font-btn-family: "Outfit", sans-serif;
+  --font-btn-size: 16px;
+  --font-btn-weight: 400;
+  --font-btn-style: normal;
+  --font-btn-line-height: 100%;
+  --font-btn-letter-spacing: 0;
+
+  /* Cuption XXS — Font(family: "Outfit", style: Regular, size: 6, weight: 400, lineHeight: 100, letterSpacing: 0) */
+  --font-caption-xxs-family: "Outfit", sans-serif;
+  --font-caption-xxs-size: 6px;
+  --font-caption-xxs-weight: 400;
+  --font-caption-xxs-style: normal;
+  --font-caption-xxs-line-height: 100%;
+  --font-caption-xxs-letter-spacing: 0;
+
+  /* Cuption S — Font(family: "Inter", style: Regular, size: 11, weight: 400, lineHeight: 100, letterSpacing: 0) */
+  --font-caption-s-family: "Inter", sans-serif;
+  --font-caption-s-size: 11px;
+  --font-caption-s-weight: 400;
+  --font-caption-s-style: normal;
+  --font-caption-s-line-height: 100%;
+  --font-caption-s-letter-spacing: 0;
+
+  /* H1 — Font(family: "Outfit", style: Medium, size: 20, weight: 500, lineHeight: 100, letterSpacing: 2) */
+  --font-h1-family: "Outfit", sans-serif;
+  --font-h1-size: 20px;
+  --font-h1-weight: 500;
+  --font-h1-style: normal;
+  --font-h1-line-height: 100%;
+  --font-h1-letter-spacing: 2px;
+
+  /* Cuption XS — Font(family: "Outfit", style: Regular, size: 8, weight: 400, lineHeight: 100, letterSpacing: 0) */
+  --font-caption-xs-family: "Outfit", sans-serif;
+  --font-caption-xs-size: 8px;
+  --font-caption-xs-weight: 400;
+  --font-caption-xs-style: normal;
+  --font-caption-xs-line-height: 100%;
+  --font-caption-xs-letter-spacing: 0;
+
+  /* H2 — Font(family: "Outfit", style: Medium, size: 18, weight: 500, lineHeight: 100, letterSpacing: 1) */
+  --font-h2-family: "Outfit", sans-serif;
+  --font-h2-size: 18px;
+  --font-h2-weight: 500;
+  --font-h2-style: normal;
+  --font-h2-line-height: 100%;
+  --font-h2-letter-spacing: 1px;
+
+  /* Body M — Font(family: "Outfit", style: Regular, size: 13, weight: 400, lineHeight: 100, letterSpacing: 0) */
+  --font-body-m-family: "Outfit", sans-serif;
+  --font-body-m-size: 13px;
+  --font-body-m-weight: 400;
+  --font-body-m-style: normal;
+  --font-body-m-line-height: 100%;
+  --font-body-m-letter-spacing: 0;
+
+  /* H3 — Font(family: "Outfit", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0) */
+  --font-h3-family: "Outfit", sans-serif;
+  --font-h3-size: 16px;
+  --font-h3-weight: 400;
+  --font-h3-style: normal;
+  --font-h3-line-height: 100%;
+  --font-h3-letter-spacing: 0;
+}

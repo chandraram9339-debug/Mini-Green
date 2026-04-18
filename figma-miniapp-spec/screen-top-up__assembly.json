@@ -1,0 +1,65 @@
+{
+  "_title": "Экран Top up — полная сборка из частей (целый фрейм не помещался в MCP)",
+  "figmaScreenNodeId": "1:3904",
+  "figmaScreenName": "1| Top up ",
+  "frame": { "width": 390, "height": 824 },
+  "layoutTree": {
+    "Status Bar": { "instanceNodeId": "1:4878", "y": 0, "height": 44, "fullWidth": true },
+    "App Bar": { "instanceNodeId": "1:4877", "y": 44, "height": 56, "codegenFile": "codegen-fragments/top-up__app-bar-deposit__1-4877.tsx" },
+    "Paiment": {
+      "frameNodeId": "1:3906",
+      "x": 20,
+      "y": 150,
+      "width": 350,
+      "height": 525,
+      "children": [
+        {
+          "title": "Recieve USDT",
+          "textNodeId": "1:3907",
+          "bounds": { "x": 112.5, "y": 0, "width": 125, "height": 25 },
+          "note": "В макете опечатка Recieve — сохранять как в Figma при копировании контента"
+        },
+        {
+          "qrPlaceholder": {
+            "frameNodeId": "1:3908",
+            "name": "qr-code 1",
+            "x": 75,
+            "y": 55,
+            "width": 200,
+            "height": 200,
+            "note": "Вложенных векторов в метаданных нет — в файле это растровый/сложный QR. В приложении: сгенерировать QR той же области 200×200 px или экспортировать из Figma как PNG/SVG."
+          }
+        },
+        {
+          "List item": {
+            "instanceNodeId": "1:4874",
+            "y": 285,
+            "width": 350,
+            "height": 76,
+            "codegenFile": "codegen-fragments/top-up__list-item__1-4874.tsx"
+          }
+        },
+        {
+          "Btn_Copy": {
+            "instanceNodeId": "1:4875",
+            "y": 391,
+            "width": 350,
+            "height": 52,
+            "codegenFile": "codegen-fragments/top-up__btn-copy__1-4875.tsx"
+          }
+        },
+        {
+          "Btn_Paid": {
+            "instanceNodeId": "1:4876",
+            "y": 473,
+            "width": 350,
+            "height": 52,
+            "codegenFile": "codegen-fragments/top-up__btn-paid__1-4876.tsx"
+          }
+        }
+      ]
+    },
+    "Tab Bar": { "instanceNodeId": "1:3905", "y": 752, "height": 72 }
+  },
+  "figmaStylesLine": "Black: #192B48, White: #FFFFFF (list item); Grey Dark, Btn, Grey Super Light (кнопки); White, Btn, Blue dark (Paid); Grey line, H1, Bg (App Bar)"
+}

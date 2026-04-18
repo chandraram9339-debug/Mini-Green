@@ -1,0 +1,35 @@
+/**
+ * AUTO-GENERATED from Figma MCP `get_variable_defs` — только значения из Figma, без догадок.
+ * Last sync: 2026-04-17 (повторный вызов MCP после ваших правок Variables во фреймах).
+ * fileKey: BBrbpnfGElX0afHLm7ccxP
+ * Nodes: 1:3075 UI Kit — https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3075&m=dev
+ *        1:3643 Ready — https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3643&m=dev
+ * Raw dump: ./figma-variable-defs.mcp.json
+ * Дополнительно (полный REST + nodes): cd frontend && FIGMA_TOKEN=... npm run figma:design-system — нужен локальный .env с токеном.
+ */
+:root {
+  --figma-black: #192B48;
+  --figma-bg: #ECF1F4;
+  --figma-blue-dark: #2D6E93;
+  --figma-blue-light: #759AC6;
+  --figma-body-m: Font(family: "Outfit", style: Regular, size: 13, weight: 400, lineHeight: 100, letterSpacing: 0);
+  --figma-btn: Font(family: "Outfit", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0);
+  --figma-cuption-s: Font(family: "Inter", style: Regular, size: 11, weight: 400, lineHeight: 100, letterSpacing: 0);
+  --figma-cuption-xs: Font(family: "Outfit", style: Regular, size: 8, weight: 400, lineHeight: 100, letterSpacing: 0);
+  --figma-cuption-xxs: Font(family: "Outfit", style: Regular, size: 6, weight: 400, lineHeight: 100, letterSpacing: 0);
+  --figma-first-black: #000000;
+  --figma-first-white: #FFFFFF;
+  --figma-green: #73C1B1;
+  --figma-green-light: #B5DDD5;
+  --figma-grey-dark: #55647B;
+  --figma-grey-line: #D3DAE5;
+  --figma-grey-light: #CFD9E9;
+  --figma-grey-medium: #8494AF;
+  --figma-grey-super-light: #E3E6EB;
+  --figma-h1: Font(family: "Outfit", style: Medium, size: 20, weight: 500, lineHeight: 100, letterSpacing: 2);
+  --figma-h2: Font(family: "Outfit", style: Medium, size: 18, weight: 500, lineHeight: 100, letterSpacing: 1);
+  --figma-h3: Font(family: "Outfit", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0);
+  --figma-red: #DF7F7F;
+  --figma-red-light: #EBA4A4;
+  --figma-white: #FFFFFF;
+}

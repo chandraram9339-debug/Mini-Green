@@ -1,0 +1,389 @@
+{
+  "meta": {
+    "title": "Figma → mini-app: размеры, цвета и переменные (два корневых фрейма)",
+    "figmaFileKey": "BBrbpnfGElX0afHLm7ccxP",
+    "figmaFileUrl": "https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-",
+    "rootFrames": [
+      {
+        "nodeId": "1:3075",
+        "name": "Ui",
+        "url": "https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3075&m=dev"
+      },
+      {
+        "nodeId": "1:3643",
+        "name": "Ready",
+        "url": "https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3643&m=dev"
+      }
+    ],
+    "exportedAt": "2026-04-17",
+    "sources": "Figma MCP: get_metadata, get_variable_defs, get_design_context (по экранам и ключевым компонентам)"
+  },
+  "figmaVariables": {
+    "byNodeScope": {
+      "_source": "Figma MCP get_variable_defs, file BBrbpnfGElX0afHLm7ccxP",
+      "node-1-3075-Ui": {
+        "Black": "#192B48",
+        "Bg": "#ECF1F4",
+        "Grey Dark": "#55647B",
+        "White": "#FFFFFF",
+        "Blue dark": "#2D6E93",
+        "Btn": "Font(family: \"Outfit\", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "Blue Light": "#759AC6",
+        "Green Light": "#B5DDD5",
+        "Green": "#73C1B1",
+        "Red": "#DF7F7F",
+        "Grey line": "#D3DAE5",
+        "Grey light": "#CFD9E9",
+        "Grey Medium": "#8494AF",
+        "Cuption S": "Font(family: \"Inter\", style: Regular, size: 11, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "H2": "Font(family: \"Outfit\", style: Medium, size: 18, weight: 500, lineHeight: 100, letterSpacing: 1)",
+        "Body M": "Font(family: \"Outfit\", style: Regular, size: 13, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "H3": "Font(family: \"Outfit\", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "Grey Super Light": "#E3E6EB",
+        "Cuption XS": "Font(family: \"Outfit\", style: Regular, size: 8, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "First/White": "#FFFFFF",
+        "First/Black": "#000000",
+        "Cuption XXS": "Font(family: \"Outfit\", style: Regular, size: 6, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "H1": "Font(family: \"Outfit\", style: Medium, size: 20, weight: 500, lineHeight: 100, letterSpacing: 2)",
+        "Red Light": "#EBA4A4"
+      },
+      "node-1-3643-Ready": {
+        "White": "#FFFFFF",
+        "Blue dark": "#2D6E93",
+        "Grey Dark": "#55647B",
+        "Black": "#192B48",
+        "Btn": "Font(family: \"Outfit\", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "Green Light": "#B5DDD5",
+        "Green": "#73C1B1",
+        "Grey Medium": "#8494AF",
+        "Cuption XXS": "Font(family: \"Outfit\", style: Regular, size: 6, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "Grey line": "#D3DAE5",
+        "Blue Light": "#759AC6",
+        "Cuption S": "Font(family: \"Inter\", style: Regular, size: 11, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "H1": "Font(family: \"Outfit\", style: Medium, size: 20, weight: 500, lineHeight: 100, letterSpacing: 2)",
+        "Bg": "#ECF1F4",
+        "Cuption XS": "Font(family: \"Outfit\", style: Regular, size: 8, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "H2": "Font(family: \"Outfit\", style: Medium, size: 18, weight: 500, lineHeight: 100, letterSpacing: 1)",
+        "Body M": "Font(family: \"Outfit\", style: Regular, size: 13, weight: 400, lineHeight: 100, letterSpacing: 0)",
+        "Grey Super Light": "#E3E6EB",
+        "Grey light": "#CFD9E9",
+        "Red": "#DF7F7F",
+        "H3": "Font(family: \"Outfit\", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0)"
+      }
+    }
+  },
+  "layoutConstants": {
+    "screenWidthPx": 390,
+    "statusBarHeightPx": 44,
+    "appBarHeightPx": 56,
+    "appBarDividerWidthPx": 350,
+    "tabBarHeightPx": 72,
+    "horizontalContentInsetPx": 20,
+    "contentWidthPx": 350,
+    "tabBarTopRadiusPx": 12,
+    "tabBarShadow": "0px -4px 20px 0px rgba(45,110,147,0.08)",
+    "navClusterGapPx": 30,
+    "navIconButtonPaddingPx": 14,
+    "navActivePillBg": "#2d6e93",
+    "mainPillButton": {
+      "minWidthPx": 350,
+      "horizontalPaddingPx": 20,
+      "verticalPaddingPx": 14,
+      "radiusPx": 54,
+      "primaryBg": "#2d6e93"
+    },
+    "halfWidthButtonPx": 168,
+    "smallActionButton": {
+      "widthPx": 126,
+      "heightPx": 40,
+      "radiusPx": 54
+    },
+    "cardRadiusPx": 12,
+    "listRowGapPx": 9,
+    "colorsHexFromCodegen": {
+      "bg": "#ecf1f4",
+      "white": "#ffffff",
+      "blueDark": "#2d6e93",
+      "blueLight": "#759ac6",
+      "green": "#73c1b1",
+      "greenLight": "#b5ddd5",
+      "black": "#192b48",
+      "greyDark": "#55647b",
+      "greyMedium": "#8494af",
+      "greyLight": "#cfd9e9",
+      "greyLine": "#d3dae5",
+      "greySuperLight": "#e3e6eb",
+      "red": "#df7f7f",
+      "tabBarInactiveIconStrokeImplied": "grey tones from assets"
+    },
+    "typographyPxExamplesFromHome": {
+      "totalBalanceLabel": {
+        "font": "Outfit Medium 20px",
+        "trackingPx": 0.4,
+        "color": "#192b48"
+      },
+      "mainBalanceAmount": {
+        "font": "Outfit SemiBold 52px",
+        "color": "#192b48"
+      },
+      "captionReferrals": {
+        "font": "Inter Regular 11px",
+        "color": "#55647b"
+      },
+      "botStatusActive": {
+        "font": "Outfit Regular 20px",
+        "color": "#73c1b1"
+      },
+      "scaleLabels": {
+        "font": "Outfit Regular 6px",
+        "color": "#8494af"
+      }
+    }
+  },
+  "sectionMetadataPlaceholder": {
+    "Ui_1_3075": "<section id=\"1:3075\" name=\"Ui\" x=\"8594\" y=\"0\" width=\"6936\" height=\"3769\">\n  <!-- full tree: Status Bar, Icons, Btn, App Bar, Tab Bar, Amount, List item, Tab, Graphic, Scale, Stats, Status Bot, Togle, Color, Colors, Btn showcase — see Figma file -->\n</section>",
+    "Ready_1_3643": "<section id=\"1:3643\" name=\"Ready\" x=\"8594\" y=\"4082\" width=\"7614\" height=\"2789\">\n  <!-- screens: Home, Detail Balance Deposit/Referral, Detail Bot, Social Media, Support, FAQ, Notification, Settings, Withdraw, Actions History, Recipient, Amount, Confirm, Done, Top up -->\n</section>",
+    "note": "Полные XML-деревья get_metadata слишком длинные для одного файла — при необходимости перезапустите get_metadata для этих node id в Figma MCP."
+  },
+  "uiKit_in_Ui_section": [
+    {
+      "nodeId": "1:3333",
+      "name": "Tab Bar (symbol)",
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93"
+    },
+    {
+      "nodeId": "1:3545",
+      "name": "Colors frame",
+      "note": "Palette swatches — see prior export; labels use Outfit 20px/16px"
+    },
+    {
+      "nodeId": "1:3076",
+      "name": "Status Bar",
+      "frame": {
+        "width": 390,
+        "height": 44
+      }
+    }
+  ],
+  "screens_in_Ready_section": [
+    {
+      "nodeId": "1:3644",
+      "name": "1 | Home",
+      "frame": {
+        "x": 188,
+        "y": 220,
+        "width": 390,
+        "height": 870
+      },
+      "stylesFromFigmaCodegen": "White: #FFFFFF, Blue dark: #2D6E93, Grey Dark: #55647B, Black: #192B48, Btn: Font(family: \"Outfit\", style: Regular, size: 16, weight: 400, lineHeight: 100, letterSpacing: 0), Green Light: #B5DDD5, Green: #73C1B1, Grey Medium: #8494AF, Cuption XXS: Font(...), Grey line: #D3DAE5, Blue Light: #759AC6, Cuption S: Font(...), H1: Font(...), Bg: #ECF1F4"
+    },
+    {
+      "nodeId": "1:3675",
+      "name": "1| Detail Balance | Deposit",
+      "frame": {
+        "x": 714,
+        "y": 220,
+        "width": 390,
+        "height": 1110
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Cuption XS: Font(...), Black: #192B48, H2: Font(...), Green Light: #B5DDD5, Green: #73C1B1, Body M: Font(...), Btn: Font(...), Blue Light: #759AC6, H1: Font(...), Cuption S: Font(...), Grey line: #D3DAE5, Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3687",
+      "name": "1 | Detail Balance | Referral",
+      "frame": {
+        "x": 1241,
+        "y": 220,
+        "width": 390,
+        "height": 915
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, H2: Font(...), Cuption XS: Font(...), Black: #192B48, Green Light: #B5DDD5, Grey Medium: #8494AF, Btn: Font(...), Blue Light: #759AC6, Green: #73C1B1, H1: Font(...), Cuption S: Font(...), Grey line: #D3DAE5, Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3701",
+      "name": "1| Detail Bot",
+      "frame": {
+        "x": 1769,
+        "y": 220,
+        "width": 390,
+        "height": 1288
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Grey light: #CFD9E9, Black: #192B48, Green: #73C1B1, H2: Font(...), Red: #DF7F7F, H3: Font(...), Grey Medium: #8494AF, Blue Light: #759AC6, H1: Font(...), Cuption XXS: Font(...), Grey line: #D3DAE5, Btn: Font(...), Grey Super Light: #E3E6EB, Bg: #ECF1F4"
+    },
+    {
+      "nodeId": "1:3734",
+      "name": "1 | Social Media",
+      "frame": {
+        "x": 2263,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "White: #FFFFFF, Blue dark: #2D6E93, Grey Dark: #55647B, Green: #73C1B1, Grey light: #CFD9E9, Black: #192B48, H2: Font(...), Grey line: #D3DAE5, Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3751",
+      "name": "1 | Support",
+      "frame": {
+        "x": 2725,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Black: #192B48, H2: Font(...), Grey line: #D3DAE5, Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3758",
+      "name": "1| FAQ ",
+      "frame": {
+        "x": 3187,
+        "y": 220,
+        "width": 390,
+        "height": 959
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Black: #192B48, H2: Font(...), H3: Font(...), Grey line: #D3DAE5, Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3770",
+      "name": "1 | Notification",
+      "frame": {
+        "x": 3702,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Green: #73C1B1, Black: #192B48, H2: Font(...), Grey Medium: #8494AF, Red: #DF7F7F, Grey line: #D3DAE5, Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3783",
+      "name": "1 | Settings",
+      "frame": {
+        "x": 4194,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, Black: #192B48, H2: Font(...), H3: Font(...), Green: #73C1B1, White: #FFFFFF, Grey line: #D3DAE5, Grey Super Light: #E3E6EB, Blue dark: #2D6E93, H1: Font(...), Bg: #ECF1F4"
+    },
+    {
+      "nodeId": "1:3808",
+      "name": "1| Withdraw",
+      "frame": {
+        "x": 4686,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Blue Light: #759AC6, Btn: Font(...), Grey Medium: #8494AF, Grey Super Light: #E3E6EB, Black: #192B48, H2: Font(...), Grey line: #D3DAE5, H1: Font(...), Bg: #ECF1F4"
+    },
+    {
+      "nodeId": "1:3821",
+      "name": "Actions History",
+      "frame": {
+        "x": 777,
+        "y": 1755,
+        "width": 1340,
+        "height": 790
+      },
+      "stylesFromFigmaCodegen": "Green Light: #B5DDD5, Blue dark: #2D6E93, Grey Dark: #55647B, Cuption XS: Font(...), Black: #192B48, H2: Font(...), Green: #73C1B1, Body M: Font(...), Blue Light: #759AC6"
+    },
+    {
+      "nodeId": "1:3860",
+      "name": "1| Recipient",
+      "frame": {
+        "x": 5130,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "note": "Most child layers hidden in Figma — use metadata for geometry",
+      "stylesFromFigmaCodegen": null
+    },
+    {
+      "nodeId": "1:3867",
+      "name": "1 | Amount",
+      "frame": {
+        "x": 5614,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "note": "Most child layers hidden in Figma",
+      "stylesFromFigmaCodegen": null
+    },
+    {
+      "nodeId": "1:3883",
+      "name": "1| Confirm",
+      "frame": {
+        "x": 6115,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Btn: Font(...), Grey line: #D3DAE5, Black: #192B48, Grey Medium: #8494AF, H1: Font(...), Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3893",
+      "name": "1 | Done",
+      "frame": {
+        "x": 6572,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "stylesFromFigmaCodegen": "Grey Dark: #55647B, White: #FFFFFF, Blue dark: #2D6E93, Grey line: #D3DAE5, Black: #192B48, Green: #73C1B1, H1: Font(...), Bg: #ECF1F4, Grey Super Light: #E3E6EB"
+    },
+    {
+      "nodeId": "1:3904",
+      "name": "1| Top up ",
+      "frame": {
+        "x": 7100,
+        "y": 220,
+        "width": 390,
+        "height": 824
+      },
+      "paymentBlock": {
+        "nodeId": "1:3906",
+        "name": "Paiment",
+        "frame": {
+          "x": 20,
+          "y": 150,
+          "width": 350,
+          "height": 525
+        },
+        "childrenGeometry": {
+          "titleRecieveUsdt": {
+            "nodeId": "1:3907",
+            "width": 125,
+            "height": 25
+          },
+          "qrCode": {
+            "nodeId": "1:3908",
+            "width": 200,
+            "height": 200
+          },
+          "listItem": {
+            "instance": "1:4874",
+            "width": 350,
+            "height": 76
+          },
+          "btn1": {
+            "instance": "1:4875",
+            "width": 350,
+            "height": 52
+          },
+          "btn2": {
+            "instance": "1:4876",
+            "width": 350,
+            "height": 52
+          }
+        }
+      },
+      "stylesFromFigmaCodegen": "get_design_context returned sparse tree for full screen — sub-nodes listed in paymentBlock"
+    }
+  ],
+  "sectionMetadataXml": {
+    "get_metadata_node_1_3075_Ui": "Полный ответ см. в сессии экспорта или вызовите get_metadata(fileKey, 1:3075). Ниже сокращённое дерево — см. также nodes в Figma.",
+    "abbreviatedTreeUi": "<section id=\"1:3075\" name=\"Ui\" x=\"8594\" y=\"0\" width=\"6936\" height=\"3769\">\n  <symbol id=\"1:3076\" name=\"Status Bar\" x=\"1774\" y=\"222\" width=\"390\" height=\"44\" />\n  <frame id=\"1:3110\" name=\"Icons\" x=\"517\" y=\"854\" width=\"365\" height=\"738\">\n    <symbol id=\"1:3111\" name=\"Property 1=Back\" x=\"277\" y=\"86\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3115\" name=\"Property 1=Arrow Up | 24\" x=\"90\" y=\"87\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3119\" name=\"Property 1=Arrow Down | 24\" x=\"212\" y=\"85\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3123\" name=\"Property 1=Withdraw\" x=\"120\" y=\"87\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3127\" name=\"Property 1=Arrow Up | 16\" x=\"35\" y=\"91\" width=\"16\" height=\"16\" />\n    <symbol id=\"1:3131\" name=\"Property 1=Arrow Down | 16\" x=\"185\" y=\"89\" width=\"16\" height=\"16\" />\n    <symbol id=\"1:3135\" name=\"Property 1=Arrow Up | 20\" x=\"61\" y=\"89\" width=\"20\" height=\"20\" />\n    <symbol id=\"1:3139\" name=\"Property 1=Minus | 24\" x=\"208\" y=\"34\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3142\" name=\"Property 1=Minus | 16\" x=\"181\" y=\"38\" width=\"16\" height=\"16\" />\n    <symbol id=\"1:3145\" name=\"Property 1=Plus | 24\" x=\"90\" y=\"38\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3149\" name=\"Property 1=Plus | 16\" x=\"33\" y=\"42\" width=\"16\" height=\"16\" />\n    <symbol id=\"1:3153\" name=\"Property 1=Plus | 20\" x=\"60\" y=\"40\" width=\"20\" height=\"20\" />\n    <symbol id=\"1:3157\" name=\"Property 1=Close\" x=\"70\" y=\"308\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3161\" name=\"Property 1=Support\" x=\"152\" y=\"150\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3167\" name=\"Property 1=Bot\" x=\"110\" y=\"150\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3171\" name=\"Property 1=speakerphone\" x=\"188\" y=\"149\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3177\" name=\"Property 1=wallet\" x=\"68\" y=\"150\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3182\" name=\"Property 1=notification\" x=\"68\" y=\"206\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3187\" name=\"Property 1=Notification New\" x=\"26\" y=\"206\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3195\" name=\"Property 1=settings\" x=\"110\" y=\"206\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3199\" name=\"Property 1=home\" x=\"26\" y=\"150\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3203\" name=\"Property 1=at-sign\" x=\"27\" y=\"349\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3207\" name=\"Property 1=rocket-launch\" x=\"28\" y=\"266\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3213\" name=\"Property 1=trending-down\" x=\"68\" y=\"266\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3217\" name=\"Property 1=check\" x=\"29\" y=\"308\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3220\" name=\"Property 1=logos:youtube-icon\" x=\"27\" y=\"608\" width=\"34\" height=\"24\" />\n    <symbol id=\"1:3223\" name=\"Property 1=translate\" x=\"29\" y=\"386\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3230\" name=\"Property 1=file\" x=\"31\" y=\"427\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3234\" name=\"Property 1=question-mark 2\" x=\"31\" y=\"511\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3238\" name=\"Property 1=scan\" x=\"31\" y=\"469\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3243\" name=\"Property 1=Copy\" x=\"33\" y=\"552\" width=\"24\" height=\"24\" />\n    <symbol id=\"1:3247\" name=\"Property 1=user-plus copy 1\" x=\"72\" y=\"389\" width=\"18\" height=\"18\" />\n  </frame>\n  <symbol id=\"1:3249\" name=\"alert-triangle copy 1\" x=\"587\" y=\"1283\" width=\"22\" height=\"22\" />\n  <symbol id=\"1:3251\" name=\"mobile_16514625 2\" x=\"590\" y=\"1205\" width=\"19\" height=\"20\" />\n  <frame id=\"1:3253\" name=\"Btn\" x=\"517\" y=\"209\" width=\"672\" height=\"536\">...</frame>\n  <frame id=\"1:3300\" name=\"App Bar\" x=\"2246\" y=\"209\" width=\"430\" height=\"476\">...</frame>\n  <symbol id=\"1:3333\" name=\"Tab Bar\" x=\"3155\" y=\"208\" width=\"390\" height=\"72\" />\n  <frame id=\"1:3343\" name=\"Amount\" x=\"1516\" y=\"471\" width=\"404\" height=\"274\">...</frame>\n  <frame id=\"1:3355\" name=\"List item\" x=\"2084\" y=\"819\" width=\"2085\" height=\"736\">...</frame>\n  <frame id=\"1:3477\" name=\"Tab\" x=\"1296\" y=\"400\" width=\"158\" height=\"345\">...</frame>\n  <frame id=\"1:3496\" name=\"pointinghand\" x=\"1452\" y=\"1923\" width=\"32\" height=\"34\" />\n  <symbol id=\"1:3505\" name=\"Graphic\" x=\"1541\" y=\"1322\" width=\"350\" height=\"167\" />\n  <symbol id=\"1:3520\" name=\"Scale\" x=\"1558\" y=\"1190\" width=\"350\" height=\"18\" />\n  <symbol id=\"1:3523\" name=\"Stats\" x=\"1558\" y=\"1050\" width=\"80\" height=\"43\" />\n  <frame id=\"1:3525\" name=\"Status Bot\" x=\"1558\" y=\"894\" width=\"130\" height=\"88\">...</frame>\n  <frame id=\"1:3532\" name=\"Togle\" x=\"1296\" y=\"842\" width=\"88\" height=\"100\">...</frame>\n  <symbol id=\"1:3541\" name=\"Color\" x=\"1156\" y=\"1771\" width=\"140\" height=\"201\" />\n  <frame id=\"1:3545\" name=\"Colors\" x=\"276\" y=\"2802\" width=\"1542\" height=\"702\">...</frame>\n  <frame id=\"1:3561\" name=\"Btn\" x=\"1974\" y=\"2802\" width=\"1918\" height=\"702\">...</frame>\n</section>"
+  }
+}

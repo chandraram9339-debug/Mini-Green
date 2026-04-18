@@ -1,0 +1,17 @@
+---
+description: Pixel/layout parity — repo PNG refs in docs/figma-ready + canonical Figma URLs only
+globs: frontend/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Figma Ready — источники правды
+
+1. **Референсы в репо:** `docs/figma-ready/*.png` (2× из Figma API; см. `frontend/scripts/figma-export-frames.mjs`, команда `npm run figma:export` из `frontend/` с `FIGMA_TOKEN`).
+2. **Токены / деревья фреймов:** `frontend/src/design-system/generated/` — `npm run figma:design-system` (тот же `FIGMA_TOKEN`); см. `frontend/src/design-system/README.md`. Дополнительно офлайн-бандл в корне: `figma-miniapp-design-system/`, спека экранов — `figma-miniapp-spec/` и `figma-miniapp-full-spec.json`.
+3. **Канонические ссылки:** только Ready и UI Kit:
+   - Ready: `https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3643&m=dev`
+   - UI Kit: `https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3075&m=dev`
+
+При правках вёрстки или утверждении «как в Figma» опирайся на **эти PNG и ссылки**. Не выдумывай отступы, цвета границ или тени «по памяти».
+
+Если для экрана **нет** соответствующего PNG в `docs/figma-ready/`, неизвестен эталонный node-id, или нельзя запустить экспорт — **не додумывай**: явно выведи **`[NEED_INPUT]`** и перечисли, что нужно (файл референса, ссылка с node-id, или обновлённый экспорт).

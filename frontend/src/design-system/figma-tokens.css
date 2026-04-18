@@ -1,0 +1,10 @@
+/**
+ * Figma file: BBrbpnfGElX0afHLm7ccxP
+ * Ready:  https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3643&m=dev
+ * UI Kit: https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3075&m=dev
+ *
+ * [NEED_INPUT] Значения переменных из Figma здесь не придумываются.
+ * Сгенерируйте токены из API (перезапишет generated/figma-tokens.css и импорт ниже):
+ *   cd frontend && FIGMA_TOKEN=... npm run figma:design-system
+ */
+@import "./generated/figma-tokens.css";

@@ -1,0 +1,42 @@
+{
+  "_title": "Экран Home — полный codegen одним файлом + разметка узлов для нарезки при необходимости",
+  "figmaScreenNodeId": "1:3644",
+  "figmaScreenName": "1 | Home",
+  "frame": { "width": 390, "height": 870 },
+  "fullScreenCodegen": "codegen-fragments/home__full-screen__1-3644.tsx",
+  "exportNote": "Основной экспорт: default HomeScreen(). График (шкала %, линия), баланс, статус бота, нижние кнопки и Tab Bar включены.",
+  "layersTopToBottom": [
+    { "name": "Status Bar", "nodeId": "1:3674", "y": 0, "height": 44 },
+    { "name": "App Bar", "nodeId": "1:3673", "y": 44, "height": 56 },
+    {
+      "name": "Balance",
+      "nodeId": "1:3659",
+      "y": 130,
+      "height": 224,
+      "children": [
+        { "name": "Total Balance + Amount", "nodeId": "1:3669" },
+        { "name": "Referrals caption + Amount", "nodeId": "1:3666" },
+        { "name": "Top up / Withdraw mini buttons", "nodeId": "1:3661" },
+        { "name": "Details (primary)", "nodeId": "1:3660" }
+      ]
+    },
+    {
+      "name": "Graphic",
+      "nodeId": "1:3649",
+      "y": 384,
+      "height": 302,
+      "children": [
+        {
+          "name": "Graphic (chart)",
+          "instanceNodeId": "1:3658",
+          "note": "В полном файле компонент Graphic соответствует мастеру node 1:3505 в разметке MCP"
+        },
+        { "name": "Status + Actual price", "nodeId": "1:3651" },
+        { "name": "Details (under chart)", "nodeId": "1:3650" }
+      ]
+    },
+    { "name": "Btns Social / Support", "nodeId": "1:3646", "y": 716, "height": 52 },
+    { "name": "Tab Bar", "nodeId": "1:3645", "y": 798, "height": 72 }
+  ],
+  "assetUrlsExpireDays": 7
+}

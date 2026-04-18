@@ -1,0 +1,193 @@
+{
+  "project": "telegram-miniapp-figma",
+  "figmaFileKey": "BBrbpnfGElX0afHLm7ccxP",
+  "description": "Карта разделов для сборки фронта: assemblyKey — стабильное имя в коде; nodeId — узел Figma; completeness — насколько полно снят codegen через MCP.",
+  "tokensAndGlobals": {
+    "cssTokensDirectory": "../figma-miniapp-design-system/",
+    "legacyFullDump": "../figma-miniapp-full-spec.json"
+  },
+  "rootSections": [
+    {
+      "assemblyKey": "frame_ui_kit",
+      "nodeId": "1:3075",
+      "name": "Ui",
+      "role": "Дизайн-система (иконки, кнопки, цвета, компоненты). Не экраны приложения.",
+      "childHighlights": [
+        { "nodeId": "1:3076", "name": "Status Bar", "size": "390×44" },
+        { "nodeId": "1:3333", "name": "Tab Bar", "size": "390×72" },
+        { "nodeId": "1:3545", "name": "Colors", "note": "Палитра" },
+        { "nodeId": "1:3110", "name": "Icons", "note": "Сетка иконок" },
+        { "nodeId": "1:3253", "name": "Btn", "note": "Варианты кнопок" },
+        { "nodeId": "1:3355", "name": "List item", "note": "Варианты строк списка" }
+      ]
+    },
+    {
+      "assemblyKey": "frame_ready_screens",
+      "nodeId": "1:3643",
+      "name": "Ready",
+      "role": "Все экраны мини-приложения (мобильная вёрстка 390px)."
+    }
+  ],
+  "screens": [
+    {
+      "order": 1,
+      "assemblyKey": "home",
+      "nodeId": "1:3644",
+      "figmaName": "1 | Home",
+      "size": "390×870",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/home",
+      "fragments": ["codegen-fragments/home__full-screen__1-3644.tsx"],
+      "assemblyMap": "screen-home__assembly.json"
+    },
+    {
+      "order": 2,
+      "assemblyKey": "balance_deposit",
+      "nodeId": "1:3675",
+      "figmaName": "1| Detail Balance | Deposit",
+      "size": "390×1110",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/balance/deposit",
+      "fragments": ["codegen-fragments/detail-balance-deposit__full-screen__1-3675.tsx"],
+      "assemblyMap": "screen-detail-balance-deposit__assembly.json",
+      "note": "Высокий экран: включает инстанс Actions History с табами и списком операций."
+    },
+    {
+      "order": 3,
+      "assemblyKey": "balance_referral",
+      "nodeId": "1:3687",
+      "figmaName": "1 | Detail Balance | Referral",
+      "size": "390×915",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/balance/referral",
+      "fragments": ["codegen-fragments/detail-balance-referral__full-screen__1-3687.tsx"]
+    },
+    {
+      "order": 4,
+      "assemblyKey": "bot_detail",
+      "nodeId": "1:3701",
+      "figmaName": "1| Detail Bot",
+      "size": "390×1288",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/bot",
+      "fragments": ["codegen-fragments/bot-detail__full-screen__1-3701.tsx"]
+    },
+    {
+      "order": 5,
+      "assemblyKey": "social_media",
+      "nodeId": "1:3734",
+      "figmaName": "1 | Social Media",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/social",
+      "fragments": ["codegen-fragments/social-media__full-screen__1-3734.tsx"]
+    },
+    {
+      "order": 6,
+      "assemblyKey": "support",
+      "nodeId": "1:3751",
+      "figmaName": "1 | Support",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/support",
+      "fragments": ["codegen-fragments/support__full-screen__1-3751.tsx"]
+    },
+    {
+      "order": 7,
+      "assemblyKey": "faq",
+      "nodeId": "1:3758",
+      "figmaName": "1| FAQ ",
+      "size": "390×959",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/faq",
+      "fragments": ["codegen-fragments/faq__full-screen__1-3758.tsx"]
+    },
+    {
+      "order": 8,
+      "assemblyKey": "notifications",
+      "nodeId": "1:3770",
+      "figmaName": "1 | Notification",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/notifications",
+      "fragments": ["codegen-fragments/notifications__full-screen__1-3770.tsx"]
+    },
+    {
+      "order": 9,
+      "assemblyKey": "settings",
+      "nodeId": "1:3783",
+      "figmaName": "1 | Settings",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/settings",
+      "fragments": ["codegen-fragments/settings__full-screen__1-3783.tsx"]
+    },
+    {
+      "order": 10,
+      "assemblyKey": "withdraw_flow_withdraw",
+      "nodeId": "1:3808",
+      "figmaName": "1| Withdraw",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/withdraw",
+      "fragments": ["codegen-fragments/withdraw__full-screen__1-3808.tsx"]
+    },
+    {
+      "order": 11,
+      "assemblyKey": "actions_history_reference",
+      "nodeId": "1:3821",
+      "figmaName": "Actions History",
+      "size": "1340×790",
+      "completeness": "full_codegen_file",
+      "note": "Три колонки: компонент Actions History с property1 Variant4 | Withdraw | Refferal.",
+      "fragments": [
+        "codegen-fragments/actions-history__unified__node-3822-3833-3844.tsx",
+        "codegen-fragments/actions-history__frame__1-3821.tsx"
+      ]
+    },
+    { "order": 12, "assemblyKey": "withdraw_flow_recipient", "nodeId": "1:3860", "figmaName": "1| Recipient", "size": "390×824", "completeness": "geometry_only_hidden_layers", "routeSuggestion": "/withdraw/recipient", "see": "hidden-screens-geometry.json" },
+    { "order": 13, "assemblyKey": "withdraw_flow_amount", "nodeId": "1:3867", "figmaName": "1 | Amount", "size": "390×824", "completeness": "geometry_only_hidden_layers", "routeSuggestion": "/withdraw/amount", "see": "hidden-screens-geometry.json" },
+    {
+      "order": 14,
+      "assemblyKey": "withdraw_flow_confirm",
+      "nodeId": "1:3883",
+      "figmaName": "1| Confirm",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/withdraw/confirm",
+      "fragments": ["codegen-fragments/withdraw-confirm__full-screen__1-3883.tsx"]
+    },
+    {
+      "order": 15,
+      "assemblyKey": "withdraw_flow_done",
+      "nodeId": "1:3893",
+      "figmaName": "1 | Done",
+      "size": "390×824",
+      "completeness": "full_codegen_file",
+      "routeSuggestion": "/withdraw/done",
+      "fragments": ["codegen-fragments/withdraw-done__full-screen__1-3893.tsx"]
+    },
+    {
+      "order": 16,
+      "assemblyKey": "top_up_deposit",
+      "nodeId": "1:3904",
+      "figmaName": "1| Top up ",
+      "size": "390×824",
+      "completeness": "split_fragments",
+      "routeSuggestion": "/deposit/top-up",
+      "see": "screen-top-up__assembly.json",
+      "fragments": [
+        "codegen-fragments/top-up__list-item__1-4874.tsx",
+        "codegen-fragments/top-up__btn-copy__1-4875.tsx",
+        "codegen-fragments/top-up__btn-paid__1-4876.tsx",
+        "codegen-fragments/top-up__app-bar-deposit__1-4877.tsx"
+      ]
+    }
+  ],
+  "analysisWhatFailedAndFix": {
+    "top_up_full_frame": "Проблема: get_design_context на 1:3904 / 1:3906 превышал лимит контекста. Решение: экспорт по подузлам 1:4874–1:4877 + JSON screen-top-up__assembly.json с деревом координат.",
+    "qr_code_block_1_3908": "Проблема: нет дочерних слоёв в XML — вероятно единый растровый QR. Решение: область 200×200 px @ x75 y55 внутри Paiment; в коде — библиотека QR или экспорт ассета из Figma.",
+    "recipient_amount_screens": "Проблема: все дочерние слои hidden — MCP вернул только bg-[#ecf1f4]. Решение: hidden-screens-geometry.json с точными размерами + сборка из тех же компонентов, что Withdraw/Confirm.",
+    "actions_history": "Два файла: actions-history__unified__node-3822-3833-3844.tsx (property1 Variant4 | Withdraw | Refferal для 1:3822, 1:3833, 1:3844) и actions-history__frame__1-3821.tsx (рамка колонок)."
+  }
+}

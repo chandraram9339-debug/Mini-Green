@@ -1,0 +1,64 @@
+{
+  "_comment": "Экраны Recipient и Amount: в Figma все инстансы помечены hidden=true — MCP get_design_context отдаёт только фон. Геометрия ниже из get_metadata (точные размеры для сборки 1:1). Компоненты те же, что на Withdraw / Confirm (см. узлы эталона).",
+  "fileKey": "BBrbpnfGElX0afHLm7ccxP",
+  "screens": [
+    {
+      "assemblyKey": "withdraw_flow_recipient",
+      "figmaName": "1| Recipient",
+      "nodeId": "1:3860",
+      "frame": { "width": 390, "height": 824 },
+      "childrenFromMetadata": [
+        { "id": "1:3861", "name": "Tab Bar", "x": 0, "y": 752, "width": 390, "height": 72, "hidden": true },
+        { "id": "1:3862", "name": "Btn", "x": 20, "y": 670, "width": 350, "height": 48, "hidden": true },
+        { "id": "1:3863", "name": "List item", "x": 20, "y": 130, "width": 350, "height": 53, "hidden": true },
+        { "id": "1:3864", "name": "(text) withdrawal explanation", "x": 20, "y": 226, "width": 350, "height": 72, "hidden": true },
+        { "id": "1:3865", "name": "App Bar", "x": 0, "y": 44, "width": 390, "height": 56, "hidden": true },
+        { "id": "1:3866", "name": "Status Bar", "x": 0, "y": 0, "width": 390, "height": 44, "hidden": true }
+      ],
+      "assemblyNote": "Использовать те же компоненты и отступы, что на экране withdraw_flow_withdraw (1:3808): List item и текст совпадают по структуре с узлами 1:3813, 1:3812."
+    },
+    {
+      "assemblyKey": "withdraw_flow_amount",
+      "figmaName": "1 | Amount",
+      "nodeId": "1:3867",
+      "frame": { "width": 390, "height": 824 },
+      "childrenFromMetadata": [
+        { "id": "1:3868", "name": "Tab Bar", "hidden": true },
+        { "id": "1:3869", "name": "Btn", "hidden": true },
+        {
+          "id": "1:3870",
+          "name": "Info",
+          "x": 20,
+          "y": 242,
+          "width": 350,
+          "height": 92,
+          "hidden": true,
+          "textChildren": ["Current balance: 725.62 USDT", "Available for withdrawal*: 653.06 USDT", "*The commission..."]
+        },
+        { "id": "1:3874", "name": "List item", "x": 20, "y": 169, "width": 350, "height": 53, "hidden": true },
+        {
+          "id": "1:3875",
+          "name": "Info (duplicate)",
+          "x": 20,
+          "y": 242,
+          "width": 350,
+          "height": 92,
+          "hidden": true
+        },
+        { "id": "1:3879", "name": "List item", "hidden": true },
+        {
+          "id": "1:3880",
+          "name": "To: UQC4...754C",
+          "x": 20,
+          "y": 130,
+          "width": 350,
+          "height": 19,
+          "hidden": true
+        },
+        { "id": "1:3881", "name": "App Bar", "hidden": true },
+        { "id": "1:3882", "name": "Status Bar", "hidden": true }
+      ],
+      "assemblyNote": "Слои скрыты — для полного codegen включите видимость в Figma или соберите из экрана 1:3808 (Withdraw) + блок Info 1:3814 и заголовок To: как в Confirm 1:3887."
+    }
+  ]
+}

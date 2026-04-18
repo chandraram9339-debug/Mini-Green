@@ -1,0 +1,33 @@
+{
+  "_title": "Экран Detail Balance | Deposit — один полный codegen (узлы для справки)",
+  "figmaScreenNodeId": "1:3675",
+  "figmaScreenName": "1| Detail Balance | Deposit",
+  "frame": { "width": 390, "height": 1110 },
+  "fullScreenCodegen": "codegen-fragments/detail-balance-deposit__full-screen__1-3675.tsx",
+  "exportNote": "Основной экспорт: default DetailBalanceDepositScreen(). Содержит карточки-сводки Deposit/Withdraw/Refferal, список операций, блок Current balance.",
+  "layersTopToBottom": [
+    { "name": "Status Bar", "nodeId": "1:3686", "y": 0, "height": 44 },
+    { "name": "App Bar", "nodeId": "1:3685", "y": 44, "height": 56 },
+    {
+      "name": "Current Balance",
+      "nodeId": "1:3678",
+      "y": 130,
+      "height": 187,
+      "children": [
+        { "name": "Заголовок + сумма + адрес", "nodeId": "1:3681" },
+        { "name": "Btn Top up", "nodeId": "1:3680" },
+        { "name": "Btn Withdraw", "nodeId": "1:3679" }
+      ]
+    },
+    {
+      "name": "Actions History (виджет)",
+      "nodeId": "1:3677",
+      "y": 347,
+      "width": 350,
+      "height": 661,
+      "note": "Тот же семейный компонент, что на референсе 1:3821; внутри — табы и список."
+    },
+    { "name": "Tab Bar", "nodeId": "1:3676", "y": 1038, "height": 72 }
+  ],
+  "assetUrlsExpireDays": 7
+}

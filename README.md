@@ -7,6 +7,9 @@ This repository is a bootstrap for a Telegram Mini App project.
 - `frontend` - client app (React + Vite + TypeScript)
 - `backend` - API service (Node.js + Express + TypeScript)
 - `docker-compose.yml` - local Postgres and Redis
+- `figma-miniapp-design-system/` — offline CSS/JSON токены (снимок из Figma MCP / экспорта)
+- `figma-miniapp-spec/` — сборки экранов и codegen-фрагменты; `figma-miniapp-full-spec.json` — агрегированный JSON
+- Повторно подтянуть артефакты из локальной папки vsix: `scripts/sync-figma-vsix-artifacts.sh` (или `FIGMA_VSIX_ROOT=… ./scripts/sync-figma-vsix-artifacts.sh`)
 
 ## Quick start
 
@@ -19,6 +22,19 @@ This repository is a bootstrap for a Telegram Mini App project.
    - `cd backend && pnpm dev`
 4. Run frontend:
    - `cd frontend && pnpm dev`
+
+## Frontend external links
+
+- Copy `frontend/.env.example` to `frontend/.env` and set production values for:
+  - `VITE_CHANNEL_URL`
+  - `VITE_CHAT_URL`
+  - `VITE_YOUTUBE_URL`
+  - `VITE_SUPPORT_URL`
+  - `VITE_REFERRAL_URL`
+- External links in UI are read from `frontend/src/app/config.ts` via these variables.
+- Validate readiness before release:
+  - `cd frontend && npm run check:external-links`
+  - Command fails until all 5 link variables are present and not `TODO`.
 
 ## Runtime preflight gate
 

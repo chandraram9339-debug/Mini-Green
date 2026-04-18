@@ -1,0 +1,24 @@
+{
+  "fileKey": "BBrbpnfGElX0afHLm7ccxP",
+  "fileUrl": "https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-",
+  "frames": [
+    {
+      "label": "Ready",
+      "nodeId": "1:3643",
+      "nodeIdUrl": "1-3643",
+      "url": "https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3643&m=dev"
+    },
+    {
+      "label": "UI Kit",
+      "nodeId": "1:3075",
+      "nodeIdUrl": "1-3075",
+      "url": "https://www.figma.com/design/BBrbpnfGElX0afHLm7ccxP/figma-ui-ux--Copy-?node-id=1-3075&m=dev"
+    }
+  ],
+  "notes": [
+    "Значения токенов не вносятся вручную: только вывод скрипта figma-export-design-system.mjs (FIGMA_TOKEN).",
+    "Переменные: GET /v1/files/{file_key}/variables/local (в документации Figma может требоваться Enterprise).",
+    "Дерево двух канонических фреймов: GET /v1/files/{file_key}/nodes?ids=1:3643,1:3075 — обычно доступно с Personal Access Token.",
+    "Снимок Variables через Cursor Figma MCP get_variable_defs: src/design-system/generated/figma-variable-defs.mcp.json + generated/figma-tokens.css (обновлять повторным вызовом MCP или REST-скриптом)."
+  ]
+}
