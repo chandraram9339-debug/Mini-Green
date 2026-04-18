@@ -5,11 +5,14 @@ export type RouteId =
   | "faq"
   | "notifications"
   | "settings"
+  | "support"
+  | "social"
   | "seed"
   | "agreement"
   | "topup"
   | "withdraw"
-  | "confirm";
+  | "confirm"
+  | "done";
 
 export type LoadState = "loading" | "ready" | "empty" | "error";
 

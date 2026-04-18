@@ -44,6 +44,15 @@ export interface MoneyDetailsPayload {
   available_minor: number;
   locked_minor: number;
   currency: string;
+  operations?: Array<{
+    id: string;
+    kind: "deposit" | "withdraw" | "referral";
+    status: "pending" | "confirmed";
+    amount_minor: number;
+    fee_minor: number | null;
+    wallet_mask: string | null;
+    occurred_at: string;
+  }>;
 }
 
 export interface TradingPosition {

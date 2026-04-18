@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:external-links": "node scripts/check-external-links.mjs",
+    "figma:export": "node scripts/figma-export-frames.mjs",
+    "figma:design-system": "node scripts/figma-export-design-system.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

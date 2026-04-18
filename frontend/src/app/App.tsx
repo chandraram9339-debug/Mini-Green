@@ -14,16 +14,20 @@ import {
   resolveInitData,
   type SessionPayload,
 } from "./api";
-import { DASHBOARD_EXTERNAL_LINKS, REFERRAL_URL, SUPPORT_URL } from "./config";
+import { DASHBOARD_EXTERNAL_LINKS, MISSING_EXTERNAL_LINK_ENV_KEYS } from "./config";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
 import topupQrAsset from "./assets/topup-qr-1-5256.svg";
+import dashboardGraphicGridline from "./assets/dashboard-graphic-gridline.svg";
+import dashboardGraphicLine from "./assets/dashboard-graphic-line.svg";
 import topBarBackIcon from "./assets/topbar-back-1-6437.svg";
 import topBarNotifyIcon from "./assets/topbar-notify-1-6436.svg";
 import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
 
 const fallbackRoute: RouteId = "dashboard";
 const uiStorageKey = "miniapp-frontend-ui-state";
+const postNavBannerStorageKey = "miniapp-frontend-post-nav-banner";
+const doneReceiptStorageKey = "miniapp-frontend-done-receipt";
 const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
 const MIN_WITHDRAW_AMOUNT_MINOR = 500;
 const WITHDRAW_FEE_BPS = 1000;
@@ -69,9 +73,44 @@ interface PendingAction {
   recipientAddress?: string;
 }
 
+interface DoneReceipt {
+  traceId: string;
+  amountMinor: number;
+  feeMinor: number;
+  recipientAddress: string;
+}
+
 function formatMinor(minor: number): string {
   return (minor / 100).toFixed(2);
 }
+
+/** Y-axis tick labels (USDT) when Home chart shows balance history (funded wallet). */
+function dashboardFundedYAxisLabels(walletMinor: number): string[] {
+  if (walletMinor <= 0) {
+    return Array.from({ length: 7 }, () => "0.00");
+  }
+  const top = Math.max(Math.ceil((walletMinor * 1.2) / 100) * 100, 100);
+  const bottom = Math.floor((walletMinor * 0.78) / 100) * 100;
+  const span = Math.max(top - bottom, 100);
+  const step = span / 6;
+  return Array.from({ length: 7 }, (_, i) => formatMinor(Math.round(top - i * step)));
+}
+
+/** Figma Ready `1 | Home` → Graphic `1:3658` — Y scale ticks (Outfit 6px, #8494AF). */
+const DASHBOARD_PERF_EMPTY_Y_AXIS = [
+  "7.00%",
+  "6.00%",
+  "5.00%",
+  "4.00%",
+  "3.00%",
+  "2.00%",
+  "1.00%",
+  "0.00%",
+  "−1.00%",
+  "−2.00%",
+] as const;
+const DASHBOARD_PERF_FUNDED_X_AXIS = ["−25d", "−20d", "−15d", "−10d", "−5d", "Now"] as const;
+const DASHBOARD_PERF_EMPTY_X_AXIS = ["W1", "W2", "W3", "W4", "W5", "W6"] as const;
 
 function parseAmountMinor(raw: string): number | null {
   const normalized = raw.trim().replace(",", ".");
@@ -87,27 +126,60 @@ function isBasicTronAddress(address: string): boolean {
 
 type TradingRange = "24h" | "7d" | "1m" | "3m";
 
+function moneyFilterToPath(filter: "deposit" | "withdraw" | "referral"): string {
+  switch (filter) {
+    case "deposit":
+      return "/balance/deposit";
+    case "withdraw":
+      return "/balance/withdraw";
+    case "referral":
+      return "/balance/referral";
+  }
+}
+
 function routeToPath(route: RouteId): string {
-  return route === "dashboard" ? "/" : `/${route}`;
+  switch (route) {
+    case "dashboard":
+      return "/home";
+    case "money":
+      return "/balance/deposit";
+    case "trading":
+      return "/bot/detail";
+    case "done":
+      return "/done";
+    case "support":
+      return "/support";
+    case "social":
+      return "/social";
+    default:
+      return `/${route}`;
+  }
 }
 
 function pathToRoute(pathname: string): RouteId {
   const key = pathname.replace(/^\/+/, "").toLowerCase();
+  if (key === "" || key === "home" || key === "dashboard") return "dashboard";
   if (
-    key === "dashboard" ||
     key === "money" ||
-    key === "trading" ||
-    key === "faq" ||
-    key === "notifications" ||
-    key === "settings" ||
-    key === "seed" ||
-    key === "agreement" ||
-    key === "topup" ||
-    key === "withdraw" ||
-    key === "confirm"
+    key === "balance" ||
+    key === "balance/deposit" ||
+    key === "balance/withdraw" ||
+    key === "balance/referral"
   ) {
-    return key;
+    return "money";
   }
+  if (key === "trading" || key === "bot/detail") return "trading";
+  if (key === "faq") return "faq";
+  if (key === "notifications" || key === "notification") return "notifications";
+  if (key === "settings") return "settings";
+  if (key === "support") return "support";
+  if (key === "social" || key === "social-media") return "social";
+  if (key === "seed") return "seed";
+  if (key === "agreement") return "agreement";
+  if (key === "topup" || key === "top-up") return "topup";
+  if (key === "withdraw") return "withdraw";
+  if (key === "confirm") return "confirm";
+  if (key === "done") return "done";
   return fallbackRoute;
 }
 
@@ -207,10 +279,22 @@ function StateView({ state, onRetry, children, messages }: StateViewProps) {
 
 const bottomNavCaption: Partial<Record<RouteId, string>> = {
   dashboard: "Home",
-  money: "Money",
-  trading: "Trading",
+  money: "Balance",
+  trading: "Bot",
   faq: "FAQ",
 };
+
+function getBottomTabRoute(route: RouteId): RouteId {
+  if (route === "money" || route === "topup" || route === "withdraw" || route === "confirm" || route === "done") {
+    return "money";
+  }
+  if (route === "trading") return "trading";
+  if (route === "faq" || route === "notifications" || route === "settings" || route === "support" || route === "social") {
+    return "faq";
+  }
+  if (route === "seed" || route === "agreement") return "faq";
+  return "dashboard";
+}
 
 function TabGlyph({ route }: { route: RouteId }) {
   const c = "tab-svg";
@@ -258,6 +342,111 @@ function isGreenHeaderRoute(route: RouteId): boolean {
   );
 }
 
+/**
+ * Performance chart from Figma node `1:3658` (component Graphic).
+ * Exported SVGs from MCP assets — stable in repo (see `assets/dashboard-graphic-*.svg`).
+ */
+function DashboardFigmaPerformanceGraphic() {
+  const ticks = DASHBOARD_PERF_EMPTY_Y_AXIS;
+  return (
+    <div className="dashboard-figma-graphic" aria-hidden="true">
+      <div className="dashboard-figma-graphic__scales">
+        {ticks.map((label) => (
+          <div key={label} className="dashboard-figma-graphic__row">
+            <span className="dashboard-figma-graphic__tick">{label}</span>
+            <div className="dashboard-figma-graphic__gridcell">
+              <img className="dashboard-figma-graphic__gridline" src={dashboardGraphicGridline} alt="" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="dashboard-figma-graphic__plot">
+        <img className="dashboard-figma-graphic__line" src={dashboardGraphicLine} alt="" />
+      </div>
+    </div>
+  );
+}
+
+/** Balance / performance chart — funded wallet uses programmatic history plot. */
+function DashboardHomeBalanceChart({ funded }: { funded: boolean }) {
+  const uid = React.useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const gradArea = `dash-area-${uid}`;
+
+  if (!funded) {
+    return (
+      <svg
+        className="dashboard-perf-svg dashboard-perf-svg--empty"
+        viewBox="0 0 300 96"
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+      >
+        <path
+          d="M 14 72 C 72 70 110 38 150 36 S 236 22 286 18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeDasharray="7 6"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      className="dashboard-perf-svg dashboard-perf-svg--funded"
+      viewBox="0 0 300 148"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradArea} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#2d6e93" stopOpacity="0.24" />
+          <stop offset="55%" stopColor="#73c1b1" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[20, 42, 64, 86, 108, 130].map((y) => (
+        <line key={y} x1="4" y1={y} x2="296" y2={y} className="dashboard-perf-svg-gridline" />
+      ))}
+      <path
+        d="M 8 118 C 36 118 52 104 78 96 S 120 86 146 74 S 188 52 234 38 S 268 30 292 26 L 292 142 L 8 142 Z"
+        fill={`url(#${gradArea})`}
+      />
+      <path
+        d="M 8 124 C 40 122 64 114 92 108 S 148 90 176 84 S 228 70 292 54"
+        fill="none"
+        stroke="#73c1b1"
+        strokeWidth="1.75"
+        strokeDasharray="5 5"
+        strokeLinecap="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d="M 8 118 C 36 118 52 104 78 96 S 120 86 146 74 S 188 52 234 38 S 268 30 292 26"
+        fill="none"
+        stroke="#2d6e93"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      {(
+        [
+          [8, 118],
+          [58, 102],
+          [108, 88],
+          [158, 64],
+          [208, 48],
+          [292, 26],
+        ] as const
+      ).map(([cx, cy], i) => (
+        <circle key={i} cx={cx} cy={cy} r="4" className="dashboard-perf-svg-dot" />
+      ))}
+    </svg>
+  );
+}
+
 function App() {
   const storedUiState = React.useMemo(() => readUiStorage(), []);
   const resolvedInitIdentity = React.useMemo(() => resolveInitData(), []);
@@ -266,6 +455,10 @@ function App() {
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
   const [moneyFilter, setMoneyFilter] = React.useState<"deposit" | "withdraw" | "referral">(() => {
+    const path = typeof window !== "undefined" ? window.location.pathname.replace(/^\/+/, "").toLowerCase() : "";
+    if (path === "balance/referral") return "referral";
+    if (path === "balance/withdraw") return "withdraw";
+    if (path === "balance/deposit" || path === "balance" || path === "money") return "deposit";
     if (storedUiState.moneyFilter === "deposit" || storedUiState.moneyFilter === "withdraw" || storedUiState.moneyFilter === "referral") {
       return storedUiState.moneyFilter;
     }
@@ -307,8 +500,10 @@ function App() {
   const [tradingOpenOrders, setTradingOpenOrders] = React.useState(0);
   const [faqEntries, setFaqEntries] = React.useState<Array<{ id: string; title: string; body: string }>>([]);
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
+  const [doneReceipt, setDoneReceipt] = React.useState<DoneReceipt | null>(null);
   const [actionState, setActionState] = React.useState<"idle" | "submitting">("idle");
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
+  const hasPendingExternalLinks = MISSING_EXTERNAL_LINK_ENV_KEYS.length > 0;
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
   const flashTopupCopied = React.useCallback(() => {
@@ -348,7 +543,11 @@ function App() {
   const openExternalLink = React.useCallback((url: string, label: string) => {
     setActionMessage(null);
     if (!url || url === "TODO") {
-      setActionMessage(`${label} link will be added soon.`);
+      const missingKeysHint =
+        MISSING_EXTERNAL_LINK_ENV_KEYS.length > 0
+          ? ` Missing env: ${MISSING_EXTERNAL_LINK_ENV_KEYS.join(", ")}.`
+          : "";
+      setActionMessage(`${label} link will be added soon.${missingKeysHint}`);
       return;
     }
     const opened = window.open(url, "_blank", "noopener,noreferrer");
@@ -393,6 +592,26 @@ function App() {
   }, [moneyFilter, tradingRange, withdrawAddress]);
 
   React.useEffect(() => {
+    if (route !== "money") return;
+    const path = window.location.pathname.replace(/^\/+/, "").toLowerCase();
+    if (path === "balance/referral" && moneyFilter !== "referral") {
+      setMoneyFilter("referral");
+      return;
+    }
+    if (path === "balance/withdraw" && moneyFilter !== "withdraw") {
+      setMoneyFilter("withdraw");
+      return;
+    }
+    if (path === "balance/deposit" && moneyFilter !== "deposit") {
+      setMoneyFilter("deposit");
+      return;
+    }
+    if ((path === "balance" || path === "money") && moneyFilter !== "deposit") {
+      setMoneyFilter("deposit");
+    }
+  }, [moneyFilter, route]);
+
+  React.useEffect(() => {
     if (route !== "confirm") {
       setConfirmStep("review");
     }
@@ -400,6 +619,48 @@ function App() {
 
   React.useEffect(() => {
     setActionMessage(null);
+  }, [route]);
+
+  React.useEffect(() => {
+    if (route !== "done") return;
+    try {
+      const raw = window.sessionStorage.getItem(doneReceiptStorageKey);
+      if (!raw) {
+        setDoneReceipt(null);
+        return;
+      }
+      const parsed = JSON.parse(raw) as Partial<DoneReceipt>;
+      if (
+        typeof parsed.traceId === "string" &&
+        typeof parsed.amountMinor === "number" &&
+        typeof parsed.feeMinor === "number" &&
+        typeof parsed.recipientAddress === "string"
+      ) {
+        setDoneReceipt({
+          traceId: parsed.traceId,
+          amountMinor: parsed.amountMinor,
+          feeMinor: parsed.feeMinor,
+          recipientAddress: parsed.recipientAddress,
+        });
+      } else {
+        setDoneReceipt(null);
+      }
+      window.sessionStorage.removeItem(doneReceiptStorageKey);
+    } catch {
+      setDoneReceipt(null);
+    }
+  }, [route]);
+
+  React.useEffect(() => {
+    if (route !== "dashboard") return;
+    try {
+      const pendingBanner = window.sessionStorage.getItem(postNavBannerStorageKey);
+      if (!pendingBanner) return;
+      setActionMessage(pendingBanner);
+      window.sessionStorage.removeItem(postNavBannerStorageKey);
+    } catch {
+      /* session storage may be unavailable */
+    }
   }, [route]);
 
   React.useEffect(() => {
@@ -462,8 +723,11 @@ function App() {
       route === "topup" ||
       route === "withdraw" ||
       route === "confirm" ||
+      route === "done" ||
       route === "notifications" ||
       route === "settings" ||
+      route === "support" ||
+      route === "social" ||
       route === "seed" ||
       route === "agreement"
     ) {
@@ -531,7 +795,21 @@ function App() {
   const isBusy =
     screenState === "loading" || actionState === "submitting" || confirmStep === "submitting";
 
+  const navigateMoneyFilter = React.useCallback(
+    (filter: "deposit" | "withdraw" | "referral") => {
+      if (isBusy) return;
+      setMoneyFilter(filter);
+      const nextUrl = `${moneyFilterToPath(filter)}${window.location.search}`;
+      window.history.replaceState({ route: "money" }, "", nextUrl);
+      setRoute("money");
+    },
+    [isBusy]
+  );
+
   const greenHeader = isGreenHeaderRoute(route);
+  const activeBottomTab = getBottomTabRoute(route);
+  const moneyRouteVariant =
+    moneyFilter === "referral" ? "Referral" : moneyFilter === "withdraw" ? "Withdraw" : "Deposit";
   const moneyRows = React.useMemo(
     () =>
       [
@@ -597,7 +875,14 @@ function App() {
         setActionMessage("Payment was not detected yet. Please complete transfer and tap Paid again.");
         return;
       }
-      setActionMessage("Top up request accepted. Returning to Dashboard.");
+      try {
+        window.sessionStorage.setItem(
+          postNavBannerStorageKey,
+          "Top up request accepted. Balance update may take a moment."
+        );
+      } catch {
+        /* session storage may be unavailable */
+      }
       navigate("dashboard");
     } catch (error) {
       setActionMessage(
@@ -634,6 +919,10 @@ function App() {
     setActionMessage(null);
     try {
       const { data, traceId } = await createWithdraw(session.initData, amountMinor);
+      if (data.status.toLowerCase() === "failed") {
+        setActionMessage("Withdrawal request was rejected. Please verify data and try again.");
+        return;
+      }
       setPendingAction({
         actionId: data.request_id,
         kind: "withdraw",
@@ -660,6 +949,24 @@ function App() {
     setActionMessage(null);
     try {
       const { data, traceId } = await confirmAction(session.initData, pendingAction.actionId);
+      if (data.status.toLowerCase() === "failed") {
+        setConfirmStep("review");
+        setActionMessage("Confirmation failed. Please retry in a moment.");
+        return;
+      }
+      try {
+        window.sessionStorage.setItem(
+          doneReceiptStorageKey,
+          JSON.stringify({
+            traceId,
+            amountMinor: pendingAction.amountMinor,
+            feeMinor: pendingAction.feeMinor,
+            recipientAddress: pendingAction.recipientAddress ?? "",
+          } satisfies DoneReceipt)
+        );
+      } catch {
+        /* session storage may be unavailable */
+      }
       setPendingAction((current) =>
         current
           ? {
@@ -670,6 +977,9 @@ function App() {
           : current
       );
       setConfirmStep("success");
+      setWithdrawAmount("");
+      setPendingAction(null);
+      navigate("done");
     } catch (error) {
       setConfirmStep("review");
       setActionMessage(
@@ -687,8 +997,12 @@ function App() {
     dashboardMode === "funded" ? "Wallet balance" : FIGMA_VISUAL_STUBS.performanceLegendPrimary;
   const dashboardGraphLegendSecondary =
     dashboardMode === "funded" ? "Net cashflow" : "Trade journal";
-  const dashboardStatusText = dashboardMode === "funded" ? "● Active" : "● Awaiting funds";
   const dashboardPriceLine = dashboardMode === "funded" ? FIGMA_VISUAL_STUBS.tradingPriceLine : "Awaiting top up";
+  const dashboardChartPeriod = dashboardHasBalance ? "30D" : FIGMA_VISUAL_STUBS.performancePeriod;
+  const dashboardYAxisLabels = dashboardHasBalance
+    ? dashboardFundedYAxisLabels(dashboardSnapshot.wallet_minor)
+    : [...DASHBOARD_PERF_EMPTY_Y_AXIS];
+  const dashboardXAxisLabels = dashboardHasBalance ? [...DASHBOARD_PERF_FUNDED_X_AXIS] : [...DASHBOARD_PERF_EMPTY_X_AXIS];
   const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
   const moneyLockedDisplay = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
   const showMoneyLocked = Boolean(moneyData && moneyData.locked_minor > 0);
@@ -761,7 +1075,10 @@ function App() {
   }
 
   return (
-    <main className={`app${isDashboard ? " app--dashboard-merge" : ""}`}>
+    <main
+      className={`app${isDashboard ? " app--dashboard-merge" : ""}`}
+      aria-label={isDashboard ? "Home" : undefined}
+    >
       <header className={`top-bar ${greenHeader ? "top-bar-green" : "top-bar-dark"}`}>
         <div className="top-bar-start">
           <button
@@ -775,13 +1092,7 @@ function App() {
           </button>
         </div>
         <div className="top-bar-center">
-          {isDashboard ? (
-            <div className="top-bar-mark" aria-label="App home">
-              dEP
-            </div>
-          ) : (
-            <h1 className="top-title">{routeTitles[route]}</h1>
-          )}
+          {!isDashboard ? <h1 className="top-title">{routeTitles[route]}</h1> : null}
         </div>
         <div className="top-bar-end">
           <div
@@ -846,9 +1157,14 @@ function App() {
             <p className="dashboard-balance-label">Total Balance</p>
             <div className="dashboard-balance-row">
               <div className="dashboard-balance-stack">
-                <p className="dashboard-balance-value">{dashboardBalance}</p>
+                <p className="dashboard-balance-value">
+                  <span className="dashboard-balance-amount">{dashboardBalance}</span>
+                  <span className="dashboard-balance-currency">USDT</span>
+                </p>
+                <div className="dashboard-balance-rule" aria-hidden="true" />
                 <p className="dashboard-referral-amount">
-                  {FIGMA_VISUAL_STUBS.referralAmount} <span className="dashboard-referral-unit">USDT</span>
+                  <span className="dashboard-referral-figure">{FIGMA_VISUAL_STUBS.referralAmount}</span>
+                  <span className="dashboard-referral-unit">USDT</span>
                 </p>
                 <p className="dashboard-referral-kicker">Received by referrals</p>
               </div>
@@ -858,7 +1174,7 @@ function App() {
                   onClick={() => navigate("topup")}
                   disabled={isBusy}
                 >
-                  <svg className="dashboard-pill-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <svg className="dashboard-pill-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                     <path
                       d="M12 5v14M5 12h14"
                       fill="none"
@@ -874,7 +1190,7 @@ function App() {
                   onClick={() => navigate("withdraw")}
                   disabled={isBusy}
                 >
-                  <svg className="dashboard-pill-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                  <svg className="dashboard-pill-icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                     <path
                       d="M12 5v10M8 15l4 4 4-4"
                       fill="none"
@@ -888,8 +1204,13 @@ function App() {
                 </button>
               </div>
             </div>
-            <button className="dashboard-details-btn" onClick={() => navigate("money")} disabled={isBusy}>
-              <svg className="dashboard-details-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <button
+              className="dashboard-details-btn"
+              onClick={() => navigate("money")}
+              disabled={isBusy}
+              aria-label="Money details"
+            >
+              <svg className="dashboard-details-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                 <path
                   d="M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z"
                   fill="none"
@@ -915,21 +1236,21 @@ function App() {
           messages={
             route === "dashboard"
               ? {
-                  loading: "Loading dashboard data...",
-                  empty: "Dashboard is empty. Top up to start tracking activity.",
-                  error: "Dashboard is temporarily unavailable.",
+                  loading: "Loading home data...",
+                  empty: "Home is empty. Top up to start tracking activity.",
+                  error: "Home is temporarily unavailable.",
                 }
               : route === "money"
                 ? {
                     loading: "Loading money operations...",
                     empty: "No money operations for this filter yet.",
-                    error: "Money details are temporarily unavailable.",
+                    error: "Detail Balance is temporarily unavailable.",
                   }
                 : route === "trading"
                   ? {
                       loading: "Loading trading metrics...",
                       empty: "Trading metrics are empty for this period.",
-                      error: "Trading details are temporarily unavailable.",
+                      error: "Detail Bot is temporarily unavailable.",
                     }
                   : route === "faq"
                     ? {
@@ -951,34 +1272,38 @@ function App() {
                 <div className="dashboard-perf">
                   <div className="dashboard-perf-head">
                     <span className="dashboard-perf-title">{dashboardGraphTitle}</span>
-                    <span className="dashboard-perf-period">{FIGMA_VISUAL_STUBS.performancePeriod}</span>
+                    <span className="dashboard-perf-period">{dashboardChartPeriod}</span>
                   </div>
-                  <div className="dashboard-perf-chart" aria-hidden="true">
-                    <div className="dashboard-perf-y-axis">
-                      <span>+4.00%</span>
-                      <span>+3.00%</span>
-                      <span>+2.00%</span>
-                      <span>+1.00%</span>
-                      <span>0.00%</span>
-                      <span>−1.00%</span>
-                      <span>−2.00%</span>
-                    </div>
-                    <div className={`dashboard-perf-plot${dashboardHasBalance ? "" : " dashboard-perf-plot--empty"}`}>
-                      {dashboardHasBalance ? (
-                        <>
-                          <div className="dashboard-perf-grid" />
-                          <div className="dashboard-perf-area" />
-                          <div className="dashboard-perf-line" />
-                        </>
-                      ) : (
-                        <div className="dashboard-perf-empty">
+                  <div
+                    className={`dashboard-perf-chart${dashboardHasBalance ? "" : " dashboard-perf-chart--figma-performance"}`}
+                  >
+                    {dashboardHasBalance ? (
+                      <>
+                        <div className="dashboard-perf-y-axis">
+                          {dashboardYAxisLabels.map((label, idx) => (
+                            <span key={`y-${idx}`}>{label}</span>
+                          ))}
+                        </div>
+                        <div className="dashboard-perf-plot dashboard-perf-plot--funded">
+                          <DashboardHomeBalanceChart funded />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="dashboard-perf-plot dashboard-perf-plot--figma-performance">
+                        <DashboardFigmaPerformanceGraphic />
+                        <div className="dashboard-perf-empty dashboard-perf-empty--on-figma">
                           <p className="dashboard-perf-empty-title">Balance is 0 USDT</p>
                           <p className="dashboard-perf-empty-body">
                             Top up to unlock balance history and cashflow tracking.
                           </p>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="dashboard-perf-x-axis" aria-hidden="true">
+                    {dashboardXAxisLabels.map((label, idx) => (
+                      <span key={`x-${idx}`}>{label}</span>
+                    ))}
                   </div>
                   <div className="dashboard-perf-legend">
                     <span className="dashboard-perf-legend-item">
@@ -998,31 +1323,92 @@ function App() {
               >
                 <div className={`dashboard-status-card${dashboardHasBalance ? "" : " dashboard-status-card--muted"}`}>
                   <div className="dashboard-status">
-                    <p>
-                      Bot status <strong>{dashboardStatusText}</strong>
-                    </p>
-                    <p>
-                      Actual price <strong>{dashboardPriceLine}</strong> <span>USDT/BTC</span>
-                    </p>
+                    <div className="dashboard-status-row">
+                      <span className="dashboard-status-kicker">Bot status</span>
+                      <span
+                        className={`dashboard-status-value${dashboardHasBalance ? " dashboard-status-value--live" : ""}`}
+                      >
+                        <span className="dashboard-status-dot" aria-hidden="true" />
+                        {dashboardHasBalance ? "Active" : "Awaiting funds"}
+                      </span>
+                    </div>
+                    <div className="dashboard-status-row">
+                      <span className="dashboard-status-kicker">Actual price</span>
+                      <span className="dashboard-price-figure">
+                        <strong className="dashboard-price-strong">{dashboardPriceLine}</strong>
+                        <span className="dashboard-price-unit">USDT/BTC</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </section>
-              <div className="dashboard-block dashboard-block--cta" role="group" aria-label="Dashboard actions">
+              <div className="dashboard-block dashboard-block--cta" role="group" aria-label="Home actions">
                 <div className="dashboard-cta-stack">
+                  <button
+                    className="dashboard-details-btn dashboard-details-btn--bot"
+                    onClick={() => navigate("trading")}
+                    disabled={isBusy}
+                    aria-label="Trading details"
+                  >
+                    <svg className="dashboard-details-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                      <path
+                        d="M4 19h16M6 16V8m6 8V5m6 11v-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Details
+                  </button>
                   <div className="dashboard-support-row">
                     <button
-                      className="dashboard-secondary-btn"
-                      onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.channelUrl, "Channel")}
+                      className="dashboard-secondary-btn dashboard-secondary-btn--social"
+                      onClick={() => navigate("social")}
                       disabled={isBusy}
                     >
-                      Channel
+                      <span className="dashboard-action-main">
+                        <span className="dashboard-action-icon" aria-hidden="true">
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="24"
+                            height="24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M3 10v4a2 2 0 0 0 2 2h2l4 3v-14l-4 3H5a2 2 0 0 0-2 2z" />
+                            <path d="M16 8a4 4 0 0 1 0 8" />
+                          </svg>
+                        </span>
+                        Social Media
+                      </span>
                     </button>
                     <button
-                      className="dashboard-secondary-btn"
-                      onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.chatUrl, "Chat")}
+                      className="dashboard-secondary-btn dashboard-secondary-btn--support"
+                      onClick={() => navigate("support")}
                       disabled={isBusy}
                     >
-                      Chat
+                      <span className="dashboard-action-main">
+                        <span className="dashboard-action-icon" aria-hidden="true">
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="24"
+                            height="24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                          </svg>
+                        </span>
+                        Support
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -1032,8 +1418,8 @@ function App() {
             <div className={`screen-template template-${route}`}>
               {route === "trading" && (
                 <header className="internal-hero internal-hero-trading">
-                  <h2 className="internal-hero-title">Trading</h2>
-                  <p className="internal-hero-label">Trading bot statistics for the period:</p>
+                  <h2 className="internal-hero-title">{routeTitles.trading}</h2>
+                  <p className="internal-hero-label">Detail Bot statistics for the period:</p>
                 </header>
               )}
               {route === "faq" && (
@@ -1059,75 +1445,109 @@ function App() {
               {route === "money" ? (
                 <div className="money-page">
                   <header className="internal-hero internal-hero-money">
-                    <h2 className="internal-hero-title">{routeTitles.money}</h2>
+                    <h2 className="internal-hero-title">
+                      {routeTitles.money} | {moneyRouteVariant}
+                    </h2>
                     <p className="internal-hero-label">{screenData.money.description}</p>
                   </header>
-                  <section className="money-overview" aria-label="Balance overview">
-                    <div className="money-overview-primary">
-                      <p className="money-overview-kicker">Current Balance</p>
-                      <p className="money-overview-figure">
-                        {moneyAvailable} <span className="money-overview-unit">USDT</span>
+                  <section className="money-current-balance" aria-label="Current balance">
+                    <p className="money-current-kicker">Current balance</p>
+                    <p className="money-current-value">
+                      {moneyAvailable}
+                      <span className="money-current-unit">USDT</span>
+                    </p>
+                    <p className="money-current-wallet">TQBw8SGT......6I48HPv4iB</p>
+                    <div className="money-quick-actions">
+                      <button type="button" className="money-quick-btn money-quick-btn--topup" onClick={() => navigate("topup")} disabled={isBusy}>
+                        <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                          <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                        <span className="money-quick-btn-label">Top up</span>
+                        <span className="money-quick-btn-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button type="button" className="money-quick-btn money-quick-btn--withdraw" onClick={() => navigate("withdraw")} disabled={isBusy}>
+                        <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                          <path
+                            d="M12 5v10M8 11l4-4 4 4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <span className="money-quick-btn-label">Withdraw</span>
+                        <span className="money-quick-btn-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                    </div>
+                    {showMoneyLocked ? (
+                      <p className="money-current-locked">
+                        Reserved: {moneyLockedDisplay} <span>USDT</span>
                       </p>
-                      {showMoneyLocked ? (
-                        <div className="money-overview-locked">
-                          <p className="money-overview-locked-label">Reserved / locked</p>
-                          <p className="money-overview-locked-value">
-                            {moneyLockedDisplay} <span className="money-overview-locked-unit">USDT</span>
-                          </p>
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="money-overview-side" role="group" aria-label="Referral and bot status">
-                      <div className="money-side-block">
-                        <p className="money-side-label">Referral</p>
-                        <p className="money-side-value">{FIGMA_VISUAL_STUBS.referralAmount}</p>
-                        <p className="money-side-unit">USDT</p>
-                      </div>
-                      <div className="money-side-block money-side-block--accent">
-                        <p className="money-side-label">Bot</p>
-                        <p className="money-side-status">Active</p>
-                      </div>
-                    </div>
+                    ) : null}
                   </section>
                   <div className="money-activity-head">
-                    <h3 className="money-activity-title">Recent activity</h3>
-                    <div className="money-activity-tabs" role="tablist" aria-label="Activity filter">
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={moneyFilter === "deposit"}
-                        aria-controls="money-feed-panel"
-                        className={`money-activity-tab${moneyFilter === "deposit" ? " money-activity-tab--active" : ""}`}
-                        disabled={isBusy}
-                        onClick={() => setMoneyFilter("deposit")}
-                      >
-                        Deposit
-                      </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={moneyFilter === "withdraw"}
-                        aria-controls="money-feed-panel"
-                        className={`money-activity-tab${moneyFilter === "withdraw" ? " money-activity-tab--active" : ""}`}
-                        disabled={isBusy}
-                        onClick={() => setMoneyFilter("withdraw")}
-                      >
-                        Withdraw
-                      </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={moneyFilter === "referral"}
-                        aria-controls="money-feed-panel"
-                        className={`money-activity-tab${moneyFilter === "referral" ? " money-activity-tab--active" : ""}`}
-                        disabled={isBusy}
-                        onClick={() => setMoneyFilter("referral")}
-                      >
-                        Referral
-                      </button>
-                    </div>
+                    <h3 className="money-activity-title" id="money-activity-heading">
+                      Actions history
+                    </h3>
                   </div>
-                  <div className="money-history-feed" id="money-feed-panel" role="tabpanel">
+                  <div className="money-summary-cards" aria-label="Balance summary — tap a category to view its history">
+                    <button
+                      type="button"
+                      className={`money-summary-card${moneyFilter === "deposit" ? " money-summary-card--active" : ""}`}
+                      aria-pressed={moneyFilter === "deposit"}
+                      disabled={isBusy}
+                      onClick={() => navigateMoneyFilter("deposit")}
+                    >
+                      <span className="money-summary-title">Deposit</span>
+                      <span className="money-summary-label">Total deposited amount:</span>
+                      <span className="money-summary-value">
+                        5237.00 <span>USDT</span>
+                      </span>
+                      <span className="money-summary-label">Number of deposits made:</span>
+                      <span className="money-summary-meta">5 TIMES</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`money-summary-card${moneyFilter === "withdraw" ? " money-summary-card--active" : ""}`}
+                      aria-pressed={moneyFilter === "withdraw"}
+                      disabled={isBusy}
+                      onClick={() => navigateMoneyFilter("withdraw")}
+                    >
+                      <span className="money-summary-title">Withdraw</span>
+                      <span className="money-summary-label">Total withdrawal amount:</span>
+                      <span className="money-summary-value">
+                        4250.98 <span>USDT</span>
+                      </span>
+                      <span className="money-summary-label">Number of withdrawals:</span>
+                      <span className="money-summary-meta">4 TIMES</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`money-summary-card${moneyFilter === "referral" ? " money-summary-card--active" : ""}`}
+                      aria-pressed={moneyFilter === "referral"}
+                      disabled={isBusy}
+                      onClick={() => navigateMoneyFilter("referral")}
+                    >
+                      <span className="money-summary-title">Referral</span>
+                      <span className="money-summary-label">Bonuses received from:</span>
+                      <span className="money-summary-value">
+                        603.22 <span>USDT</span>
+                      </span>
+                      <span className="money-summary-label">Total number of invited users:</span>
+                      <span className="money-summary-meta">8 PEOPLE</span>
+                    </button>
+                  </div>
+                  <div
+                    className="money-history-feed"
+                    id="money-history-feed"
+                    role="region"
+                    aria-labelledby="money-activity-heading"
+                  >
                     {filteredMoneyRows.length > 0 ? (
                       filteredMoneyRows.map((row, idx) => (
                         <article
@@ -1151,7 +1571,7 @@ function App() {
                     ) : (
                       <div className="money-feed-empty" role="status">
                         <p className="money-feed-empty-title">No operations in this section yet</p>
-                        <p className="money-feed-empty-body">Switch tab or wait for new transactions.</p>
+                        <p className="money-feed-empty-body">Pick another category above or wait for new transactions.</p>
                       </div>
                     )}
                   </div>
@@ -1160,51 +1580,64 @@ function App() {
 
               {route === "trading" && (
                 <>
-                  <section className="trading-hero" aria-label="Trading bot status">
+                  <section className="trading-hero" aria-label="Detail Bot status">
                     <div className="trading-hero-main">
                       <p className="trading-hero-label">Bot status</p>
                       <p className="trading-hero-value">
                         <span className="trading-hero-dot" aria-hidden="true" /> Active
                       </p>
                     </div>
-                    <div className="trading-hero-meta">
-                      <div className="trading-hero-meta-block">
-                        <p className="trading-hero-meta-label">Actual price</p>
-                        <p className="trading-hero-meta-value">
-                          {FIGMA_VISUAL_STUBS.tradingPriceLine} <span className="trading-hero-meta-unit">USDT/BTC</span>
-                        </p>
-                      </div>
-                      <div className="trading-hero-meta-actions" aria-label="Trading details action">
-                        <button
-                          type="button"
-                          className="trading-hero-cta trading-hero-cta--details"
-                          onClick={() => navigate("money")}
-                          disabled={isBusy}
-                        >
-                          <svg className="trading-hero-cta-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <div className="trading-hero-meta-block">
+                      <p className="trading-hero-meta-label">Actual price</p>
+                      <p className="trading-hero-meta-value">
+                        {FIGMA_VISUAL_STUBS.tradingPriceLine} <span className="trading-hero-meta-unit">USDT/BTC</span>
+                      </p>
+                    </div>
+                    <div className="trading-action-row">
+                      <button
+                        type="button"
+                        className="trading-action-btn trading-action-btn--start"
+                        onClick={() => setActionMessage("Bot is already active.")}
+                        disabled={isBusy}
+                      >
+                        <span className="trading-action-main">
+                          <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                             <path
-                              d="M5 7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V7z"
+                              d="M5 19l3.5-3.5 3 3L19 11M15 11h4v4"
                               fill="none"
                               stroke="currentColor"
-                              strokeWidth="1.75"
+                              strokeWidth="1.9"
+                              strokeLinecap="round"
                               strokeLinejoin="round"
                             />
-                            <path
-                              d="M7 10h10M9 14h4"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.75"
-                              strokeLinecap="round"
-                            />
                           </svg>
-                          Details
-                        </button>
-                      </div>
+                          <span>Start</span>
+                        </span>
+                        <span className="trading-action-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="trading-action-btn trading-action-btn--stop"
+                        onClick={() => setActionMessage("Stop action is not enabled in this wave.")}
+                        disabled={isBusy}
+                      >
+                        <span className="trading-action-main">
+                          <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          <span>Stop</span>
+                        </span>
+                        <span className="trading-action-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
                     </div>
                   </section>
                   <div className="trading-stack">
                     <div className="trading-stack-head">
-                      <p className="trading-section-title">Trading bot statistics for the period:</p>
+                      <p className="trading-section-title">Detail Bot statistics for the period:</p>
                       <div className="stats-tabs" role="tablist" aria-label="Period">
                         {(["24h", "7d", "1m", "3m"] as const).map((label) => (
                           <button
@@ -1222,22 +1655,63 @@ function App() {
                       </div>
                     </div>
                     <div className="trading-graph" aria-hidden="true">
+                      <div className="trading-graph-y-axis">
+                        <span>+8%</span>
+                        <span>+4%</span>
+                        <span>0%</span>
+                        <span>-4%</span>
+                      </div>
                       <div className="trading-graph-line" />
+                      <div className="trading-graph-points">
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                        <span />
+                      </div>
+                      <div className="trading-graph-legend">
+                        <span className="trading-graph-legend-item">
+                          <span className="trading-graph-legend-dot trading-graph-legend-dot--bot" />
+                          Bot yield
+                        </span>
+                        <span className="trading-graph-legend-item">
+                          <span className="trading-graph-legend-dot trading-graph-legend-dot--market" />
+                          Market baseline
+                        </span>
+                      </div>
+                      <div className="trading-graph-x-axis">
+                        <span>Week 1</span>
+                        <span>Week 2</span>
+                        <span>Week 3</span>
+                        <span>Week 4</span>
+                      </div>
                     </div>
                     <div className="trading-kpi-row" aria-label="Trading summary">
-                      <div className="trading-kpi-cell">
-                        <p className="trading-kpi-label">Source</p>
-                        <p className="trading-kpi-value">{tradingStats.sourceLabel}</p>
-                      </div>
-                      <div className="trading-kpi-cell">
-                        <p className="trading-kpi-label">Total trades</p>
-                        <p className="trading-kpi-value">{tradingTotalLabel}</p>
-                      </div>
-                      <div className="trading-kpi-cell">
-                        <p className="trading-kpi-label">Result</p>
-                        <p className="trading-kpi-value trading-kpi-value--muted">{tradingStats.result}</p>
-                      </div>
+                      <article className="trading-stats-card">
+                        <div className="trading-stats-row">
+                          <span className="trading-stats-icon trading-stats-icon--total" aria-hidden="true" />
+                          <p className="trading-stats-label">Total deals:</p>
+                          <p className="trading-stats-value">{tradingTotalLabel}</p>
+                        </div>
+                        <div className="trading-stats-row">
+                          <span className="trading-stats-icon trading-stats-icon--up" aria-hidden="true" />
+                          <p className="trading-stats-label">Successful:</p>
+                          <p className="trading-stats-value">{tradingStats.positive}</p>
+                        </div>
+                        <div className="trading-stats-row">
+                          <span className="trading-stats-icon trading-stats-icon--down" aria-hidden="true" />
+                          <p className="trading-stats-label">Unsuccessful:</p>
+                          <p className="trading-stats-value">{tradingStats.negative}</p>
+                        </div>
+                        <div className="trading-stats-row">
+                          <span className="trading-stats-icon trading-stats-icon--result" aria-hidden="true" />
+                          <p className="trading-stats-label">Percentage of profit:</p>
+                          <p className="trading-stats-value trading-stats-value--result">{tradingStats.result}</p>
+                        </div>
+                      </article>
                     </div>
+                    <p className="trading-list-kicker">trading:</p>
                     {[
                       {
                         tone: "success",
@@ -1249,7 +1723,7 @@ function App() {
                       },
                       {
                         tone: "danger",
-                        title: "Prediction was unsuccessful.",
+                        title: "Prediction was unsuccessful!",
                         priceLabel: "Price is UP",
                         amountLabel: "to 69569.32",
                         resultLabel: "Loss of trade is:",
@@ -1288,6 +1762,17 @@ function App() {
 
               {route === "faq" && (
                 <div className="faq-list" role="list">
+                  <article className="faq-support-card">
+                    <p className="faq-support-title">Need more help?</p>
+                    <div className="faq-support-actions">
+                      <button type="button" className="faq-support-btn" onClick={() => navigate("support")} disabled={isBusy}>
+                        Support
+                      </button>
+                      <button type="button" className="faq-support-btn faq-support-btn--alt" onClick={() => navigate("social")} disabled={isBusy}>
+                        Social Media
+                      </button>
+                    </div>
+                  </article>
                   {faqEntries.map((entry) => {
                     const isOpen = expandedFaqId === entry.id;
                     return (
@@ -1333,16 +1818,29 @@ function App() {
                     <p className="internal-hero-label">{screenData.notifications.description}</p>
                   </header>
                   <div className="notifications-list" role="list">
+                    <p className="notification-group-title">New</p>
                     {[
                       ["Top up confirmed", "A 42.10 USDT deposit was credited.", "Today · 14:32"],
                       ["Withdrawal queued", "Your withdrawal is being processed.", "Today · 12:05"],
-                      ["Bot status update", "Trading bot switched to active mode.", "Yesterday · 09:42"],
+                      ["Bot status update", "Detail Bot switched to active mode.", "Today · 09:42"],
                     ].map(([title, body, meta], idx) => (
                       <article
                         key={`${title}-${idx}`}
                         className={`notification-row${idx === 0 ? " notification-row--new" : ""}`}
                         role="listitem"
                       >
+                        <p className="notification-title">{title}</p>
+                        <p className="notification-body">{body}</p>
+                        <p className="notification-meta">{meta}</p>
+                      </article>
+                    ))}
+                    <div className="notification-divider" aria-hidden="true" />
+                    <p className="notification-group-title">Earlier</p>
+                    {[
+                      ["Referral bonus", "A referral bonus operation was added.", "Yesterday · 18:10"],
+                      ["Status note", "No additional actions required right now.", "Yesterday · 11:20"],
+                    ].map(([title, body, meta], idx) => (
+                      <article key={`${title}-${idx}`} className="notification-row" role="listitem">
                         <p className="notification-title">{title}</p>
                         <p className="notification-body">{body}</p>
                         <p className="notification-meta">{meta}</p>
@@ -1357,20 +1855,21 @@ function App() {
                   <header className="internal-hero internal-hero-settings">
                     <h2 className="internal-hero-title">{screenData.settings.title}</h2>
                     <p className="internal-hero-label">{screenData.settings.description}</p>
+                    {hasPendingExternalLinks && (
+                      <p className="settings-pending-note">External production links will be finalized at release step.</p>
+                    )}
                   </header>
                   <div className="settings-stack">
-                    <article className="metric-card settings-card">
-                      <p className="metric-label">Theme</p>
-                      <div className="settings-segmented">
-                        <button type="button" className="settings-segment settings-segment--active">
-                          Black
-                        </button>
-                        <button type="button" className="settings-segment">
-                          Light
-                        </button>
-                      </div>
-                    </article>
                     <article className="metric-card settings-card settings-links">
+                      <p className="settings-group-title">Language</p>
+                      <button type="button" className="settings-link-btn">
+                        English
+                      </button>
+                      <button type="button" className="settings-link-btn">
+                        Spanish
+                      </button>
+                      <div className="settings-divider" aria-hidden="true" />
+                      <p className="settings-group-title">Preferences</p>
                       <button type="button" className="settings-link-btn">
                         Push: Enabled
                       </button>
@@ -1378,26 +1877,92 @@ function App() {
                         Vibration: Enabled
                       </button>
                       <button type="button" className="settings-link-btn" onClick={() => navigate("faq")} disabled={isBusy}>
-                        FAQ
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            i
+                          </span>
+                          FAQ
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
                       </button>
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(SUPPORT_URL, "Support")}
+                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.supportUrl, "Support")}
                         disabled={isBusy}
                       >
-                        Support
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            ?
+                          </span>
+                          Support
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
                       </button>
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(REFERRAL_URL, "Referral")}
+                        onClick={() => navigate("support")}
                         disabled={isBusy}
                       >
-                        Referral link
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            S
+                          </span>
+                          Open Support
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
                       </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => navigate("social")}
+                        disabled={isBusy}
+                      >
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            C
+                          </span>
+                          Social Media
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.referralUrl, "Referral")}
+                        disabled={isBusy}
+                      >
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            R
+                          </span>
+                          Referral link
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <div className="settings-divider" aria-hidden="true" />
+                      <p className="settings-group-title">Account</p>
                       <button type="button" className="settings-link-btn" onClick={() => navigate("seed")} disabled={isBusy}>
-                        Seed
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            #
+                          </span>
+                          Seed
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -1405,8 +1970,197 @@ function App() {
                         onClick={() => navigate("agreement")}
                         disabled={isBusy}
                       >
-                        User Agreement
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            U
+                          </span>
+                          User Agreement
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
                       </button>
+                    </article>
+                  </div>
+                </div>
+              )}
+
+              {route === "support" && (
+                <div className="settings-page">
+                  <header className="internal-hero internal-hero-settings">
+                    <h2 className="internal-hero-title">{screenData.support.title}</h2>
+                    <p className="internal-hero-label">{screenData.support.description}</p>
+                    {hasPendingExternalLinks && (
+                      <p className="settings-pending-note">External production links will be finalized at release step.</p>
+                    )}
+                  </header>
+                  <div className="settings-stack">
+                    <article className="metric-card settings-card settings-links support-list-card">
+                      <div className="settings-context-note">
+                        <p className="settings-context-title">Response time</p>
+                        <p className="settings-context-body">Average support reply within 15-30 minutes during active hours.</p>
+                      </div>
+                      <p className="settings-group-title">Contacts</p>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.supportUrl, "Support")}
+                        disabled={isBusy}
+                      >
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            ?
+                          </span>
+                          Telegram Support
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("faq")} disabled={isBusy}>
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            i
+                          </span>
+                          FAQ
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("notifications")} disabled={isBusy}>
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            !
+                          </span>
+                          Notification
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <div className="settings-divider" aria-hidden="true" />
+                      <p className="settings-group-title">Navigation</p>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("settings")} disabled={isBusy}>
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            *
+                          </span>
+                          Settings
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("dashboard")} disabled={isBusy}>
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            H
+                          </span>
+                          Home
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                    </article>
+                    <article className="metric-card support-info-card">
+                      <p className="support-info-title">Before contacting support</p>
+                      <ul className="support-info-list">
+                        <li>Prepare transaction hash, amount and wallet address.</li>
+                        <li>For top up issues, attach payment proof screenshot.</li>
+                        <li>Use FAQ first for common onboarding questions.</li>
+                      </ul>
+                    </article>
+                  </div>
+                </div>
+              )}
+
+              {route === "social" && (
+                <div className="settings-page">
+                  <header className="internal-hero internal-hero-settings">
+                    <h2 className="internal-hero-title">{screenData.social.title}</h2>
+                    <p className="internal-hero-label">{screenData.social.description}</p>
+                    {hasPendingExternalLinks && (
+                      <p className="settings-pending-note">External production links will be finalized at release step.</p>
+                    )}
+                  </header>
+                  <div className="settings-stack">
+                    <article className="metric-card settings-card settings-links social-list-card">
+                      <div className="settings-context-note">
+                        <p className="settings-context-title">Official community links</p>
+                        <p className="settings-context-body">Follow updates, release notes and market announcements.</p>
+                      </div>
+                      <p className="settings-group-title">Channels</p>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.channelUrl, "Channel")}
+                        disabled={isBusy}
+                      >
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            C
+                          </span>
+                          Channel
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.chatUrl, "Chat")}
+                        disabled={isBusy}
+                      >
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            @
+                          </span>
+                          Chat
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-link-btn"
+                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.youtubeUrl, "Youtube")}
+                        disabled={isBusy}
+                      >
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            Y
+                          </span>
+                          Youtube
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                      <div className="settings-divider" aria-hidden="true" />
+                      <p className="settings-group-title">More</p>
+                      <button type="button" className="settings-link-btn" onClick={() => navigate("support")} disabled={isBusy}>
+                        <span className="settings-link-main">
+                          <span className="settings-link-icon" aria-hidden="true">
+                            ?
+                          </span>
+                          Support
+                        </span>
+                        <span className="settings-link-chevron" aria-hidden="true">
+                          ›
+                        </span>
+                      </button>
+                    </article>
+                    <article className="metric-card social-guidelines-card">
+                      <p className="support-info-title">Community guidelines</p>
+                      <ul className="support-info-list">
+                        <li>Use official channels only; avoid unknown direct messages.</li>
+                        <li>Admins never request seed phrase or private keys.</li>
+                        <li>Report suspicious links directly via Support.</li>
+                      </ul>
                     </article>
                   </div>
                 </div>
@@ -1463,54 +2217,77 @@ function App() {
                     <p className="internal-hero-label">{screenData.topup.description}</p>
                   </header>
                   <div className="topup-frame">
-                    <TopUpQrVisual />
-                    <p className="topup-qr-hint">Scan the QR or copy the address below</p>
-                    <TopupAddressPanel address={DEFAULT_TOPUP_ADDRESS} />
-                    <button
-                      type="button"
-                      className="topup-copy-row"
-                      disabled={isBusy}
-                      onClick={async () => {
-                        if (isBusy) return;
-                        try {
-                          await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
-                          flashTopupCopied();
-                        } catch {
-                          flashTopupCopyError();
-                        }
-                      }}
-                    >
-                      <span className="topup-copy-row-icon" aria-hidden="true">
-                        <svg className="topup-copy-svg" viewBox="0 0 24 24" width="20" height="20" fill="none">
-                          <path
-                            d="M16 4h2a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2h2"
-                            stroke="currentColor"
-                            strokeWidth="1.75"
-                            strokeLinejoin="round"
-                          />
-                          <rect
-                            x="4"
-                            y="8"
-                            width="12"
-                            height="12"
-                            rx="2"
-                            stroke="currentColor"
-                            strokeWidth="1.75"
-                          />
-                        </svg>
-                      </span>
-                      {topupCopyState === "success"
-                        ? "Copied"
-                        : topupCopyState === "error"
-                          ? "Copy unavailable"
-                          : "Copy"}
-                    </button>
+                    <article className="topup-payment-card">
+                      <p className="topup-payment-title">Receive USDT</p>
+                      <TopUpQrVisual />
+                      <p className="topup-qr-hint">Scan the QR or copy the address below</p>
+                      <TopupAddressPanel address={DEFAULT_TOPUP_ADDRESS} />
+                      <button
+                        type="button"
+                        className="topup-copy-row"
+                        disabled={isBusy}
+                        onClick={async () => {
+                          if (isBusy) return;
+                          try {
+                            await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
+                            flashTopupCopied();
+                          } catch {
+                            flashTopupCopyError();
+                          }
+                        }}
+                      >
+                        <span className="topup-copy-row-icon" aria-hidden="true">
+                          <svg className="topup-copy-svg" viewBox="0 0 24 24" width="20" height="20" fill="none">
+                            <path
+                              d="M16 4h2a2 2 0 012 2v11a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2h2"
+                              stroke="currentColor"
+                              strokeWidth="1.75"
+                              strokeLinejoin="round"
+                            />
+                            <rect
+                              x="4"
+                              y="8"
+                              width="12"
+                              height="12"
+                              rx="2"
+                              stroke="currentColor"
+                              strokeWidth="1.75"
+                            />
+                          </svg>
+                        </span>
+                        {topupCopyState === "success"
+                          ? "Copied"
+                          : topupCopyState === "error"
+                            ? "Copy unavailable"
+                            : "Copy"}
+                      </button>
+                    </article>
                   </div>
                 </div>
               )}
 
               {route === "withdraw" && (
                 <div className="withdraw-block">
+                  <article className="metric-card withdraw-overview-card">
+                    <div className="withdraw-overview-row">
+                      <span className="withdraw-overview-label">Recipient</span>
+                      <span className="withdraw-overview-value">
+                        {withdrawAddress.trim() ? withdrawAddress.trim() : "Paste TRC20 address"}
+                      </span>
+                    </div>
+                    <div className="withdraw-overview-row">
+                      <span className="withdraw-overview-label">Amount</span>
+                      <span className="withdraw-overview-value">
+                        {withdrawAmount.trim() ? withdrawAmount.trim() : "0.00"} USDT
+                      </span>
+                    </div>
+                    <div className="withdraw-overview-row">
+                      <span className="withdraw-overview-label">Estimated fee</span>
+                      <span className="withdraw-overview-value">
+                        {withdrawFeeMinor != null ? formatMinor(withdrawFeeMinor) : "0.00"} USDT
+                      </span>
+                    </div>
+                  </article>
                   <article className="metric-card withdraw-form-card">
                     <div className="withdraw-form-head">
                       <p className="metric-label">Destination</p>
@@ -1592,7 +2369,21 @@ function App() {
 
               {route === "confirm" && (
                 <div className="confirm-block">
-                  {confirmStep === "success" ? (
+                  {!pendingAction ? (
+                    <article className="metric-card confirm-cheque-card" aria-live="polite">
+                      <header className="confirm-cheque-head">
+                        <div>
+                          <p className="confirm-cheque-kicker">Cheque</p>
+                          <h3 className="confirm-cheque-title">No pending withdrawal request</h3>
+                        </div>
+                      </header>
+                      <div className="confirm-cheque-body">
+                        <p className="confirm-cheque-subline">
+                          Start from <strong>Withdraw</strong>, enter address and amount, then continue here.
+                        </p>
+                      </div>
+                    </article>
+                  ) : confirmStep === "success" ? (
                     <article className="metric-card confirm-result-card" aria-live="polite">
                       <div className="confirm-result-mark" aria-hidden="true">
                         ✓
@@ -1600,8 +2391,8 @@ function App() {
                       <p className="confirm-result-kicker">Transfer status</p>
                       <h3 className="confirm-result-title">Transfer queued successfully</h3>
                       <p className="confirm-result-body">
-                        Your transfer request was accepted. You can continue from the dashboard or review activity on
-                        the Money screen.
+                        Your transfer request was accepted. You can continue from Home or review activity on
+                        Detail Balance.
                       </p>
                       <div className="confirm-result-meta">
                         <span className="confirm-result-meta-label">Trace</span>
@@ -1612,7 +2403,7 @@ function App() {
                     <article className="metric-card confirm-cheque-card">
                       <header className="confirm-cheque-head">
                         <div>
-                          <p className="confirm-cheque-kicker">Operation summary</p>
+                          <p className="confirm-cheque-kicker">Cheque</p>
                           <h3 className="confirm-cheque-title">Confirm withdrawal</h3>
                         </div>
                         <span className="confirm-cheque-ref" title="Trace reference">
@@ -1648,6 +2439,56 @@ function App() {
                           submission.
                         </p>
                       </footer>
+                    </article>
+                  )}
+                </div>
+              )}
+
+              {route === "done" && (
+                <div className="confirm-block">
+                  {doneReceipt ? (
+                    <article className="metric-card confirm-result-card" aria-live="polite">
+                      <div className="confirm-result-mark" aria-hidden="true">
+                        ✓
+                      </div>
+                      <p className="confirm-result-kicker">Done</p>
+                      <h3 className="confirm-result-title">Withdrawal submitted</h3>
+                      <p className="confirm-result-body">
+                        Request accepted. Processing time is usually 10 minutes to 3 hours.
+                      </p>
+                      <div className="confirm-result-meta">
+                        <span className="confirm-result-meta-label">Address</span>
+                        <span className="confirm-result-meta-value">{doneReceipt.recipientAddress || "TRC20 wallet"}</span>
+                      </div>
+                      <div className="confirm-result-meta">
+                        <span className="confirm-result-meta-label">Amount</span>
+                        <span className="confirm-result-meta-value">{formatMinor(doneReceipt.amountMinor)} USDT</span>
+                      </div>
+                      <div className="confirm-result-meta">
+                        <span className="confirm-result-meta-label">Fee</span>
+                        <span className="confirm-result-meta-value">{formatMinor(doneReceipt.feeMinor)} USDT</span>
+                      </div>
+                      <div className="confirm-result-meta">
+                        <span className="confirm-result-meta-label">Trace</span>
+                        <span className="confirm-result-meta-value">{doneReceipt.traceId}</span>
+                      </div>
+                      <div className="done-pill" role="status" aria-live="polite">
+                        Done!
+                      </div>
+                    </article>
+                  ) : (
+                    <article className="metric-card confirm-cheque-card" aria-live="polite">
+                      <header className="confirm-cheque-head">
+                        <div>
+                          <p className="confirm-cheque-kicker">Done</p>
+                          <h3 className="confirm-cheque-title">No confirmed withdrawal found</h3>
+                        </div>
+                      </header>
+                      <div className="confirm-cheque-body">
+                        <p className="confirm-cheque-subline">
+                          Open this screen through the withdraw flow after tapping <strong>Confirm and Send</strong>.
+                        </p>
+                      </div>
                     </article>
                   )}
                 </div>
@@ -1711,7 +2552,7 @@ function App() {
                     }
                     disabled={isBusy}
                   >
-                    {route === "confirm" && confirmStep === "success" ? "Back to Dashboard" : secondaryCta.label}
+                    {route === "confirm" && confirmStep === "success" ? "Back to Home" : secondaryCta.label}
                   </button>
                 ) : null}
               </div>
@@ -1726,8 +2567,8 @@ function App() {
             key={item.route}
             type="button"
             onClick={() => navigate(item.route)}
-            aria-current={route === item.route ? "page" : undefined}
-            className={`tab${route === item.route ? " tab-active" : ""}`}
+            aria-current={activeBottomTab === item.route ? "page" : undefined}
+            className={`tab${activeBottomTab === item.route ? " tab-active" : ""}`}
             disabled={isBusy}
           >
             <span className="tab-stack">
