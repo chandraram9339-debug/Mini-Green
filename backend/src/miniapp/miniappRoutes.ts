@@ -8,10 +8,12 @@ import { buildTradingJournalEmptyPayload, buildTradingJournalPayload } from "./t
 import { runDepositOnPaid } from "../services/depositService.js";
 import { createWithdrawal } from "../services/withdrawalService.js";
 import { buildWalletHistoryForUser } from "./historyResponse.js";
+import { buildNotificationsPayload } from "./notificationsPayload.js";
 import { signAccessToken, requireMiniappAuth } from "./jwtAuth.js";
 import { buildTradingSummaryForUser, isAllowedTradingPeriod } from "./tradingResponse.js";
 import { buildWalletSeedPayload } from "./walletSeedPayload.js";
 import { buildWalletForUser } from "./walletResponse.js";
+import { markAllUserNotificationsRead } from "../repos/notificationRepo.js";
 
 /**
  * Мини-апп (Figma): JWT + per-user TRC20 (HD / deterministic) + ввод/вывод по ТЗ.
@@ -77,6 +79,29 @@ export function registerMiniappContract(app: express.Express) {
 
   app.get("/wallet/history", requireMiniappAuth, (req, res) => {
     res.json(buildWalletHistoryForUser(req.userId!));
+  });
+
+  app.get("/notifications", requireMiniappAuth, (req, res) => {
+    const db = getDb();
+    const rawLimit = Number(req.query.limit);
+    const limit = Number.isFinite(rawLimit) ? rawLimit : 20;
+    const u = getUserByTg(db, req.userId!);
+    if (!u) {
+      res.json({ items: [], unreadCount: 0 });
+      return;
+    }
+    res.json(buildNotificationsPayload(db, u.id, limit));
+  });
+
+  app.post("/notifications/read-all", requireMiniappAuth, (req, res) => {
+    const db = getDb();
+    const u = getUserByTg(db, req.userId!);
+    if (!u) {
+      res.json({ ok: true, unreadCount: 0 });
+      return;
+    }
+    markAllUserNotificationsRead(db, u.id);
+    res.json({ ok: true, unreadCount: 0 });
   });
 
   app.get("/trading/summary", requireMiniappAuth, async (req, res) => {

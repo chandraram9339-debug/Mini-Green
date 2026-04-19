@@ -117,6 +117,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration014TradePositionFeedMeta(db);
   runMigration015TradePositionsCloseResultRepair(db);
   runMigration016AlTradeFeedSnapshots(db);
+  runMigration017UserNotifications(db);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -393,4 +394,27 @@ CREATE TABLE IF NOT EXISTS al_trade_feed_snapshots (
 CREATE INDEX IF NOT EXISTS idx_al_tf_snap_fetched ON al_trade_feed_snapshots (fetched_at DESC);
 `);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (16, '016_al_trade_feed_snapshots')").run();
+}
+
+function runMigration017UserNotifications(db: Database) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=17").get() as { ok: number } | undefined;
+  if (m) return;
+  db.exec(`
+CREATE TABLE IF NOT EXISTS user_notifications (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  variant TEXT NOT NULL,
+  message TEXT NOT NULL,
+  source_id TEXT,
+  unread INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_user_notifications_user_created
+  ON user_notifications (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_user_notifications_user_unread
+  ON user_notifications (user_id, unread, created_at DESC);
+`);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (17, '017_user_notifications')").run();
 }

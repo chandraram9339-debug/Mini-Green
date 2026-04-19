@@ -35,7 +35,7 @@ function readFiniteNumber(value: unknown): number | null {
   return null;
 }
 
-function hasAlStateHttpConfig(c: AppConfig): boolean {
+export function hasAlStateHttpConfig(c: AppConfig): boolean {
   return (
     Boolean(c.alTradeFeedBaseUrl.trim()) &&
     Boolean(c.alTradeFeedHttpUser.trim()) &&
@@ -72,6 +72,7 @@ export async function fetchAlLiveTradingPrice(c: AppConfig): Promise<LiveTrading
         headers: {
           Authorization: `Basic ${auth}`,
           Accept: "application/json",
+          "User-Agent": "curl/8.0",
         },
         signal: ac.signal,
       });

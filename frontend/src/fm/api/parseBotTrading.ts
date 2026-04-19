@@ -103,8 +103,8 @@ export function parseBotTradingPayload(root: unknown): BotTradingSnapshot | null
   if (!displayPrice && !hasAnyStat) return null;
 
   return {
-    displayPrice: displayPrice ?? "69 425.22",
-    pricePair: pricePair || "USDT/BTC",
+    displayPrice: displayPrice ?? "—",
+    pricePair: pricePair || "—",
     byPeriod: hasAnyStat
       ? byPeriod
       : {

@@ -131,7 +131,6 @@ export default function SettingsScreen() {
         assets={settingsAppBarAssets}
         backTo={routes.home}
         title={t("settings.title")}
-        bellBadge="3"
         settingsStatic
       />
 

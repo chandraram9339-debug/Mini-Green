@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { authTelegramWithInitData } from "../api/authTelegram";
 import { confirmDepositPaidRequest } from "../api/confirmDeposit";
 import { hasApiBase } from "../api/env";
+import { fetchNotifications } from "../api/fetchNotifications";
 import { fetchWalletSnapshot } from "../api/fetchWallet";
 import { setStoredAccessToken } from "../api/http";
 import { mergeWalletSnapshots } from "../api/mergeWallets";
@@ -28,6 +29,7 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
   const [state, setState] = useState<AppSessionState>({
     phase: "idle",
     mode: "mock",
+    notificationUnreadCount: 0,
   });
 
   const refreshWallet = useCallback(async () => {
@@ -51,13 +53,35 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+  const refreshNotifications = useCallback(async () => {
+    if (!hasApiBase()) {
+      setState((s) => ({ ...s, notificationUnreadCount: 0 }));
+      return;
+    }
+    const initData = window.Telegram?.WebApp?.initData ?? "";
+    if (!initData) {
+      const bearer = devBearerFallback();
+      if (bearer) setStoredAccessToken(bearer);
+      else return;
+    }
+    try {
+      const payload = await fetchNotifications(1);
+      setState((s) => ({
+        ...s,
+        notificationUnreadCount: payload?.unreadCount ?? 0,
+      }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     if (appSessionBootStarted) return;
     appSessionBootStarted = true;
 
     void (async () => {
       if (!hasApiBase()) {
-        setState({ phase: "ready", mode: "mock" });
+        setState({ phase: "ready", mode: "mock", notificationUnreadCount: 0 });
         return;
       }
 
@@ -67,54 +91,65 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
         const bearer = devBearerFallback();
         if (allowDevWithoutTelegram() && bearer) {
           setStoredAccessToken(bearer);
-          setState({ phase: "bootstrapping", mode: "live" });
+          setState({ phase: "bootstrapping", mode: "live", notificationUnreadCount: 0 });
           try {
             const w = await fetchWalletSnapshot();
-            setState({ phase: "ready", mode: "live", wallet: w });
+            setState({ phase: "ready", mode: "live", wallet: w, notificationUnreadCount: 0 });
           } catch (e) {
             setState({
               phase: "error",
               mode: "live",
               errorMessage: e instanceof Error ? e.message : "Wallet fetch failed",
+              notificationUnreadCount: 0,
             });
           }
           return;
         }
         if (allowDevWithoutTelegram()) {
           console.warn("[AppSession] No Telegram initData — mock mode (dev).");
-          setState({ phase: "ready", mode: "mock" });
+          setState({ phase: "ready", mode: "mock", notificationUnreadCount: 0 });
           return;
         }
         setState({
           phase: "error",
           mode: "live",
           errorMessage: "Откройте мини-приложение из Telegram (нет initData).",
+          notificationUnreadCount: 0,
         });
         return;
       }
 
-      setState({ phase: "bootstrapping", mode: "live" });
+      setState({ phase: "bootstrapping", mode: "live", notificationUnreadCount: 0 });
       try {
         const { wallet: wAuth } = await authTelegramWithInitData(initData);
         const wFetch = await fetchWalletSnapshot();
         const merged = mergeWalletSnapshots(wAuth, wFetch);
-        setState({ phase: "ready", mode: "live", wallet: merged });
+        setState({ phase: "ready", mode: "live", wallet: merged, notificationUnreadCount: 0 });
       } catch (e) {
         const fallbackMock = import.meta.env.VITE_API_AUTH_FALLBACK_MOCK === "true";
         if (fallbackMock) {
           console.warn("[AppSession] Auth failed, fallback mock:", e);
           setStoredAccessToken(null);
-          setState({ phase: "ready", mode: "mock" });
+          setState({ phase: "ready", mode: "mock", notificationUnreadCount: 0 });
           return;
         }
         setState({
           phase: "error",
           mode: "live",
           errorMessage: e instanceof Error ? e.message : "Auth failed",
+          notificationUnreadCount: 0,
         });
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!hasApiBase()) return;
+    if (state.phase !== "ready") return;
+    void refreshNotifications();
+    const intervalId = window.setInterval(() => void refreshNotifications(), 5_000);
+    return () => window.clearInterval(intervalId);
+  }, [state.phase, refreshNotifications]);
 
   const confirmDepositPaid = useCallback(async (): Promise<boolean> => {
     if (!hasApiBase()) {
@@ -133,16 +168,20 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
     } else if (result.ok) {
       await refreshWallet();
     }
+    if (result.ok) {
+      await refreshNotifications();
+    }
     return result.ok;
-  }, [refreshWallet]);
+  }, [refreshNotifications, refreshWallet]);
 
   const value = useMemo<AppSessionContextValue>(
     () => ({
       ...state,
       refreshWallet,
       confirmDepositPaid,
+      refreshNotifications,
     }),
-    [state, refreshWallet, confirmDepositPaid],
+    [state, refreshWallet, confirmDepositPaid, refreshNotifications],
   );
 
   return <AppSessionContext.Provider value={value}>{children}</AppSessionContext.Provider>;

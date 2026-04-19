@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import { useAppSession } from "../../session/useAppSession";
 import type { AppBarAssetUrls } from "../types/appBarAssets";
 import { routes } from "../routes";
 
@@ -11,7 +12,7 @@ type FigmaAppBarProps = {
   /** Центральный заголовок (узкие экраны вроде Social Media node 1:3734). */
   title?: string;
   /** Число на бейдже колокольчика (экран Notification — «3»). По умолчанию 25. */
-  bellBadge?: string;
+  bellBadge?: string | number | null;
   /** На экране уведомлений колокольчик в макете без ссылки — декоративный. */
   bellStatic?: boolean;
   /** На экране Settings иконка шестерёнки справа без ссылки (node 1:3805). */
@@ -24,10 +25,18 @@ export function FigmaAppBar({
   backTo,
   onBack,
   title,
-  bellBadge = "25",
+  bellBadge,
   bellStatic = false,
   settingsStatic = false,
 }: FigmaAppBarProps) {
+  const { notificationUnreadCount } = useAppSession();
+  const resolvedBellBadge =
+    bellBadge != null
+      ? String(bellBadge)
+      : notificationUnreadCount > 0
+        ? String(notificationUnreadCount)
+        : null;
+
   const backInner = (
     <span className="fm-back-inner">
       <img alt="" src={assets.backIcon} />
@@ -37,7 +46,7 @@ export function FigmaAppBar({
   const bellInner = (
     <>
       <img alt="" src={assets.bellIcon} className="fm-bell-img" />
-      <span className="fm-notify-badge">{bellBadge}</span>
+      {resolvedBellBadge ? <span className="fm-notify-badge">{resolvedBellBadge}</span> : null}
     </>
   );
 

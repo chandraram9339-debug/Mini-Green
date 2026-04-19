@@ -16,6 +16,7 @@ import { runLiveDepositSends } from "../integrations/tronChainSend.js";
 import { notifyUserDeposit } from "../integrations/telegramBot.js";
 import { sendPurchaseCapi } from "../integrations/metaCapi.js";
 import { readChainGrossDelta, updateChainSnapshot } from "../integrations/tronUsdt.js";
+import { insertUserNotification } from "../repos/notificationRepo.js";
 import { addBalance, bumpDepositCount, getInviterId, getUserByTg } from "../repos/userRepo.js";
 import { fireSibJournalSyncHook, sibReevaluateAfterDeposit } from "./sibBalance.js";
 
@@ -103,9 +104,17 @@ export function applyDepositNet(
     }
   });
   tx();
+  const us = (netMinor / 100).toFixed(2);
+  insertUserNotification(db, {
+    user_id: userId,
+    kind: "deposit",
+    variant: "success",
+    message: `Replenishment of ${us} USDT completed.`,
+    source_id: id,
+    created_at: now,
+  });
   sibReevaluateAfterDeposit(db, userId);
   fireSibJournalSyncHook(c, tgUserId, trace);
-  const us = (netMinor / 100).toFixed(2);
   const netUsdt = Number(us);
   logEvent(trace, "central.deposit_completed", {
     user: tgUserId,

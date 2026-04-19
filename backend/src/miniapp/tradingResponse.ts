@@ -3,7 +3,7 @@ import { getDb } from "../db/connection.js";
 import { config } from "../config.js";
 import { getUserByTg } from "../repos/userRepo.js";
 import { emptyDealStatsPayload, tradingStatsForAllFigmaPeriods } from "./tradingPeriodStats.js";
-import { fetchAlLiveTradingPrice } from "../services/alStatePrice.js";
+import { fetchAlLiveTradingPrice, hasAlStateHttpConfig } from "../services/alStatePrice.js";
 
 const PERIODS = ["24h", "3d", "7d", "1m"] as const;
 
@@ -24,11 +24,12 @@ export async function buildTradingSummaryForUser(userId: string) {
     ? tradingStatsForAllFigmaPeriods(db, u.id)
     : Object.fromEntries(PERIODS.map((p) => [p, emptyDealStatsPayload()]));
   const livePrice = await fetchAlLiveTradingPrice(config);
+  const liveMode = hasAlStateHttpConfig(config);
 
   return {
-    currentPrice: livePrice?.currentPrice ?? current,
-    lastPrice: last,
-    pricePair: livePrice?.pricePair ?? "USDT/BTC",
+    currentPrice: livePrice?.currentPrice ?? (liveMode ? undefined : current),
+    lastPrice: liveMode ? undefined : last,
+    pricePair: livePrice?.pricePair ?? (liveMode ? "—" : "USDT/BTC"),
     stats
   };
 }

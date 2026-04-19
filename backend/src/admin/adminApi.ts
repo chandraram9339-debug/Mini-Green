@@ -38,6 +38,7 @@ import {
   syncAlTradeFeedOnce
 } from "../services/alTradeFeedSync.js";
 import { sendTelegramText } from "../integrations/telegramBot.js";
+import { insertUserNotification } from "../repos/notificationRepo.js";
 
 function timingSafeAdminKey(headerVal: unknown, secret: string): boolean {
   if (typeof headerVal !== "string" || !secret) return false;
@@ -475,6 +476,28 @@ export function registerAdminApi(app: express.Express) {
     const depN = (db.prepare("SELECT count(*) as n FROM deposits WHERE user_id=?").get(uid) as { n: number }).n;
     const wdN = (db.prepare("SELECT count(*) as n FROM withdrawals WHERE user_id=?").get(uid) as { n: number }).n;
     res.json({ user: u, deposits_count: depN, withdrawals_count: wdN });
+  });
+
+  app.post("/admin/users/:tgId/notifications/support", requireAdmin, (req, res) => {
+    const tg = String(req.params.tgId).trim();
+    const message = typeof req.body?.message === "string" ? req.body.message.trim() : "";
+    if (!message) {
+      res.status(400).json({ error: "message required" });
+      return;
+    }
+    const db = getDb();
+    const u = getUserByTg(db, tg);
+    if (!u) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    const id = insertUserNotification(db, {
+      user_id: u.id,
+      kind: "support",
+      variant: "success",
+      message,
+    });
+    res.status(201).json({ ok: true, id });
   });
 
   app.get("/admin/users/:tgId/stats-detail", requireAdmin, (req, res) => {

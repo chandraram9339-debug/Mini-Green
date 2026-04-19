@@ -10,6 +10,7 @@ import {
   type FeeSnapshot
 } from "../domain/effectiveConfig.js";
 import { isValidTronTrc20Address } from "../domain/deriveAddress.js";
+import { insertUserNotification } from "../repos/notificationRepo.js";
 import { getUserByTg, addBalance } from "../repos/userRepo.js";
 import { logEvent } from "../httpEnvelope.js";
 import { logChain } from "../integrations/opsLog.js";
@@ -82,6 +83,14 @@ export function createWithdrawal(
       addBalance(db, u.id, -need);
     });
     tr();
+    insertUserNotification(db, {
+      user_id: u.id,
+      kind: "withdraw",
+      variant: "success",
+      message: `Withdrawal request for ${(amountMinor / 100).toFixed(2)} USDT created.`,
+      source_id: id,
+      created_at: now,
+    });
     sibAfterWithdrawSent(db, u.id);
     fireSibJournalSyncHook(c, tg, "admin-auto");
     const trace = "admin-auto";
@@ -101,6 +110,14 @@ export function createWithdrawal(
   db.prepare(
     "INSERT INTO withdrawals (id, user_id, to_address, amount_minor, fee_minor, status, idempotency_key, created_at) VALUES (?,?,?,?,?,?,?,?)"
   ).run(id, u.id, toAddress, amountMinor, feeMinor, "pending_approval", ikey, now);
+  insertUserNotification(db, {
+    user_id: u.id,
+    kind: "withdraw",
+    variant: "success",
+    message: `Withdrawal request for ${(amountMinor / 100).toFixed(2)} USDT created.`,
+    source_id: id,
+    created_at: now,
+  });
   sibOnWithdrawRequest(db, u.id);
   return { ok: true as const, id, auto: false as const };
 }

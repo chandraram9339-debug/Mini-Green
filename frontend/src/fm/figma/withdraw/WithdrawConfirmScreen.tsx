@@ -50,7 +50,7 @@ function withdrawNotify(message: string, then?: () => void): void {
 export default function WithdrawConfirmScreen() {
   useWithdrawDraftGuard();
   const navigate = useNavigate();
-  const { refreshWallet } = useAppSession();
+  const { refreshNotifications, refreshWallet } = useAppSession();
   const [submitting, setSubmitting] = useState(false);
   const draft = readWithdrawDraft();
 
@@ -82,6 +82,7 @@ export default function WithdrawConfirmScreen() {
 
       clearWithdrawDraft();
       await refreshWallet();
+      await refreshNotifications();
       window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
       withdrawNotify("Withdrawal request created.", () => navigate(routes.home));
     } finally {
