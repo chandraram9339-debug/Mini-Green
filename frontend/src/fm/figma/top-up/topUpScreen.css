@@ -1,0 +1,142 @@
+/* Top up — frame 390×824, node 1:3904, сборка `screen-top-up__assembly.json` */
+
+.fm-topup {
+  position: relative;
+  width: 390px;
+  min-height: 824px;
+  margin: 0 auto;
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+}
+
+.fm-topup * {
+  box-sizing: border-box;
+}
+
+.fm-topup .fm-tabbar {
+  top: 752px;
+}
+
+.fm-topup-card {
+  position: absolute;
+  left: 20px;
+  top: 150px;
+  width: 350px;
+  height: 525px;
+  background-color: var(--color-white);
+  border-radius: var(--figma-radius-card);
+}
+
+.fm-topup-title {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 350px;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: var(--font-h1-size);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  line-height: 25px;
+  color: var(--color-black);
+}
+
+/* QR: в макете растр — область 200×200 @ x75 y55 внутри карточки (см. BUILD_INDEX) */
+.fm-topup-qr {
+  position: absolute;
+  left: 75px;
+  top: 55px;
+  width: 200px;
+  height: 200px;
+  border-radius: var(--figma-radius-card-sm);
+  /* контраст к белой карточке — область под QR из BUILD_INDEX */
+  background-color: var(--fm-page-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.fm-topup-qr-img {
+  width: 200px;
+  height: 200px;
+  display: block;
+  object-fit: contain;
+}
+
+.fm-topup-address {
+  position: absolute;
+  left: 0;
+  top: 285px;
+  width: 350px;
+  height: 76px;
+  margin: 0;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-white);
+  border-radius: var(--figma-radius-card);
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 400;
+  line-height: normal;
+  text-align: center;
+  color: var(--color-black);
+  word-break: break-all;
+}
+
+.fm-topup-btn {
+  position: absolute;
+  left: 0;
+  width: 350px;
+  height: 52px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: var(--figma-radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: var(--font-btn-size);
+  font-weight: 400;
+  line-height: normal;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fm-topup-btn img {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.fm-topup-btn--copy {
+  top: 391px;
+  background-color: var(--color-grey-super-light);
+  color: var(--color-grey-dark);
+}
+
+.fm-topup-btn--paid {
+  top: 473px;
+  background-color: var(--color-blue-dark);
+  color: var(--color-white);
+}
+
+.fm-topup-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.fm-topup-btn:active:not(:disabled) {
+  opacity: 0.92;
+}
+
+.fm-topup-btn:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 3px;
+}

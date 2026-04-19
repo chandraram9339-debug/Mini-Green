@@ -1,0 +1,77 @@
+/* Support — frame 390×824, node 1:3751 */
+
+.fm-support {
+  position: relative;
+  width: 390px;
+  min-height: 824px;
+  margin: 0 auto;
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+}
+
+.fm-support * {
+  box-sizing: border-box;
+}
+
+.fm-support .fm-tabbar {
+  top: 752px;
+}
+
+.fm-support-list {
+  left: 20px;
+  top: 130px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.fm-support-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 350px;
+  padding: 12px 10px;
+  margin: 0;
+  background-color: var(--color-white);
+  border-radius: var(--figma-radius-card);
+  border: none;
+  cursor: default;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fm-support-row--link {
+  cursor: pointer;
+}
+
+.fm-support-row-icon-wrap {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Явные px: SVG с width/height 100% внутри <img> иначе может тянуться под другие правила; 17px заметнее чем −5px от эталона 24 */
+.fm-support .fm-support-row-icon-img {
+  width: 17px;
+  height: 17px;
+  max-width: 17px;
+  max-height: 17px;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.fm-support-row-title {
+  margin: 0;
+  font-family: var(--font-h2-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 500;
+  letter-spacing: 0.18px;
+  color: var(--color-black);
+  white-space: nowrap;
+}

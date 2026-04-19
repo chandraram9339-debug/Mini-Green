@@ -1,0 +1,20 @@
+/** Маршруты как в `figma-miniapp-spec/BUILD_INDEX.json` — один источник для Link / redirects. */
+export const routes = {
+  home: "/home",
+  balanceDeposit: "/balance/deposit",
+  balanceReferral: "/balance/referral",
+  bot: "/bot",
+  social: "/social",
+  support: "/support",
+  faq: "/faq",
+  notifications: "/notifications",
+  settings: "/settings",
+  withdraw: "/withdraw",
+  withdrawRecipient: "/withdraw/recipient",
+  withdrawAmount: "/withdraw/amount",
+  withdrawConfirm: "/withdraw/confirm",
+  withdrawDone: "/withdraw/done",
+  depositTopUp: "/deposit/top-up",
+  seedCode: "/settings/seed-code",
+  userAgreement: "/settings/user-agreement",
+} as const;

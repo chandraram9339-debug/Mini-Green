@@ -25,6 +25,13 @@ export const MISSING_EXTERNAL_LINK_ENV_KEYS = [
   REFERRAL_URL === "TODO" ? "VITE_REFERRAL_URL" : null,
 ].filter((key): key is string => key !== null);
 
+/** Same check but channel & chat omitted (filled later); used for UI “pending links” banner. */
+export const MISSING_EXTERNAL_LINK_ENV_KEYS_EXCEPT_CHANNEL_CHAT = [
+  YOUTUBE_URL === "TODO" ? "VITE_YOUTUBE_URL" : null,
+  SUPPORT_URL === "TODO" ? "VITE_SUPPORT_URL" : null,
+  REFERRAL_URL === "TODO" ? "VITE_REFERRAL_URL" : null,
+].filter((key): key is string => key !== null);
+
 if (import.meta.env.DEV && MISSING_EXTERNAL_LINK_ENV_KEYS.length > 0) {
   console.warn(
     `[miniapp] Missing external link env vars: ${MISSING_EXTERNAL_LINK_ENV_KEYS.join(", ")}. ` +

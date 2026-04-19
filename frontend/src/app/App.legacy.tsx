@@ -1,25 +1,41 @@
 import React from "react";
+import QRCode from "react-qr-code";
 import {
   ApiError,
   confirmAction,
   createTopUp,
   createWithdraw,
+  type AgreementPayload,
+  type DashboardChartPoint,
   type DashboardPayload,
+  fetchAgreement,
   fetchDashboard,
   fetchFaq,
   fetchMoneyDetails,
+  fetchNotifications,
+  fetchSettings,
   fetchTradingDetails,
+  fetchWalletSeed,
   initSession,
+  postRecoveryClaim,
+  postTradingState,
   type MoneyDetailsPayload,
+  type NotificationItemPayload,
+  type SettingsPayload,
   resolveInitData,
   type SessionPayload,
+  type TradingDetailsPayload,
+  type TradingPeriodTab,
+  type TradingPosition,
+  type WalletSeedPayload,
 } from "./api";
-import { DASHBOARD_EXTERNAL_LINKS, MISSING_EXTERNAL_LINK_ENV_KEYS } from "./config";
+import {
+  DASHBOARD_EXTERNAL_LINKS,
+  MISSING_EXTERNAL_LINK_ENV_KEYS,
+  MISSING_EXTERNAL_LINK_ENV_KEYS_EXCEPT_CHANNEL_CHAT,
+} from "./config";
 import { routeTitles, screenData, topLevelRoutes } from "./data";
 import type { LoadState, RouteId } from "./types";
-import topupQrAsset from "./assets/topup-qr-1-5256.svg";
-import dashboardGraphicGridline from "./assets/dashboard-graphic-gridline.svg";
-import dashboardGraphicLine from "./assets/dashboard-graphic-line.svg";
 import topBarBackIcon from "./assets/topbar-back-1-6437.svg";
 import topBarNotifyIcon from "./assets/topbar-notify-1-6436.svg";
 import topBarSettingsIcon from "./assets/topbar-settings-1-6435.svg";
@@ -32,35 +48,14 @@ const DEFAULT_ACTION_AMOUNT_MINOR = 60000;
 const MIN_WITHDRAW_AMOUNT_MINOR = 500;
 const WITHDRAW_FEE_BPS = 1000;
 const DEFAULT_TOPUP_ADDRESS = "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm";
-const DEFAULT_SEED_WORDS = [
-  "apple",
-  "carpet",
-  "vapor",
-  "harbor",
-  "engine",
-  "fabric",
-  "silver",
-  "orchid",
-  "planet",
-  "yellow",
-  "socket",
-  "mango",
-] as const;
 const DASHBOARD_MOCK_FALLBACK: DashboardPayload = {
   screen: "dashboard",
   wallet_minor: 0,
+  referral_received_minor: 0,
   pnl_minor: 0,
   open_positions: 0,
+  chart_points: [],
 };
-
-/** Figma-only fields: no backend read path in current scope; kept localized for 1:1 visuals. */
-const FIGMA_VISUAL_STUBS = {
-  referralAmount: "425.22",
-  tradingPriceLine: "69 425.22",
-  performancePeriod: "7D",
-  performanceLegendPrimary: "Bot yield",
-  performanceLegendSecondary: "Benchmark",
-} as const;
 
 interface PendingAction {
   actionId: string;
@@ -84,33 +79,166 @@ function formatMinor(minor: number): string {
   return (minor / 100).toFixed(2);
 }
 
-/** Y-axis tick labels (USDT) when Home chart shows balance history (funded wallet). */
-function dashboardFundedYAxisLabels(walletMinor: number): string[] {
-  if (walletMinor <= 0) {
-    return Array.from({ length: 7 }, () => "0.00");
+function formatMoneyOpDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
+  } catch {
+    return iso;
   }
-  const top = Math.max(Math.ceil((walletMinor * 1.2) / 100) * 100, 100);
-  const bottom = Math.floor((walletMinor * 0.78) / 100) * 100;
-  const span = Math.max(top - bottom, 100);
-  const step = span / 6;
-  return Array.from({ length: 7 }, (_, i) => formatMinor(Math.round(top - i * step)));
 }
 
-/** Figma Ready `1 | Home` → Graphic `1:3658` — Y scale ticks (Outfit 6px, #8494AF). */
-const DASHBOARD_PERF_EMPTY_Y_AXIS = [
-  "7.00%",
-  "6.00%",
-  "5.00%",
-  "4.00%",
-  "3.00%",
-  "2.00%",
-  "1.00%",
-  "0.00%",
-  "−1.00%",
-  "−2.00%",
-] as const;
-const DASHBOARD_PERF_FUNDED_X_AXIS = ["−25d", "−20d", "−15d", "−10d", "−5d", "Now"] as const;
-const DASHBOARD_PERF_EMPTY_X_AXIS = ["W1", "W2", "W3", "W4", "W5", "W6"] as const;
+function truncateMiddleAddr(s: string, left = 8, right = 6): string {
+  const t = s.trim();
+  if (t.length <= left + right + 3) return t;
+  return `${t.slice(0, left)}…${t.slice(-right)}`;
+}
+
+function formatTradingStatsSource(source: TradingDetailsPayload["stats_source"] | undefined): string {
+  if (source === "external-algo") return "External market feed";
+  if (source === "trade-journal") return "Recorded positions (journal)";
+  return "—";
+}
+
+function formatPositionSideLabel(side: string): string {
+  const s = side.trim().toLowerCase();
+  if (s === "long" || s === "short") return s[0]!.toUpperCase() + s.slice(1);
+  return side.trim() || "—";
+}
+
+function partitionPositionSides(positions: TradingPosition[]): { long: number; short: number } {
+  let long = 0;
+  let short = 0;
+  for (const p of positions) {
+    const s = p.side.trim().toLowerCase();
+    if (s === "short") short += 1;
+    else long += 1;
+  }
+  return { long, short };
+}
+
+function formatNotificationTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    const now = new Date();
+    const dayStart = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    if (dayStart(now) === dayStart(d)) {
+      return `Today · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+    }
+    return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  } catch {
+    return iso;
+  }
+}
+
+/** Y-axis ticks from actual chart range (USDT). */
+function dashboardChartYAxisFromRange(minMinor: number, maxMinor: number): string[] {
+  const lo = Math.min(minMinor, maxMinor);
+  const hi = Math.max(maxMinor, lo + 1);
+  return Array.from({ length: 7 }, (_, i) => {
+    const t = i / 6;
+    return formatMinor(Math.round(hi - t * (hi - lo)));
+  });
+}
+
+function formatChartMonthDay(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } catch {
+    return "—";
+  }
+}
+
+function dashboardChartXLabels(points: DashboardChartPoint[]): string[] {
+  if (points.length < 2) {
+    return ["—", "—", "—", "—", "—", "Now"];
+  }
+  const t0 = Date.parse(points[0]!.occurred_at);
+  const t1 = Date.parse(points[points.length - 1]!.occurred_at);
+  const span = Math.max(t1 - t0, 1);
+  return Array.from({ length: 6 }, (_, i) =>
+    formatChartMonthDay(new Date(t0 + (span * i) / 5).toISOString())
+  );
+}
+
+function buildDashboardBalancePaths(points: DashboardChartPoint[]): {
+  pathLine: string;
+  pathArea: string;
+  dots: [number, number][];
+  minV: number;
+  maxV: number;
+  isEmpty: boolean;
+} {
+  if (points.length === 0) {
+    return { pathLine: "", pathArea: "", dots: [], minV: 0, maxV: 0, isEmpty: true };
+  }
+  const vals = points.map((p) => p.wallet_minor);
+  const ts = points.map((p) => Date.parse(p.occurred_at));
+  const minV = Math.min(0, ...vals);
+  const maxV = Math.max(minV + 1, ...vals);
+  const t0 = ts[0]!;
+  const t1 = ts[ts.length - 1]!;
+  const spanT = Math.max(t1 - t0, 1);
+  const plotLeft = 8;
+  const plotRight = 292;
+  const plotTop = 26;
+  const plotBottom = 124;
+  const coords: [number, number][] = points.map((p) => {
+    const ti = Date.parse(p.occurred_at);
+    const x = plotLeft + ((ti - t0) / spanT) * (plotRight - plotLeft);
+    const norm = (p.wallet_minor - minV) / (maxV - minV);
+    const y = plotBottom - norm * (plotBottom - plotTop);
+    return [x, y];
+  });
+  let dLine = `M ${coords[0]![0].toFixed(2)} ${coords[0]![1].toFixed(2)}`;
+  for (let i = 1; i < coords.length; i++) {
+    dLine += ` L ${coords[i]![0].toFixed(2)} ${coords[i]![1].toFixed(2)}`;
+  }
+  const last = coords[coords.length - 1]!;
+  const first = coords[0]!;
+  const pathArea = `${dLine} L ${last[0].toFixed(2)} ${plotBottom} L ${first[0].toFixed(2)} ${plotBottom} Z`;
+  return { pathLine: dLine, pathArea, dots: coords, minV, maxV, isEmpty: false };
+}
+
+function buildTradingExposureSpark(positions: TradingPosition[]): {
+  pointsAttr: string;
+  yTicks: string[];
+  xLabels: string[];
+} {
+  const sorted = [...positions].sort((a, b) => {
+    const ta = a.opened_at ? Date.parse(a.opened_at) : 0;
+    const tb = b.opened_at ? Date.parse(b.opened_at) : 0;
+    if (ta !== tb) return ta - tb;
+    return a.symbol.localeCompare(b.symbol);
+  });
+  let acc = 0;
+  const cum: number[] = [];
+  for (const p of sorted) {
+    acc += p.size_minor;
+    cum.push(acc);
+  }
+  const maxV = Math.max(1, ...cum, 1);
+  const yTicks = Array.from({ length: 5 }, (_, i) => formatMinor(Math.round((maxV * (4 - i)) / 4)));
+  const n = cum.length;
+  let pointsAttr = "";
+  if (n === 0) {
+    pointsAttr = "0,50 100,50";
+  } else if (n === 1) {
+    const y = 100 - (cum[0]! / maxV) * 100;
+    pointsAttr = `0,${y} 100,${y}`;
+  } else {
+    pointsAttr = cum.map((v, i) => `${(i / (n - 1)) * 100},${100 - (v / maxV) * 100}`).join(" ");
+  }
+  const firstIso = sorted[0]?.opened_at;
+  const lastIso = sorted[sorted.length - 1]?.opened_at;
+  const xLabels =
+    sorted.length === 0
+      ? ["—", "—", "—", "—"]
+      : [formatChartMonthDay(firstIso ?? ""), "·", "·", formatChartMonthDay(lastIso ?? "")];
+  return { pointsAttr, yTicks, xLabels };
+}
 
 function parseAmountMinor(raw: string): number | null {
   const normalized = raw.trim().replace(",", ".");
@@ -124,9 +252,26 @@ function isBasicTronAddress(address: string): boolean {
   return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address.trim());
 }
 
-type TradingRange = "24h" | "7d" | "1m" | "3m";
+const TRADING_PERIOD_TABS = ["24h", "3d", "7d", "30d"] as const satisfies readonly TradingPeriodTab[];
 
-function moneyFilterToPath(filter: "deposit" | "withdraw" | "referral"): string {
+const TRADING_TAB_LABELS: Record<TradingPeriodTab, string> = {
+  "24h": "24h",
+  "3d": "3d",
+  "7d": "7d",
+  "30d": "30d",
+};
+
+function formatApproxDuration(seconds: number): string {
+  if (seconds <= 0) return "0";
+  if (seconds < 3600) return `${Math.max(1, Math.round(seconds / 60))} min`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)} h`;
+  const d = Math.floor(seconds / 86400);
+  const h = Math.round((seconds % 86400) / 3600);
+  if (d >= 1 && h > 0) return `${d}d ${h}h`;
+  return `${d}d`;
+}
+
+function moneyFilterToPath(filter: "deposit" | "withdraw" | "referral" | "trading"): string {
   switch (filter) {
     case "deposit":
       return "/balance/deposit";
@@ -134,6 +279,8 @@ function moneyFilterToPath(filter: "deposit" | "withdraw" | "referral"): string 
       return "/balance/withdraw";
     case "referral":
       return "/balance/referral";
+    case "trading":
+      return "/balance/trading";
   }
 }
 
@@ -164,7 +311,8 @@ function pathToRoute(pathname: string): RouteId {
     key === "balance" ||
     key === "balance/deposit" ||
     key === "balance/withdraw" ||
-    key === "balance/referral"
+    key === "balance/referral" ||
+    key === "balance/trading"
   ) {
     return "money";
   }
@@ -188,8 +336,8 @@ function readUiStorage() {
     const raw = window.sessionStorage.getItem(uiStorageKey);
     if (!raw) return {};
     return JSON.parse(raw) as Partial<{
-      moneyFilter: "deposit" | "withdraw" | "referral" | "all" | "in" | "out";
-      tradingRange: TradingRange | "1d" | "30d" | "All";
+      moneyFilter: "deposit" | "withdraw" | "referral" | "trading" | "all" | "in" | "out";
+      tradingRange: TradingPeriodTab | "1d" | "30d" | "All" | "1m" | "3m";
       withdrawAddress: string;
     }>;
   } catch {
@@ -219,10 +367,19 @@ function topupAddressTwoLines(full: string): readonly [string, string] {
   return [full.slice(0, mid), full.slice(mid)] as const;
 }
 
-function TopUpQrVisual() {
+function TopUpQrVisual({ value }: { value: string }) {
+  const payload = value.trim().length > 0 ? value.trim() : DEFAULT_TOPUP_ADDRESS;
   return (
-    <div className="topup-qr-shell" aria-hidden="true">
-      <img className="topup-qr-svg" src={topupQrAsset} alt="Deposit QR code" />
+    <div className="topup-qr-shell">
+      <QRCode
+        value={payload}
+        size={200}
+        level="M"
+        className="topup-qr-svg"
+        fgColor="#0a0a0a"
+        bgColor="#ffffff"
+        aria-label="Deposit address QR code"
+      />
     </div>
   );
 }
@@ -342,55 +499,46 @@ function isGreenHeaderRoute(route: RouteId): boolean {
   );
 }
 
-/**
- * Performance chart from Figma node `1:3658` (component Graphic).
- * Exported SVGs from MCP assets — stable in repo (see `assets/dashboard-graphic-*.svg`).
- */
-function DashboardFigmaPerformanceGraphic() {
-  const ticks = DASHBOARD_PERF_EMPTY_Y_AXIS;
-  return (
-    <div className="dashboard-figma-graphic" aria-hidden="true">
-      <div className="dashboard-figma-graphic__scales">
-        {ticks.map((label) => (
-          <div key={label} className="dashboard-figma-graphic__row">
-            <span className="dashboard-figma-graphic__tick">{label}</span>
-            <div className="dashboard-figma-graphic__gridcell">
-              <img className="dashboard-figma-graphic__gridline" src={dashboardGraphicGridline} alt="" />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="dashboard-figma-graphic__plot">
-        <img className="dashboard-figma-graphic__line" src={dashboardGraphicLine} alt="" />
-      </div>
-    </div>
-  );
-}
-
-/** Balance / performance chart — funded wallet uses programmatic history plot. */
-function DashboardHomeBalanceChart({ funded }: { funded: boolean }) {
+/** Home balance chart — same SVG shell as before; paths from ledger `chart_points`. */
+function DashboardHomeBalanceChart({ chartPoints }: { chartPoints: DashboardChartPoint[] }) {
   const uid = React.useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const gradArea = `dash-area-${uid}`;
+  const geom = React.useMemo(() => buildDashboardBalancePaths(chartPoints), [chartPoints]);
 
-  if (!funded) {
+  if (geom.isEmpty || chartPoints.length === 0) {
     return (
       <svg
-        className="dashboard-perf-svg dashboard-perf-svg--empty"
-        viewBox="0 0 300 96"
+        className="dashboard-perf-svg dashboard-perf-svg--funded"
+        viewBox="0 0 300 148"
         preserveAspectRatio="xMidYMid meet"
         aria-hidden="true"
       >
+        {[20, 42, 64, 86, 108, 130].map((y) => (
+          <line key={y} x1="4" y1={y} x2="296" y2={y} className="dashboard-perf-svg-gridline" />
+        ))}
         <path
-          d="M 14 72 C 72 70 110 38 150 36 S 236 22 286 18"
+          d="M 8 96 L 292 96"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeDasharray="7 6"
-          strokeLinecap="round"
+          strokeDasharray="6 5"
+          opacity={0.35}
         />
       </svg>
     );
   }
+
+  const plotTop = 26;
+  const plotBottom = 124;
+  const zeroY =
+    geom.maxV > geom.minV
+      ? plotBottom - ((0 - geom.minV) / (geom.maxV - geom.minV)) * (plotBottom - plotTop)
+      : null;
+  const showZeroGuide =
+    zeroY != null && Number.isFinite(zeroY) && zeroY >= plotTop && zeroY <= plotBottom && geom.minV < geom.maxV;
+
+  const dotStride = Math.max(1, Math.ceil(geom.dots.length / 8));
+  const dotsToShow = geom.dots.filter((_, i) => i % dotStride === 0 || i === geom.dots.length - 1);
 
   return (
     <svg
@@ -409,21 +557,21 @@ function DashboardHomeBalanceChart({ funded }: { funded: boolean }) {
       {[20, 42, 64, 86, 108, 130].map((y) => (
         <line key={y} x1="4" y1={y} x2="296" y2={y} className="dashboard-perf-svg-gridline" />
       ))}
+      {showZeroGuide ? (
+        <path
+          d={`M 8 ${zeroY!.toFixed(2)} L 292 ${zeroY!.toFixed(2)}`}
+          fill="none"
+          stroke="#73c1b1"
+          strokeWidth="1.75"
+          strokeDasharray="5 5"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+          opacity={0.55}
+        />
+      ) : null}
+      <path d={geom.pathArea} fill={`url(#${gradArea})`} />
       <path
-        d="M 8 118 C 36 118 52 104 78 96 S 120 86 146 74 S 188 52 234 38 S 268 30 292 26 L 292 142 L 8 142 Z"
-        fill={`url(#${gradArea})`}
-      />
-      <path
-        d="M 8 124 C 40 122 64 114 92 108 S 148 90 176 84 S 228 70 292 54"
-        fill="none"
-        stroke="#73c1b1"
-        strokeWidth="1.75"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      <path
-        d="M 8 118 C 36 118 52 104 78 96 S 120 86 146 74 S 188 52 234 38 S 268 30 292 26"
+        d={geom.pathLine}
         fill="none"
         stroke="#2d6e93"
         strokeWidth="2.25"
@@ -431,16 +579,7 @@ function DashboardHomeBalanceChart({ funded }: { funded: boolean }) {
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
-      {(
-        [
-          [8, 118],
-          [58, 102],
-          [108, 88],
-          [158, 64],
-          [208, 48],
-          [292, 26],
-        ] as const
-      ).map(([cx, cy], i) => (
+      {dotsToShow.map(([cx, cy], i) => (
         <circle key={i} cx={cx} cy={cy} r="4" className="dashboard-perf-svg-dot" />
       ))}
     </svg>
@@ -454,30 +593,30 @@ function App() {
   const [initToken, setInitToken] = React.useState(0);
   const [route, setRoute] = React.useState<RouteId>(pathToRoute(window.location.pathname));
   const [expandedFaqId, setExpandedFaqId] = React.useState<string | null>(null);
-  const [moneyFilter, setMoneyFilter] = React.useState<"deposit" | "withdraw" | "referral">(() => {
+  const [moneyFilter, setMoneyFilter] = React.useState<"deposit" | "withdraw" | "referral" | "trading">(() => {
     const path = typeof window !== "undefined" ? window.location.pathname.replace(/^\/+/, "").toLowerCase() : "";
     if (path === "balance/referral") return "referral";
     if (path === "balance/withdraw") return "withdraw";
+    if (path === "balance/trading") return "trading";
     if (path === "balance/deposit" || path === "balance" || path === "money") return "deposit";
-    if (storedUiState.moneyFilter === "deposit" || storedUiState.moneyFilter === "withdraw" || storedUiState.moneyFilter === "referral") {
+    if (
+      storedUiState.moneyFilter === "deposit" ||
+      storedUiState.moneyFilter === "withdraw" ||
+      storedUiState.moneyFilter === "referral" ||
+      storedUiState.moneyFilter === "trading"
+    ) {
       return storedUiState.moneyFilter;
     }
     if (storedUiState.moneyFilter === "in") return "deposit";
     if (storedUiState.moneyFilter === "out") return "withdraw";
     return "deposit";
   });
-  const [tradingRange, setTradingRange] = React.useState<TradingRange>(() => {
-    if (
-      storedUiState.tradingRange === "24h" ||
-      storedUiState.tradingRange === "7d" ||
-      storedUiState.tradingRange === "1m" ||
-      storedUiState.tradingRange === "3m"
-    ) {
-      return storedUiState.tradingRange;
-    }
-    if (storedUiState.tradingRange === "1d") return "24h";
-    if (storedUiState.tradingRange === "30d") return "1m";
-    if (storedUiState.tradingRange === "All") return "3m";
+  const [tradingRange, setTradingRange] = React.useState<TradingPeriodTab>(() => {
+    const x = storedUiState.tradingRange;
+    if (x === "24h" || x === "3d" || x === "7d" || x === "30d") return x;
+    if (x === "1m" || x === "3m" || x === "All") return "30d";
+    if (x === "1d") return "24h";
+    if (x === "30d") return "30d";
     return "7d";
   });
   const [withdrawAddress, setWithdrawAddress] = React.useState(storedUiState.withdrawAddress ?? "");
@@ -497,13 +636,82 @@ function App() {
   const [dashboardData, setDashboardData] = React.useState<DashboardPayload | null>(null);
   const [dashboardUsesFallback, setDashboardUsesFallback] = React.useState(false);
   const [moneyData, setMoneyData] = React.useState<MoneyDetailsPayload | null>(null);
-  const [tradingOpenOrders, setTradingOpenOrders] = React.useState(0);
+  const [tradingDetails, setTradingDetails] = React.useState<TradingDetailsPayload | null>(null);
+  const [agreementData, setAgreementData] = React.useState<AgreementPayload | null>(null);
   const [faqEntries, setFaqEntries] = React.useState<Array<{ id: string; title: string; body: string }>>([]);
+  const [notificationItems, setNotificationItems] = React.useState<NotificationItemPayload[]>([]);
+  const [serverSettings, setServerSettings] = React.useState<SettingsPayload | null>(null);
   const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
   const [doneReceipt, setDoneReceipt] = React.useState<DoneReceipt | null>(null);
   const [actionState, setActionState] = React.useState<"idle" | "submitting">("idle");
   const [actionMessage, setActionMessage] = React.useState<string | null>(null);
-  const hasPendingExternalLinks = MISSING_EXTERNAL_LINK_ENV_KEYS.length > 0;
+  const [tradingUiBusy, setTradingUiBusy] = React.useState(false);
+  const [seedFetchState, setSeedFetchState] = React.useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [seedRemote, setSeedRemote] = React.useState<WalletSeedPayload | null>(null);
+  const [seedRetryToken, setSeedRetryToken] = React.useState(0);
+  const [recoveryClaimInput, setRecoveryClaimInput] = React.useState("");
+  const [recoveryClaimBusy, setRecoveryClaimBusy] = React.useState(false);
+  const hasPendingExternalLinks = MISSING_EXTERNAL_LINK_ENV_KEYS_EXCEPT_CHANNEL_CHAT.length > 0;
+
+  const handleRecoveryClaim = React.useCallback(async () => {
+    if (!session?.initData || recoveryClaimBusy) return;
+    const code = recoveryClaimInput.trim();
+    if (code.length < 8) {
+      setActionMessage("Paste the full recovery code (at least 8 characters).");
+      return;
+    }
+    setRecoveryClaimBusy(true);
+    setActionMessage(null);
+    try {
+      await postRecoveryClaim(session.initData, code);
+      setRecoveryClaimInput("");
+      setSeedRetryToken((x) => x + 1);
+      setScreenReloadToken((x) => x + 1);
+      setActionMessage("Account linked to this Telegram profile. Refreshing…");
+    } catch (e) {
+      setActionMessage(e instanceof ApiError ? e.message : "Could not link account.");
+    } finally {
+      setRecoveryClaimBusy(false);
+    }
+  }, [session?.initData, recoveryClaimBusy, recoveryClaimInput]);
+
+  const externalLinks = React.useMemo(() => {
+    const s = serverSettings;
+    if (!s) return DASHBOARD_EXTERNAL_LINKS;
+    const pick = (remote: string | undefined, fallback: string) => {
+      const t = remote?.trim();
+      return t && t.length > 0 ? t : fallback;
+    };
+    return {
+      channelUrl: pick(s.channel_url, DASHBOARD_EXTERNAL_LINKS.channelUrl),
+      chatUrl: pick(s.chat_url, DASHBOARD_EXTERNAL_LINKS.chatUrl),
+      youtubeUrl: pick(s.youtube_url, DASHBOARD_EXTERNAL_LINKS.youtubeUrl),
+      supportUrl: pick(s.support_url, DASHBOARD_EXTERNAL_LINKS.supportUrl),
+      referralUrl: pick(s.referral_link, DASHBOARD_EXTERNAL_LINKS.referralUrl),
+    };
+  }, [serverSettings]);
+
+  React.useEffect(() => {
+    if (initState !== "ready" || !session?.initData) return;
+    const ac = new AbortController();
+    fetchSettings(session.initData, ac.signal)
+      .then(({ data }) => setServerSettings(data))
+      .catch(() => setServerSettings(null));
+    return () => ac.abort();
+  }, [initState, session?.initData]);
+
+  /** Prefetch notifications for header badge (same endpoint as Notifications screen). */
+  React.useEffect(() => {
+    if (initState !== "ready" || !session?.initData) return;
+    const ac = new AbortController();
+    fetchNotifications(session.initData, ac.signal)
+      .then(({ data }) => setNotificationItems(data.items))
+      .catch(() => {
+        /* badge stays empty until user opens Notifications */
+      });
+    return () => ac.abort();
+  }, [initState, session?.initData]);
+
   const topupCopyTimerRef = React.useRef<number | null>(null);
 
   const flashTopupCopied = React.useCallback(() => {
@@ -544,8 +752,8 @@ function App() {
     setActionMessage(null);
     if (!url || url === "TODO") {
       const missingKeysHint =
-        MISSING_EXTERNAL_LINK_ENV_KEYS.length > 0
-          ? ` Missing env: ${MISSING_EXTERNAL_LINK_ENV_KEYS.join(", ")}.`
+        MISSING_EXTERNAL_LINK_ENV_KEYS_EXCEPT_CHANNEL_CHAT.length > 0
+          ? ` Missing env: ${MISSING_EXTERNAL_LINK_ENV_KEYS_EXCEPT_CHANNEL_CHAT.join(", ")}.`
           : "";
       setActionMessage(`${label} link will be added soon.${missingKeysHint}`);
       return;
@@ -604,6 +812,10 @@ function App() {
     }
     if (path === "balance/deposit" && moneyFilter !== "deposit") {
       setMoneyFilter("deposit");
+      return;
+    }
+    if (path === "balance/trading" && moneyFilter !== "trading") {
+      setMoneyFilter("trading");
       return;
     }
     if ((path === "balance" || path === "money") && moneyFilter !== "deposit") {
@@ -709,6 +921,29 @@ function App() {
   }, [initToken, navigate, resolvedInitIdentity]);
 
   React.useEffect(() => {
+    if (route !== "seed" || initState !== "ready" || !session?.initData) {
+      if (route !== "seed") {
+        setSeedFetchState("idle");
+        setSeedRemote(null);
+      }
+      return;
+    }
+    const ac = new AbortController();
+    setSeedFetchState("loading");
+    fetchWalletSeed(session.initData, ac.signal)
+      .then(({ data }) => {
+        setSeedRemote(data);
+        setSeedFetchState("ready");
+      })
+      .catch(() => {
+        if (!ac.signal.aborted) {
+          setSeedFetchState("error");
+        }
+      });
+    return () => ac.abort();
+  }, [route, initState, session?.initData, seedRetryToken]);
+
+  React.useEffect(() => {
     if (initState !== "ready" || !session) {
       return;
     }
@@ -720,16 +955,13 @@ function App() {
     }
 
     if (
-      route === "topup" ||
       route === "withdraw" ||
       route === "confirm" ||
       route === "done" ||
-      route === "notifications" ||
       route === "settings" ||
       route === "support" ||
       route === "social" ||
-      route === "seed" ||
-      route === "agreement"
+      route === "seed"
     ) {
       setScreenState("ready");
       return;
@@ -748,7 +980,7 @@ function App() {
           return;
         }
 
-        if (route === "money") {
+        if (route === "money" || route === "topup") {
           const { data } = await fetchMoneyDetails(session.initData, abortController.signal);
           setMoneyData(data);
           setScreenState("ready");
@@ -756,8 +988,15 @@ function App() {
         }
 
         if (route === "trading") {
-          const { data } = await fetchTradingDetails(session.initData, abortController.signal);
-          setTradingOpenOrders(data.positions.length);
+          const { data } = await fetchTradingDetails(session.initData, abortController.signal, tradingRange);
+          setTradingDetails(data);
+          setScreenState("ready");
+          return;
+        }
+
+        if (route === "agreement") {
+          const { data } = await fetchAgreement(session.initData, abortController.signal);
+          setAgreementData(data);
           setScreenState("ready");
           return;
         }
@@ -766,6 +1005,14 @@ function App() {
           const { data } = await fetchFaq(session.initData, abortController.signal);
           setFaqEntries(data.items.map((entry) => ({ id: entry.id, title: entry.q, body: entry.a })));
           setScreenState(data.items.length === 0 ? "empty" : "ready");
+          return;
+        }
+
+        if (route === "notifications") {
+          const { data } = await fetchNotifications(session.initData, abortController.signal);
+          setNotificationItems(data.items);
+          setScreenState(data.items.length === 0 ? "empty" : "ready");
+          return;
         }
       } catch {
         if (!abortController.signal.aborted) {
@@ -782,7 +1029,7 @@ function App() {
 
     void loadRoute();
     return () => abortController.abort();
-  }, [initState, route, screenReloadToken, session]);
+  }, [initState, route, screenReloadToken, session, tradingRange]);
 
   const retry = React.useCallback(() => {
     setScreenReloadToken((current) => current + 1);
@@ -796,7 +1043,7 @@ function App() {
     screenState === "loading" || actionState === "submitting" || confirmStep === "submitting";
 
   const navigateMoneyFilter = React.useCallback(
-    (filter: "deposit" | "withdraw" | "referral") => {
+    (filter: "deposit" | "withdraw" | "referral" | "trading") => {
       if (isBusy) return;
       setMoneyFilter(filter);
       const nextUrl = `${moneyFilterToPath(filter)}${window.location.search}`;
@@ -809,61 +1056,97 @@ function App() {
   const greenHeader = isGreenHeaderRoute(route);
   const activeBottomTab = getBottomTabRoute(route);
   const moneyRouteVariant =
-    moneyFilter === "referral" ? "Referral" : moneyFilter === "withdraw" ? "Withdraw" : "Deposit";
-  const moneyRows = React.useMemo(
-    () =>
-      [
-        {
+    moneyFilter === "referral"
+      ? "Referral"
+      : moneyFilter === "withdraw"
+        ? "Withdraw"
+        : moneyFilter === "trading"
+          ? "Trading (SIB)"
+          : "Deposit";
+
+  const sibHistoryStats = React.useMemo(() => {
+    const ops = moneyData?.operations ?? [];
+    let net = 0;
+    let n = 0;
+    for (const o of ops) {
+      if (o.kind !== "sib_trade") continue;
+      net += o.amount_minor;
+      n += 1;
+    }
+    return { net_minor: net, count: n };
+  }, [moneyData?.operations]);
+  const moneyRowsFromApi = React.useMemo(() => {
+    const ops = moneyData?.operations;
+    if (!ops?.length) return [];
+    return ops.map((o) => {
+      const dateTimeText = formatMoneyOpDate(o.occurred_at);
+      if (o.kind === "deposit") {
+        return {
           kind: "deposit" as const,
           title: "Replenishment",
-          walletMask: "UQBw8....SGTF",
-          dateTimeText: "31.12.2024 00:00",
-          amount: "+42.10 USDT",
-          fee: "10.00 USDT",
+          walletMask: o.wallet_mask ?? "—",
+          dateTimeText,
+          amount: `+${formatMinor(o.amount_minor)} USDT`,
+          fee:
+            o.fee_minor != null && o.fee_minor > 0 ? `${formatMinor(o.fee_minor)} USDT` : null,
           tone: "in" as const,
-        },
-        {
+        };
+      }
+      if (o.kind === "referral") {
+        return {
           kind: "referral" as const,
           title: "Referral reward",
-          walletMask: "TG referral",
-          dateTimeText: "30.12.2024 09:10",
-          amount: "+18.00 USDT",
+          walletMask: o.wallet_mask ?? "—",
+          dateTimeText,
+          amount: `+${formatMinor(o.amount_minor)} USDT`,
           fee: null,
           tone: "in" as const,
-        },
-        {
-          kind: "withdraw" as const,
-          title: "Withdrawal",
-          walletMask: "TQx4d....91AF",
-          dateTimeText: "29.12.2024 12:05",
-          amount: "−600.00 USDT",
-          fee: "1.20 USDT",
-          tone: "pending" as const,
-        },
-        {
-          kind: "withdraw" as const,
-          title: "Withdrawal",
-          walletMask: "TQx4d....91AF",
-          dateTimeText: "28.12.2024 16:47",
-          amount: "−120.00 USDT",
-          fee: "0.24 USDT",
-          tone: "out" as const,
-        },
-        {
-          kind: "deposit" as const,
-          title: "Replenishment",
-          walletMask: "UQBw8....SGTF",
-          dateTimeText: "27.12.2024 11:05",
-          amount: "+200.00 USDT",
+        };
+      }
+      if (o.kind === "sib_trade") {
+        const d = o.amount_minor;
+        const up = d >= 0;
+        return {
+          kind: "sib_trade" as const,
+          title: "Trading result (SIB)",
+          walletMask: o.wallet_mask ?? "—",
+          dateTimeText,
+          amount: `${up ? "+" : "−"}${formatMinor(Math.abs(d))} USDT`,
           fee: null,
-          tone: "in" as const,
-        },
-      ] as const,
-    []
-  );
+          tone: up ? ("in" as const) : ("out" as const),
+        };
+      }
+      const tone = o.status === "pending" ? ("pending" as const) : ("out" as const);
+      return {
+        kind: "withdraw" as const,
+        title: "Withdrawal",
+        walletMask: o.wallet_mask ?? "—",
+        dateTimeText,
+        amount: `−${formatMinor(o.amount_minor)} USDT`,
+        fee: o.fee_minor != null && o.fee_minor > 0 ? `${formatMinor(o.fee_minor)} USDT` : null,
+        tone,
+      };
+    });
+  }, [moneyData?.operations]);
   const filteredMoneyRows = React.useMemo(() => {
-    return moneyRows.filter((row) => row.kind === moneyFilter);
-  }, [moneyFilter, moneyRows]);
+    return moneyRowsFromApi.filter((row) =>
+      moneyFilter === "trading" ? row.kind === "sib_trade" : row.kind === moneyFilter
+    );
+  }, [moneyFilter, moneyRowsFromApi]);
+
+  const { notificationToday, notificationEarlier } = React.useMemo(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const todayMs = start.getTime();
+    const today: NotificationItemPayload[] = [];
+    const earlier: NotificationItemPayload[] = [];
+    for (const n of notificationItems) {
+      const t = new Date(n.created_at).getTime();
+      if (!Number.isNaN(t) && t >= todayMs) today.push(n);
+      else earlier.push(n);
+    }
+    return { notificationToday: today, notificationEarlier: earlier };
+  }, [notificationItems]);
 
   const handleTopUpContinue = React.useCallback(async () => {
     if (!session || isBusy) return;
@@ -989,21 +1272,35 @@ function App() {
   }, [confirmStep, isBusy, pendingAction, session]);
 
   const dashboardSnapshot = dashboardData ?? DASHBOARD_MOCK_FALLBACK;
+  const dashboardChartPoints = dashboardSnapshot.chart_points ?? [];
+  const dashboardChartGeom = React.useMemo(
+    () => buildDashboardBalancePaths(dashboardChartPoints),
+    [dashboardChartPoints]
+  );
   const dashboardHasBalance = dashboardSnapshot.wallet_minor > 0;
-  const dashboardMode = dashboardHasBalance ? "funded" : "empty";
   const dashboardBalance = formatMinor(dashboardSnapshot.wallet_minor);
-  const dashboardGraphTitle = dashboardMode === "funded" ? "Balance history" : "% Performance (3M)";
-  const dashboardGraphLegendPrimary =
-    dashboardMode === "funded" ? "Wallet balance" : FIGMA_VISUAL_STUBS.performanceLegendPrimary;
-  const dashboardGraphLegendSecondary =
-    dashboardMode === "funded" ? "Net cashflow" : "Trade journal";
-  const dashboardPriceLine = dashboardMode === "funded" ? FIGMA_VISUAL_STUBS.tradingPriceLine : "Awaiting top up";
-  const dashboardChartPeriod = dashboardHasBalance ? "30D" : FIGMA_VISUAL_STUBS.performancePeriod;
-  const dashboardYAxisLabels = dashboardHasBalance
-    ? dashboardFundedYAxisLabels(dashboardSnapshot.wallet_minor)
-    : [...DASHBOARD_PERF_EMPTY_Y_AXIS];
-  const dashboardXAxisLabels = dashboardHasBalance ? [...DASHBOARD_PERF_FUNDED_X_AXIS] : [...DASHBOARD_PERF_EMPTY_X_AXIS];
-  const moneyAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
+  const dashboardReferralMinor = dashboardSnapshot.referral_received_minor ?? 0;
+  const dashboardReferralDisplay = formatMinor(dashboardReferralMinor);
+  const dashboardGraphTitle = "Balance history";
+  const dashboardGraphLegendPrimary = "Wallet balance";
+  const dashboardGraphLegendSecondary = "Zero reference";
+  const dashboardChartPeriod =
+    dashboardChartPoints.length >= 2
+      ? `${formatChartMonthDay(dashboardChartPoints[0]!.occurred_at)}–${formatChartMonthDay(
+          dashboardChartPoints[dashboardChartPoints.length - 1]!.occurred_at
+        )}`
+      : "—";
+  const dashboardYAxisLabels =
+    dashboardChartGeom.isEmpty || dashboardChartPoints.length === 0
+      ? Array.from({ length: 7 }, () => formatMinor(0))
+      : dashboardChartYAxisFromRange(dashboardChartGeom.minV, dashboardChartGeom.maxV);
+  const dashboardXAxisLabels = dashboardChartXLabels(dashboardChartPoints);
+  const dashboardShowZeroBalanceHint =
+    !dashboardHasBalance && dashboardChartPoints.length <= 2;
+  const moneyWalletMinor =
+    moneyData?.wallet_minor ??
+    (moneyData ? moneyData.available_minor + moneyData.locked_minor : 0);
+  const moneyBalanceDisplay = formatMinor(moneyWalletMinor);
   const moneyLockedDisplay = moneyData ? formatMinor(moneyData.locked_minor) : "0.00";
   const showMoneyLocked = Boolean(moneyData && moneyData.locked_minor > 0);
   const withdrawAvailable = moneyData ? formatMinor(moneyData.available_minor) : "0.00";
@@ -1016,6 +1313,11 @@ function App() {
   const withdrawFeeMinor =
     withdrawAmountMinor == null ? null : Math.ceil((withdrawAmountMinor * WITHDRAW_FEE_BPS) / 10000);
   const withdrawMaxMinor = moneyData ? Math.floor(moneyData.available_minor / (1 + WITHDRAW_FEE_BPS / 10000)) : 0;
+
+  const topupDepositAddress = React.useMemo(() => {
+    const fromApi = moneyData?.deposit_address?.trim();
+    return fromApi && fromApi.length > 0 ? fromApi : DEFAULT_TOPUP_ADDRESS;
+  }, [moneyData?.deposit_address]);
   const withdrawValidationMessage =
     !withdrawAddress.trim() || !withdrawAmount.trim()
       ? null
@@ -1035,25 +1337,78 @@ function App() {
     isBasicTronAddress(withdrawAddress) &&
     withdrawAmountMinor + (withdrawFeeMinor ?? 0) <= (moneyData?.available_minor ?? 0);
   const confirmTrace = pendingAction?.traceId ?? session?.traceId ?? "trace_unavailable";
+  const tradingPositionCount = tradingDetails?.positions?.length ?? 0;
   const tradingStats = React.useMemo(() => {
-    const sourceLabel = dashboardHasBalance ? "Algorithm system data" : "Trade journal data";
-    const byRange: Record<TradingRange, { total: number; positive: number; negative: number; result: string }> =
-      dashboardHasBalance
-        ? {
-            "24h": { total: 8, positive: 6, negative: 2, result: "+1.2%" },
-            "7d": { total: 29, positive: 21, negative: 8, result: "+4.6%" },
-            "1m": { total: 94, positive: 69, negative: 25, result: "+12.1%" },
-            "3m": { total: 254, positive: 184, negative: 70, result: "+28.4%" },
-          }
-        : {
-            "24h": { total: 5, positive: 3, negative: 2, result: "+0.7%" },
-            "7d": { total: 17, positive: 11, negative: 6, result: "+2.9%" },
-            "1m": { total: 68, positive: 44, negative: 24, result: "+9.3%" },
-            "3m": { total: 201, positive: 132, negative: 69, result: "+24.8%" },
-          };
-    return { sourceLabel, ...byRange[tradingRange] };
-  }, [dashboardHasBalance, tradingRange]);
-  const tradingTotalLabel = tradingOpenOrders > 0 ? String(tradingOpenOrders) : String(tradingStats.total);
+    const positions = tradingDetails?.positions ?? [];
+    const sourceLabel = formatTradingStatsSource(tradingDetails?.stats_source);
+    if (positions.length === 0) {
+      return {
+        sourceLabel,
+        total: 0,
+        longCount: 0,
+        shortCount: 0,
+        notionalLabel: "—",
+      };
+    }
+    const { long, short } = partitionPositionSides(positions);
+    const sumMinor = positions.reduce((acc, p) => acc + p.size_minor, 0);
+    return {
+      sourceLabel,
+      total: positions.length,
+      longCount: long,
+      shortCount: short,
+      notionalLabel: `${formatMinor(sumMinor)} USDT`,
+    };
+  }, [tradingDetails]);
+  const tradingExposureSpark = React.useMemo(
+    () => buildTradingExposureSpark(tradingDetails?.positions ?? []),
+    [tradingDetails?.positions]
+  );
+  const tradingTotalLabel = String(tradingStats.total);
+
+  const tradingWalletMinor = tradingDetails?.wallet_minor ?? 0;
+  const botTradingEnabled = tradingDetails?.bot_trading_enabled ?? false;
+  const tradingBlocked = isBusy || tradingUiBusy;
+
+  const handleTradingStart = React.useCallback(async () => {
+    if (!session?.initData || tradingBlocked) return;
+    if (tradingWalletMinor <= 0) {
+      navigate("topup");
+      return;
+    }
+    if (botTradingEnabled) {
+      setActionMessage("Trading is already running.");
+      return;
+    }
+    setTradingUiBusy(true);
+    setActionMessage(null);
+    try {
+      await postTradingState(session.initData, true);
+      setScreenReloadToken((x) => x + 1);
+    } catch (e) {
+      setActionMessage(e instanceof ApiError ? e.message : "Could not start trading.");
+    } finally {
+      setTradingUiBusy(false);
+    }
+  }, [session?.initData, tradingWalletMinor, botTradingEnabled, tradingBlocked, navigate]);
+
+  const handleTradingStop = React.useCallback(async () => {
+    if (!session?.initData || tradingBlocked) return;
+    if (!botTradingEnabled) {
+      setActionMessage("Trading is already stopped.");
+      return;
+    }
+    setTradingUiBusy(true);
+    setActionMessage(null);
+    try {
+      await postTradingState(session.initData, false);
+      setScreenReloadToken((x) => x + 1);
+    } catch (e) {
+      setActionMessage(e instanceof ApiError ? e.message : "Could not stop trading.");
+    } finally {
+      setTradingUiBusy(false);
+    }
+  }, [session?.initData, botTradingEnabled, tradingBlocked]);
 
   if (initState === "loading") {
     return (
@@ -1118,7 +1473,11 @@ function App() {
                   type="button"
                   className="top-bar-chip top-bar-chip--notify"
                   disabled={isBusy}
-                  aria-label="Open notifications"
+                  aria-label={
+                    notificationItems.length > 0
+                      ? `Open notifications, ${notificationItems.length} items`
+                      : "Open notifications"
+                  }
                   onClick={() => navigate("notifications")}
                 >
                   <img
@@ -1127,9 +1486,11 @@ function App() {
                     alt=""
                     aria-hidden="true"
                   />
-                  <span className="top-bar-badge" aria-hidden="true">
-                    25
-                  </span>
+                  {notificationItems.length > 0 ? (
+                    <span className="top-bar-badge" aria-hidden="true">
+                      {notificationItems.length > 99 ? "99+" : notificationItems.length}
+                    </span>
+                  ) : null}
                 </button>
                 <button
                   type="button"
@@ -1163,7 +1524,7 @@ function App() {
                 </p>
                 <div className="dashboard-balance-rule" aria-hidden="true" />
                 <p className="dashboard-referral-amount">
-                  <span className="dashboard-referral-figure">{FIGMA_VISUAL_STUBS.referralAmount}</span>
+                  <span className="dashboard-referral-figure">{dashboardReferralDisplay}</span>
                   <span className="dashboard-referral-unit">USDT</span>
                 </p>
                 <p className="dashboard-referral-kicker">Received by referrals</p>
@@ -1258,7 +1619,25 @@ function App() {
                         empty: "No FAQ entries published yet.",
                         error: "FAQ is temporarily unavailable.",
                       }
-                    : undefined
+                    : route === "notifications"
+                      ? {
+                          loading: "Loading notifications...",
+                          empty: "No notifications yet.",
+                          error: "Notifications are temporarily unavailable.",
+                        }
+                      : route === "topup"
+                        ? {
+                            loading: "Loading deposit details...",
+                            empty: "No deposit address assigned yet.",
+                            error: "Could not load deposit details.",
+                          }
+                        : route === "agreement"
+                          ? {
+                              loading: "Loading agreement...",
+                              empty: "Agreement text is not available.",
+                              error: "Could not load the agreement.",
+                            }
+                          : undefined
           }
         >
           {isDashboard ? (
@@ -1274,31 +1653,23 @@ function App() {
                     <span className="dashboard-perf-title">{dashboardGraphTitle}</span>
                     <span className="dashboard-perf-period">{dashboardChartPeriod}</span>
                   </div>
-                  <div
-                    className={`dashboard-perf-chart${dashboardHasBalance ? "" : " dashboard-perf-chart--figma-performance"}`}
-                  >
-                    {dashboardHasBalance ? (
-                      <>
-                        <div className="dashboard-perf-y-axis">
-                          {dashboardYAxisLabels.map((label, idx) => (
-                            <span key={`y-${idx}`}>{label}</span>
-                          ))}
-                        </div>
-                        <div className="dashboard-perf-plot dashboard-perf-plot--funded">
-                          <DashboardHomeBalanceChart funded />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="dashboard-perf-plot dashboard-perf-plot--figma-performance">
-                        <DashboardFigmaPerformanceGraphic />
+                  <div className="dashboard-perf-chart">
+                    <div className="dashboard-perf-y-axis">
+                      {dashboardYAxisLabels.map((label, idx) => (
+                        <span key={`y-${idx}`}>{label}</span>
+                      ))}
+                    </div>
+                    <div className="dashboard-perf-plot dashboard-perf-plot--funded">
+                      <DashboardHomeBalanceChart chartPoints={dashboardChartPoints} />
+                      {dashboardShowZeroBalanceHint ? (
                         <div className="dashboard-perf-empty dashboard-perf-empty--on-figma">
                           <p className="dashboard-perf-empty-title">Balance is 0 USDT</p>
                           <p className="dashboard-perf-empty-body">
                             Top up to unlock balance history and cashflow tracking.
                           </p>
                         </div>
-                      </div>
-                    )}
+                      ) : null}
+                    </div>
                   </div>
                   <div className="dashboard-perf-x-axis" aria-hidden="true">
                     {dashboardXAxisLabels.map((label, idx) => (
@@ -1317,10 +1688,7 @@ function App() {
                   </div>
                 </div>
               </section>
-              <section
-                className="dashboard-block dashboard-block--status"
-                aria-label="Bot status and market price"
-              >
+              <section className="dashboard-block dashboard-block--status" aria-label="Bot status and session metrics">
                 <div className={`dashboard-status-card${dashboardHasBalance ? "" : " dashboard-status-card--muted"}`}>
                   <div className="dashboard-status">
                     <div className="dashboard-status-row">
@@ -1333,10 +1701,14 @@ function App() {
                       </span>
                     </div>
                     <div className="dashboard-status-row">
-                      <span className="dashboard-status-kicker">Actual price</span>
+                      <span className="dashboard-status-kicker">Open positions</span>
+                      <span className="dashboard-status-value">{dashboardSnapshot.open_positions}</span>
+                    </div>
+                    <div className="dashboard-status-row">
+                      <span className="dashboard-status-kicker">Session PnL</span>
                       <span className="dashboard-price-figure">
-                        <strong className="dashboard-price-strong">{dashboardPriceLine}</strong>
-                        <span className="dashboard-price-unit">USDT/BTC</span>
+                        <strong className="dashboard-price-strong">{formatMinor(dashboardSnapshot.pnl_minor)}</strong>
+                        <span className="dashboard-price-unit">USDT</span>
                       </span>
                     </div>
                   </div>
@@ -1453,10 +1825,12 @@ function App() {
                   <section className="money-current-balance" aria-label="Current balance">
                     <p className="money-current-kicker">Current balance</p>
                     <p className="money-current-value">
-                      {moneyAvailable}
+                      {moneyBalanceDisplay}
                       <span className="money-current-unit">USDT</span>
                     </p>
-                    <p className="money-current-wallet">TQBw8SGT......6I48HPv4iB</p>
+                    <p className="money-current-wallet">
+                      {moneyData?.deposit_address ? truncateMiddleAddr(moneyData.deposit_address) : "—"}
+                    </p>
                     <div className="money-quick-actions">
                       <button type="button" className="money-quick-btn money-quick-btn--topup" onClick={() => navigate("topup")} disabled={isBusy}>
                         <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -1506,10 +1880,10 @@ function App() {
                       <span className="money-summary-title">Deposit</span>
                       <span className="money-summary-label">Total deposited amount:</span>
                       <span className="money-summary-value">
-                        5237.00 <span>USDT</span>
+                        {formatMinor(moneyData?.deposit_total_minor ?? 0)} <span>USDT</span>
                       </span>
                       <span className="money-summary-label">Number of deposits made:</span>
-                      <span className="money-summary-meta">5 TIMES</span>
+                      <span className="money-summary-meta">{moneyData?.deposit_count ?? 0} TIMES</span>
                     </button>
                     <button
                       type="button"
@@ -1521,10 +1895,10 @@ function App() {
                       <span className="money-summary-title">Withdraw</span>
                       <span className="money-summary-label">Total withdrawal amount:</span>
                       <span className="money-summary-value">
-                        4250.98 <span>USDT</span>
+                        {formatMinor(moneyData?.withdraw_total_minor ?? 0)} <span>USDT</span>
                       </span>
                       <span className="money-summary-label">Number of withdrawals:</span>
-                      <span className="money-summary-meta">4 TIMES</span>
+                      <span className="money-summary-meta">{moneyData?.withdraw_count ?? 0} TIMES</span>
                     </button>
                     <button
                       type="button"
@@ -1536,10 +1910,26 @@ function App() {
                       <span className="money-summary-title">Referral</span>
                       <span className="money-summary-label">Bonuses received from:</span>
                       <span className="money-summary-value">
-                        603.22 <span>USDT</span>
+                        {formatMinor(moneyData?.referral_received_minor ?? 0)} <span>USDT</span>
                       </span>
                       <span className="money-summary-label">Total number of invited users:</span>
-                      <span className="money-summary-meta">8 PEOPLE</span>
+                      <span className="money-summary-meta">{moneyData?.invited_users_count ?? 0} PEOPLE</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`money-summary-card${moneyFilter === "trading" ? " money-summary-card--active" : ""}`}
+                      aria-pressed={moneyFilter === "trading"}
+                      disabled={isBusy}
+                      onClick={() => navigateMoneyFilter("trading")}
+                    >
+                      <span className="money-summary-title">Trading (SIB)</span>
+                      <span className="money-summary-label">Net trading result:</span>
+                      <span className="money-summary-value">
+                        {sibHistoryStats.net_minor >= 0 ? "+" : "−"}
+                        {formatMinor(Math.abs(sibHistoryStats.net_minor))} <span>USDT</span>
+                      </span>
+                      <span className="money-summary-label">Applied closes:</span>
+                      <span className="money-summary-meta">{sibHistoryStats.count} TIMES</span>
                     </button>
                   </div>
                   <div
@@ -1584,21 +1974,23 @@ function App() {
                     <div className="trading-hero-main">
                       <p className="trading-hero-label">Bot status</p>
                       <p className="trading-hero-value">
-                        <span className="trading-hero-dot" aria-hidden="true" /> Active
+                        <span className="trading-hero-dot" aria-hidden="true" />{" "}
+                        {botTradingEnabled ? "Active" : "Stopped"}
                       </p>
                     </div>
                     <div className="trading-hero-meta-block">
-                      <p className="trading-hero-meta-label">Actual price</p>
+                      <p className="trading-hero-meta-label">Data source</p>
                       <p className="trading-hero-meta-value">
-                        {FIGMA_VISUAL_STUBS.tradingPriceLine} <span className="trading-hero-meta-unit">USDT/BTC</span>
+                        {formatTradingStatsSource(tradingDetails?.stats_source)}
+                        <span className="trading-hero-meta-unit"> · {tradingPositionCount} open</span>
                       </p>
                     </div>
                     <div className="trading-action-row">
                       <button
                         type="button"
                         className="trading-action-btn trading-action-btn--start"
-                        onClick={() => setActionMessage("Bot is already active.")}
-                        disabled={isBusy}
+                        onClick={() => void handleTradingStart()}
+                        disabled={tradingBlocked}
                       >
                         <span className="trading-action-main">
                           <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -1620,8 +2012,8 @@ function App() {
                       <button
                         type="button"
                         className="trading-action-btn trading-action-btn--stop"
-                        onClick={() => setActionMessage("Stop action is not enabled in this wave.")}
-                        disabled={isBusy}
+                        onClick={() => void handleTradingStop()}
+                        disabled={tradingBlocked}
                       >
                         <span className="trading-action-main">
                           <svg className="action-btn-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -1635,127 +2027,163 @@ function App() {
                       </button>
                     </div>
                   </section>
+                  {tradingDetails?.al_trading_simulator?.syncs_this_user ? (
+                    <p className="trading-period-hint" role="note" style={{ marginBottom: "0.65rem" }}>
+                      Trade feed is synced from the AL simulator (backend polls GET /api/trade-feed).
+                    </p>
+                  ) : null}
                   <div className="trading-stack">
                     <div className="trading-stack-head">
                       <p className="trading-section-title">Detail Bot statistics for the period:</p>
-                      <div className="stats-tabs" role="tablist" aria-label="Period">
-                        {(["24h", "7d", "1m", "3m"] as const).map((label) => (
+                      <div className="stats-tabs" role="tablist" aria-label="Statistics period">
+                        {TRADING_PERIOD_TABS.map((tab) => (
                           <button
-                            key={label}
+                            key={tab}
                             type="button"
                             role="tab"
-                            aria-selected={tradingRange === label}
-                            className={tradingRange === label ? "stat-pill stat-pill-active" : "stat-pill"}
+                            aria-selected={tradingRange === tab}
+                            className={tradingRange === tab ? "stat-pill stat-pill-active" : "stat-pill"}
                             disabled={isBusy}
-                            onClick={() => setTradingRange(label)}
+                            onClick={() => setTradingRange(tab)}
                           >
-                            {label}
+                            {TRADING_TAB_LABELS[tab]}
                           </button>
                         ))}
                       </div>
                     </div>
+                    {tradingDetails?.stats_capped_to_history ? (
+                      <p className="trading-period-hint" role="status">
+                        Showing {formatApproxDuration(tradingDetails.period_seconds_effective)} of activity — your history is
+                        shorter than the selected window ({TRADING_TAB_LABELS[tradingDetails.period]}). Totals include all
+                        activity in the available span.
+                      </p>
+                    ) : null}
                     <div className="trading-graph" aria-hidden="true">
                       <div className="trading-graph-y-axis">
-                        <span>+8%</span>
-                        <span>+4%</span>
-                        <span>0%</span>
-                        <span>-4%</span>
+                        {tradingExposureSpark.yTicks.map((label, idx) => (
+                          <span key={`ty-${idx}`}>{label}</span>
+                        ))}
                       </div>
-                      <div className="trading-graph-line" />
+                      {tradingPositionCount === 0 ? <div className="trading-graph-line" /> : null}
                       <div className="trading-graph-points">
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                        <span />
+                        <svg
+                          className="trading-graph-series-svg"
+                          viewBox="0 0 100 100"
+                          preserveAspectRatio="none"
+                        >
+                          <polyline
+                            fill="none"
+                            stroke="#2d6e93"
+                            strokeWidth="1.5"
+                            vectorEffect="nonScalingStroke"
+                            points={tradingExposureSpark.pointsAttr}
+                          />
+                        </svg>
                       </div>
                       <div className="trading-graph-legend">
                         <span className="trading-graph-legend-item">
                           <span className="trading-graph-legend-dot trading-graph-legend-dot--bot" />
-                          Bot yield
-                        </span>
-                        <span className="trading-graph-legend-item">
-                          <span className="trading-graph-legend-dot trading-graph-legend-dot--market" />
-                          Market baseline
+                          Cumulative open notional (USDT)
                         </span>
                       </div>
                       <div className="trading-graph-x-axis">
-                        <span>Week 1</span>
-                        <span>Week 2</span>
-                        <span>Week 3</span>
-                        <span>Week 4</span>
+                        {tradingExposureSpark.xLabels.map((label, idx) => (
+                          <span key={`tx-${idx}`}>{label}</span>
+                        ))}
                       </div>
                     </div>
+                    <p className="trading-graph-note" role="note">
+                      Step curve adds each open position by time (sorted by opened_at); axis shows cumulative size.
+                    </p>
                     <div className="trading-kpi-row" aria-label="Trading summary">
                       <article className="trading-stats-card">
                         <div className="trading-stats-row">
                           <span className="trading-stats-icon trading-stats-icon--total" aria-hidden="true" />
-                          <p className="trading-stats-label">Total deals:</p>
+                          <p className="trading-stats-label">Open positions:</p>
                           <p className="trading-stats-value">{tradingTotalLabel}</p>
                         </div>
                         <div className="trading-stats-row">
                           <span className="trading-stats-icon trading-stats-icon--up" aria-hidden="true" />
-                          <p className="trading-stats-label">Successful:</p>
-                          <p className="trading-stats-value">{tradingStats.positive}</p>
+                          <p className="trading-stats-label">Long:</p>
+                          <p className="trading-stats-value">{tradingStats.longCount}</p>
                         </div>
                         <div className="trading-stats-row">
                           <span className="trading-stats-icon trading-stats-icon--down" aria-hidden="true" />
-                          <p className="trading-stats-label">Unsuccessful:</p>
-                          <p className="trading-stats-value">{tradingStats.negative}</p>
+                          <p className="trading-stats-label">Short:</p>
+                          <p className="trading-stats-value">{tradingStats.shortCount}</p>
                         </div>
                         <div className="trading-stats-row">
                           <span className="trading-stats-icon trading-stats-icon--result" aria-hidden="true" />
-                          <p className="trading-stats-label">Percentage of profit:</p>
-                          <p className="trading-stats-value trading-stats-value--result">{tradingStats.result}</p>
+                          <p className="trading-stats-label">Notional exposure:</p>
+                          <p className="trading-stats-value trading-stats-value--result">{tradingStats.notionalLabel}</p>
                         </div>
                       </article>
                     </div>
-                    <p className="trading-list-kicker">trading:</p>
-                    {[
-                      {
-                        tone: "success",
-                        title: "Prediction was successful!",
-                        priceLabel: "Price is DOWN",
-                        amountLabel: "to 69569.32",
-                        resultLabel: "Profit of trade is:",
-                        resultValue: "0.13 %",
-                      },
-                      {
-                        tone: "danger",
-                        title: "Prediction was unsuccessful!",
-                        priceLabel: "Price is UP",
-                        amountLabel: "to 69569.32",
-                        resultLabel: "Loss of trade is:",
-                        resultValue: "0.16 %",
-                      },
-                      {
-                        tone: "new",
-                        title: "Opening new trade...",
-                        priceLabel: "Actual price:",
-                        amountLabel: "69 425.22",
-                        resultLabel: "Source:",
-                        resultValue: tradingStats.sourceLabel,
-                      },
-                    ].map((item) => (
-                      <article key={item.title} className={`metric-card trading-list-row trading-list-row--${item.tone}`}>
+                    <p className="trading-list-kicker">Positions:</p>
+                    {(tradingDetails?.positions?.length ?? 0) === 0 ? (
+                      <article className="metric-card trading-list-row trading-list-row--new">
                         <div className="trading-list-line">
                           <span className="trading-list-dot" aria-hidden="true" />
-                          <p className="trading-list-title">{item.title}</p>
+                          <p className="trading-list-title">No trades in this period</p>
                         </div>
                         <div className="trading-list-line">
-                          <span className="trading-list-arrow" aria-hidden="true" />
-                          <p className="trading-list-body">{item.priceLabel}</p>
-                          <p className="trading-list-amount">{item.amountLabel}</p>
-                          <p className="trading-list-unit">USDT/BTC</p>
-                        </div>
-                        <div className="trading-list-line">
-                          <span className="trading-list-wave" aria-hidden="true" />
-                          <p className="trading-list-body">{item.resultLabel}</p>
-                          <p className="trading-list-result">{item.resultValue}</p>
+                          <p className="trading-list-body">
+                            Try a longer range or wait for new fills from your trading engine.
+                          </p>
                         </div>
                       </article>
-                    ))}
+                    ) : (
+                      (tradingDetails?.positions ?? []).map((pos, idx) => {
+                        const tone =
+                          pos.side.trim().toLowerCase() === "short"
+                            ? "danger"
+                            : pos.side.trim().toLowerCase() === "long"
+                              ? "success"
+                              : "new";
+                        const openedLabel = pos.opened_at ? formatChartMonthDay(pos.opened_at) : "—";
+                        const closedLabel =
+                          pos.closed_at != null && String(pos.closed_at).trim() !== ""
+                            ? formatChartMonthDay(pos.closed_at)
+                            : null;
+                        return (
+                          <article
+                            key={`${pos.symbol}-${pos.opened_at}-${idx}-${closedLabel ?? "o"}`}
+                            className={`metric-card trading-list-row trading-list-row--${tone}`}
+                          >
+                            <div className="trading-list-line">
+                              <span className="trading-list-dot" aria-hidden="true" />
+                              <p className="trading-list-title">
+                                {pos.symbol} · {formatPositionSideLabel(pos.side)}
+                                {closedLabel ? (
+                                  <span className="trading-list-closed-badge" aria-label="Closed position">
+                                    {" "}
+                                    · Closed
+                                  </span>
+                                ) : null}
+                              </p>
+                            </div>
+                            <div className="trading-list-line">
+                              <span className="trading-list-wave" aria-hidden="true" />
+                              <p className="trading-list-body">
+                                Opened {openedLabel}
+                                {closedLabel ? ` · Closed ${closedLabel}` : ""}
+                              </p>
+                            </div>
+                            <div className="trading-list-line">
+                              <span className="trading-list-arrow" aria-hidden="true" />
+                              <p className="trading-list-body">Position size</p>
+                              <p className="trading-list-amount">{formatMinor(pos.size_minor)}</p>
+                              <p className="trading-list-unit">USDT</p>
+                            </div>
+                            <div className="trading-list-line">
+                              <span className="trading-list-wave" aria-hidden="true" />
+                              <p className="trading-list-body">Data source</p>
+                              <p className="trading-list-result">{tradingStats.sourceLabel}</p>
+                            </div>
+                          </article>
+                        );
+                      })
+                    )}
                   </div>
                 </>
               )}
@@ -1819,33 +2247,38 @@ function App() {
                   </header>
                   <div className="notifications-list" role="list">
                     <p className="notification-group-title">New</p>
-                    {[
-                      ["Top up confirmed", "A 42.10 USDT deposit was credited.", "Today · 14:32"],
-                      ["Withdrawal queued", "Your withdrawal is being processed.", "Today · 12:05"],
-                      ["Bot status update", "Detail Bot switched to active mode.", "Today · 09:42"],
-                    ].map(([title, body, meta], idx) => (
-                      <article
-                        key={`${title}-${idx}`}
-                        className={`notification-row${idx === 0 ? " notification-row--new" : ""}`}
-                        role="listitem"
-                      >
-                        <p className="notification-title">{title}</p>
-                        <p className="notification-body">{body}</p>
-                        <p className="notification-meta">{meta}</p>
-                      </article>
-                    ))}
+                    {notificationToday.length > 0 ? (
+                      notificationToday.map((item, idx) => (
+                        <article
+                          key={item.id}
+                          className={`notification-row${idx === 0 ? " notification-row--new" : ""}`}
+                          role="listitem"
+                        >
+                          <p className="notification-title">{item.title}</p>
+                          <p className="notification-body">{item.body}</p>
+                          <p className="notification-meta">{formatNotificationTime(item.created_at)}</p>
+                        </article>
+                      ))
+                    ) : (
+                      <p className="notification-body" role="status">
+                        No notifications from today yet.
+                      </p>
+                    )}
                     <div className="notification-divider" aria-hidden="true" />
                     <p className="notification-group-title">Earlier</p>
-                    {[
-                      ["Referral bonus", "A referral bonus operation was added.", "Yesterday · 18:10"],
-                      ["Status note", "No additional actions required right now.", "Yesterday · 11:20"],
-                    ].map(([title, body, meta], idx) => (
-                      <article key={`${title}-${idx}`} className="notification-row" role="listitem">
-                        <p className="notification-title">{title}</p>
-                        <p className="notification-body">{body}</p>
-                        <p className="notification-meta">{meta}</p>
-                      </article>
-                    ))}
+                    {notificationEarlier.length > 0 ? (
+                      notificationEarlier.map((item) => (
+                        <article key={item.id} className="notification-row" role="listitem">
+                          <p className="notification-title">{item.title}</p>
+                          <p className="notification-body">{item.body}</p>
+                          <p className="notification-meta">{formatNotificationTime(item.created_at)}</p>
+                        </article>
+                      ))
+                    ) : (
+                      <p className="notification-body" role="status">
+                        No earlier notifications.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -1856,7 +2289,9 @@ function App() {
                     <h2 className="internal-hero-title">{screenData.settings.title}</h2>
                     <p className="internal-hero-label">{screenData.settings.description}</p>
                     {hasPendingExternalLinks && (
-                      <p className="settings-pending-note">External production links will be finalized at release step.</p>
+                      <p className="settings-pending-note">
+                        Some links still use env placeholders (channel & chat can be added later).
+                      </p>
                     )}
                   </header>
                   <div className="settings-stack">
@@ -1870,11 +2305,21 @@ function App() {
                       </button>
                       <div className="settings-divider" aria-hidden="true" />
                       <p className="settings-group-title">Preferences</p>
-                      <button type="button" className="settings-link-btn">
-                        Push: Enabled
+                      <button type="button" className="settings-link-btn" disabled aria-disabled="true">
+                        <span className="settings-link-main">
+                          Theme:{" "}
+                          {serverSettings ? (serverSettings.theme === "black" ? "Dark" : "Light") : "…"}
+                        </span>
                       </button>
-                      <button type="button" className="settings-link-btn">
-                        Vibration: Enabled
+                      <button type="button" className="settings-link-btn" disabled aria-disabled="true">
+                        <span className="settings-link-main">
+                          Push: {serverSettings ? (serverSettings.push ? "On" : "Off") : "…"}
+                        </span>
+                      </button>
+                      <button type="button" className="settings-link-btn" disabled aria-disabled="true">
+                        <span className="settings-link-main">
+                          Vibration: {serverSettings ? (serverSettings.vibration ? "On" : "Off") : "…"}
+                        </span>
                       </button>
                       <button type="button" className="settings-link-btn" onClick={() => navigate("faq")} disabled={isBusy}>
                         <span className="settings-link-main">
@@ -1890,7 +2335,7 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.supportUrl, "Support")}
+                        onClick={() => openExternalLink(externalLinks.supportUrl, "Support")}
                         disabled={isBusy}
                       >
                         <span className="settings-link-main">
@@ -1938,7 +2383,7 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.referralUrl, "Referral")}
+                        onClick={() => openExternalLink(externalLinks.referralUrl, "Referral")}
                         disabled={isBusy}
                       >
                         <span className="settings-link-main">
@@ -2004,7 +2449,7 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.supportUrl, "Support")}
+                        onClick={() => openExternalLink(externalLinks.supportUrl, "Support")}
                         disabled={isBusy}
                       >
                         <span className="settings-link-main">
@@ -2095,7 +2540,7 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.channelUrl, "Channel")}
+                        onClick={() => openExternalLink(externalLinks.channelUrl, "Channel")}
                         disabled={isBusy}
                       >
                         <span className="settings-link-main">
@@ -2111,7 +2556,7 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.chatUrl, "Chat")}
+                        onClick={() => openExternalLink(externalLinks.chatUrl, "Chat")}
                         disabled={isBusy}
                       >
                         <span className="settings-link-main">
@@ -2127,7 +2572,7 @@ function App() {
                       <button
                         type="button"
                         className="settings-link-btn"
-                        onClick={() => openExternalLink(DASHBOARD_EXTERNAL_LINKS.youtubeUrl, "Youtube")}
+                        onClick={() => openExternalLink(externalLinks.youtubeUrl, "Youtube")}
                         disabled={isBusy}
                       >
                         <span className="settings-link-main">
@@ -2173,22 +2618,127 @@ function App() {
                     <p className="internal-hero-label">{screenData.seed.description}</p>
                   </header>
                   <article className="metric-card seed-card">
-                    <ol className="seed-grid" aria-label="Recovery words">
-                      {DEFAULT_SEED_WORDS.map((word, index) => (
-                        <li key={word} className="seed-item">
-                          <span className="seed-index">{index + 1}.</span>
-                          <span className="seed-word">{word}</span>
-                        </li>
-                      ))}
-                    </ol>
-                    <button
-                      type="button"
-                      className="seed-copy-btn"
-                      onClick={async () => navigator.clipboard.writeText(DEFAULT_SEED_WORDS.join(" "))}
-                      disabled={isBusy}
-                    >
-                      Copy
-                    </button>
+                    {seedFetchState === "ready" &&
+                    seedRemote?.account_recovery?.enabled &&
+                    seedRemote.account_recovery.state !== "off" ? (
+                      <div className="seed-recovery-section" style={{ marginBottom: "1.35rem" }}>
+                        <p className="settings-group-title">App account recovery</p>
+                        <p className="seed-status-msg" style={{ marginBottom: "0.75rem" }}>
+                          Save this code in a safe place. It lets you restore your <strong>balance and history</strong> in
+                          this app if you change Telegram account or reinstall — or give it to an admin if needed.
+                        </p>
+                        {seedRemote.account_recovery.code ? (
+                          <>
+                            <p className="seed-status-msg" style={{ fontWeight: 600, color: "var(--figma-warning, #c96)" }}>
+                              Copy now — this text is shown only once.
+                            </p>
+                            <pre
+                              style={{
+                                padding: "0.75rem",
+                                borderRadius: 8,
+                                background: "rgba(0,0,0,0.06)",
+                                wordBreak: "break-all",
+                                fontSize: 14,
+                                margin: "0.5rem 0",
+                              }}
+                            >
+                              {seedRemote.account_recovery.code}
+                            </pre>
+                            <button
+                              type="button"
+                              className="seed-copy-btn"
+                              onClick={() =>
+                                void navigator.clipboard.writeText(seedRemote.account_recovery!.code!)
+                              }
+                              disabled={isBusy}
+                            >
+                              Copy recovery code
+                            </button>
+                          </>
+                        ) : (
+                          <p className="seed-status-msg">
+                            {seedRemote.account_recovery.state === "previously_shown"
+                              ? "Your recovery code was already displayed on your first visit. If you lost it, contact support."
+                              : null}
+                          </p>
+                        )}
+                        <div style={{ margin: "1.1rem 0", borderTop: "1px solid rgba(0,0,0,0.08)" }} />
+                        <p className="settings-group-title">Link this Telegram to a saved code</p>
+                        <p className="seed-status-msg" style={{ marginBottom: "0.5rem" }}>
+                          Use when you open the app with a <strong>new</strong> Telegram account but still have your
+                          recovery code. The empty new profile will be discarded; your old account moves to this
+                          Telegram. If this profile already has deposits, linking is blocked — use support.
+                        </p>
+                        <input
+                          type="text"
+                          value={recoveryClaimInput}
+                          onChange={(e) => setRecoveryClaimInput(e.target.value)}
+                          placeholder="Paste recovery code"
+                          className="seed-recovery-input"
+                          style={{
+                            width: "100%",
+                            padding: "0.6rem 0.75rem",
+                            borderRadius: 8,
+                            border: "1px solid rgba(0,0,0,0.15)",
+                            marginBottom: "0.5rem",
+                          }}
+                          autoComplete="off"
+                          disabled={recoveryClaimBusy}
+                        />
+                        <button
+                          type="button"
+                          className="seed-copy-btn"
+                          onClick={() => void handleRecoveryClaim()}
+                          disabled={isBusy || recoveryClaimBusy}
+                        >
+                          {recoveryClaimBusy ? "Linking…" : "Link account"}
+                        </button>
+                      </div>
+                    ) : null}
+                    {seedFetchState === "loading" || seedFetchState === "idle" ? (
+                      <p className="seed-status-msg">Loading recovery phrase…</p>
+                    ) : seedFetchState === "error" ? (
+                      <div className="seed-status-box">
+                        <p className="seed-status-msg">Could not load recovery phrase.</p>
+                        <button type="button" className="seed-copy-btn" onClick={() => setSeedRetryToken((t) => t + 1)}>
+                          Retry
+                        </button>
+                      </div>
+                    ) : seedRemote?.mode === "per_user" && seedRemote.words.length > 0 ? (
+                      <>
+                        <ol className="seed-grid" aria-label="Recovery words">
+                          {seedRemote.words.map((word, index) => (
+                            <li key={`${index}-${word}`} className="seed-item">
+                              <span className="seed-index">{index + 1}.</span>
+                              <span className="seed-word">{word}</span>
+                            </li>
+                          ))}
+                        </ol>
+                        <button
+                          type="button"
+                          className="seed-copy-btn"
+                          onClick={async () => navigator.clipboard.writeText(seedRemote.words.join(" "))}
+                          disabled={isBusy}
+                        >
+                          Copy
+                        </button>
+                      </>
+                    ) : seedRemote?.mode === "custodial_pk" ? (
+                      <p className="seed-status-msg">
+                        This account uses a custodial deposit wallet: the key is encrypted in our database (no BIP39 seed is
+                        shown here). Use Top Up for your deposit address.
+                      </p>
+                    ) : seedRemote?.mode === "legacy" ? (
+                      <p className="seed-status-msg">
+                        This account uses a legacy shared deposit scheme. No personal phrase is stored in the app —
+                        contact support if you need help with your deposit address.
+                      </p>
+                    ) : (
+                      <p className="seed-status-msg">
+                        Personal recovery phrases are disabled on this deployment. Your deposit address is still shown on
+                        the Top Up screen.
+                      </p>
+                    )}
                   </article>
                 </div>
               )}
@@ -2196,16 +2746,11 @@ function App() {
               {route === "agreement" && (
                 <div className="agreement-page">
                   <header className="internal-hero internal-hero-agreement">
-                    <h2 className="internal-hero-title">{screenData.agreement.title}</h2>
+                    <h2 className="internal-hero-title">{agreementData?.title ?? screenData.agreement.title}</h2>
                     <p className="internal-hero-label">{screenData.agreement.description}</p>
                   </header>
                   <article className="metric-card agreement-card">
-                    <p>
-                      By using this mini app you agree that blockchain operations are final and account access is your
-                      responsibility.
-                    </p>
-                    <p>Keep your recovery phrase private and do not share private keys with third parties.</p>
-                    <p>Continued usage confirms acceptance of updated terms published in the app.</p>
+                    <div style={{ whiteSpace: "pre-wrap" }}>{agreementData?.content ?? ""}</div>
                   </article>
                 </div>
               )}
@@ -2219,9 +2764,9 @@ function App() {
                   <div className="topup-frame">
                     <article className="topup-payment-card">
                       <p className="topup-payment-title">Receive USDT</p>
-                      <TopUpQrVisual />
+                      <TopUpQrVisual value={topupDepositAddress} />
                       <p className="topup-qr-hint">Scan the QR or copy the address below</p>
-                      <TopupAddressPanel address={DEFAULT_TOPUP_ADDRESS} />
+                      <TopupAddressPanel address={topupDepositAddress} />
                       <button
                         type="button"
                         className="topup-copy-row"
@@ -2229,7 +2774,7 @@ function App() {
                         onClick={async () => {
                           if (isBusy) return;
                           try {
-                            await navigator.clipboard.writeText(DEFAULT_TOPUP_ADDRESS);
+                            await navigator.clipboard.writeText(topupDepositAddress);
                             flashTopupCopied();
                           } catch {
                             flashTopupCopyError();

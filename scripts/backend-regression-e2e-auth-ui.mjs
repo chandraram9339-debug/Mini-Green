@@ -238,16 +238,34 @@ async function createMockServer() {
 
     if (
       method === "GET" &&
-      ["/api/v1/ui/dashboard", "/api/v1/ui/money-details", "/api/v1/ui/trading-details", "/api/v1/ui/faq"].includes(urlObj.pathname)
+      [
+        "/api/v1/ui/dashboard",
+        "/api/v1/ui/money-details",
+        "/api/v1/ui/trading-details",
+        "/api/v1/ui/notifications",
+        "/api/v1/ui/faq"
+      ].includes(urlObj.pathname)
     ) {
       const traceId = ensureDemoInitFromQuery(urlObj, res);
       if (!traceId) return;
 
       if (urlObj.pathname === "/api/v1/ui/dashboard") {
+        const nowMs = Date.now();
         sendJson(res, 200, {
           ok: true,
           trace_id: traceId,
-          data: { screen: "dashboard", wallet_minor: 125000, pnl_minor: 3400, open_positions: 2 }
+          data: {
+            screen: "dashboard",
+            wallet_minor: 125000,
+            referral_received_minor: 1500,
+            pnl_minor: 3400,
+            open_positions: 2,
+            chart_points: [
+              { occurred_at: new Date(nowMs - 14 * 86400000).toISOString(), wallet_minor: 0 },
+              { occurred_at: new Date(nowMs - 3 * 86400000).toISOString(), wallet_minor: 40000 },
+              { occurred_at: new Date(nowMs).toISOString(), wallet_minor: 125000 }
+            ]
+          }
         });
         return;
       }
@@ -255,19 +273,83 @@ async function createMockServer() {
         sendJson(res, 200, {
           ok: true,
           trace_id: traceId,
-          data: { screen: "money-details", available_minor: 125000, locked_minor: 20000, currency: "USD" }
+          data: {
+            screen: "money-details",
+            wallet_minor: 145000,
+            available_minor: 125000,
+            locked_minor: 20000,
+            deposit_total_minor: 500000,
+            deposit_count: 3,
+            withdraw_total_minor: 380000,
+            withdraw_count: 2,
+            referral_received_minor: 5000,
+            invited_users_count: 1,
+            deposit_address: "TD7WuK8xQY2mN4pL6vR3tZ9aBcDeF1gH2JkLm",
+            currency: "USD",
+            operations: [
+              {
+                id: "dep_1",
+                kind: "deposit",
+                status: "confirmed",
+                amount_minor: 20000,
+                fee_minor: 100,
+                wallet_mask: "chain",
+                occurred_at: new Date().toISOString()
+              }
+            ]
+          }
         });
         return;
       }
       if (urlObj.pathname === "/api/v1/ui/trading-details") {
+        const period = urlObj.searchParams.get("period") || "7d";
+        const periodSec = { "24h": 86400, "3d": 259200, "7d": 604800, "30d": 2592000 }[period] ?? 604800;
+        const now = Date.now();
+        const opened1 = new Date(now - 4 * 3600000).toISOString();
+        const opened2 = new Date(now - 71 * 3600000).toISOString();
         sendJson(res, 200, {
           ok: true,
           trace_id: traceId,
           data: {
             screen: "trading-details",
+            period,
+            period_seconds_requested: periodSec,
+            period_seconds_effective: periodSec,
+            trading_history_seconds: 14 * 86400,
+            stats_capped_to_history: false,
+            stats_source: "external-algo",
+            wallet_minor: 145000,
+            bot_trading_enabled: false,
             positions: [
-              { symbol: "BTCUSDT", side: "long", size_minor: 20000 },
-              { symbol: "ETHUSDT", side: "short", size_minor: 15000 }
+              { symbol: "BTCUSDT", side: "long", size_minor: 20000, opened_at: opened1 },
+              { symbol: "ETHUSDT", side: "short", size_minor: 15000, opened_at: opened2 }
+            ]
+          }
+        });
+        return;
+      }
+      if (urlObj.pathname === "/api/v1/ui/notifications") {
+        const yesterday = new Date(Date.now() - 86400000).toISOString();
+        sendJson(res, 200, {
+          ok: true,
+          trace_id: traceId,
+          data: {
+            screen: "notifications",
+            items: [
+              {
+                id: "n_today",
+                title: "Deposit",
+                body: "+100.00 USDT · chain",
+                created_at: new Date().toISOString(),
+                level: "success"
+              },
+              {
+                id: "n_old",
+                title: "Referral reward",
+                body: "+5.00 USDT referral bonus",
+                created_at: yesterday,
+                level: "success"
+              }
             ]
           }
         });
@@ -283,6 +365,23 @@ async function createMockServer() {
             { id: "withdraw", q: "When is withdraw completed?", a: "After review." }
           ]
         }
+      });
+      return;
+    }
+
+    if (method === "POST" && urlObj.pathname === "/api/v1/ui/trading-state") {
+      const traceId = crypto.randomUUID();
+      const body = await readJsonBody(req);
+      if (!rejectByInitValidation(res, traceId, body.initData)) return;
+      const enabled =
+        body.enabled === true ||
+        body.enabled === "true" ||
+        body.enabled === 1 ||
+        body.enabled === "1";
+      sendJson(res, 200, {
+        ok: true,
+        trace_id: traceId,
+        data: { screen: "trading-state", bot_trading_enabled: enabled }
       });
       return;
     }
@@ -515,7 +614,20 @@ try {
   );
   checkResult(
     "trading_details_success",
-    await callApi("GET", `/api/v1/ui/trading-details?initData=${encodeURIComponent(initToken)}`),
+    await callApi(
+      "GET",
+      `/api/v1/ui/trading-details?initData=${encodeURIComponent(initToken)}&period=7d`
+    ),
+    { status: 200, requiresTrace: true }
+  );
+  checkResult(
+    "trading_state_start_success",
+    await callApi("POST", "/api/v1/ui/trading-state", { initData: initToken, enabled: true }),
+    { status: 200, requiresTrace: true }
+  );
+  checkResult(
+    "trading_state_stop_success",
+    await callApi("POST", "/api/v1/ui/trading-state", { initData: initToken, enabled: false }),
     { status: 200, requiresTrace: true }
   );
   checkResult(

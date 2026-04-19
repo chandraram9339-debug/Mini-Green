@@ -1,0 +1,831 @@
+/*
+ * Home «1 | Home» node 1:3644 — отступы и координаты как в
+ * figma-miniapp-spec/codegen-fragments/home__full-screen__1-3644.tsx
+ * (не выдумываем числа).
+ */
+.fm-home {
+  position: relative;
+  width: 390px;
+  min-height: 870px;
+  margin: 0 auto;
+  /* В мини-приложении Telegram подставляет --tg-theme-bg-color; иначе токен Figma Bg */
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+  /* Макет LTR; в Telegram при RTL абсолютные left/right «зеркалятся» и ломают строку рефералов */
+  direction: ltr;
+}
+
+.fm-home * {
+  box-sizing: border-box;
+}
+
+.fm-home a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fm-abs {
+  position: absolute;
+  left: 0;
+}
+
+/* ---------- Status Bar (node 1:3674, y 0–44) ---------- */
+/* Фон страницы рисует корневой <main> экрана; здесь — без второго слоя серого. */
+.fm-status {
+  top: 0;
+  height: 44px;
+  width: 390px;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.fm-status-notch {
+  position: absolute;
+  height: 30px;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.fm-status-icons {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  right: 20px;
+  top: 16px;
+}
+
+.fm-status-icons img {
+  display: block;
+}
+
+.fm-net {
+  height: 14px;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.fm-wifi {
+  height: 14px;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.fm-battery {
+  height: 14px;
+  width: 25px;
+  flex-shrink: 0;
+}
+
+.fm-indicator {
+  position: absolute;
+  right: 71px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+}
+
+.fm-time {
+  position: absolute;
+  height: 21px;
+  left: 21px;
+  top: 12px;
+  width: 54px;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.fm-time-inner {
+  position: absolute;
+  width: 33px;
+  height: 15px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.fm-time-inner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- App Bar (node 1:3673, y 44–100) ---------- */
+.fm-appbar {
+  top: 44px;
+  height: 56px;
+  width: 390px;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.fm-appbar-line {
+  position: absolute;
+  height: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 55px;
+  width: 350px;
+}
+
+.fm-appbar-line img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fm-appbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 15px;
+  margin: 0;
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: var(--font-h1-size);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  color: var(--color-black);
+  text-align: center;
+}
+
+.fm-appbar-settings {
+  position: absolute;
+  left: 346px;
+  top: 16px;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+a.fm-appbar-settings {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+span.fm-appbar-settings {
+  display: block;
+}
+
+.fm-appbar-settings img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.fm-appbar-settings--static {
+  pointer-events: none;
+}
+
+.fm-appbar-bell-wrap {
+  position: absolute;
+  left: 309px;
+  top: 16px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+a.fm-appbar-bell-wrap {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fm-appbar-bell-wrap--static {
+  pointer-events: none;
+}
+
+.fm-appbar-bell-wrap img.fm-bell-img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.fm-notify-badge {
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  min-width: 15px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background-color: var(--color-blue-dark);
+  color: var(--color-white);
+  font-family: var(--font-h3-family), sans-serif;
+  font-weight: 500;
+  font-size: 7px;
+  letter-spacing: 0.14px;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+}
+
+.fm-back-wrap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 16px;
+  top: 12px;
+  width: 32px;
+  height: 32px;
+}
+
+.fm-back-btn {
+  border: none;
+  padding: 4px;
+  border-radius: var(--figma-radius-icon-hit);
+  cursor: pointer;
+  background: transparent;
+  display: flex;
+  align-items: flex-start;
+}
+
+a.fm-back-btn {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Стрелка back: ассет `app-bar/back.svg` уже в ориентации «влево» (Figma Icons 1:3292 / 1:3112) — без rotate, иначе визуал не совпадает с макетом */
+.fm-back-inner {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-back-inner img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* ---------- Balance block (node 1:3659, y 130–354) ---------- */
+/* Узел 1:3659 в Figma без отдельной плашки; фон = страница. Явно задаём тот же цвет, что и у .fm-home,
+ * иначе в WebView иногда появляется «полоса» (другой слой композитинга) слева, где нет плашек Top up / Withdraw. */
+.fm-balance {
+  top: 130px;
+  height: 224px;
+  width: 390px;
+  overflow: hidden;
+  direction: ltr;
+  unicode-bidi: isolate;
+  background-color: var(--fm-page-bg);
+  /* `isolation: isolate` в части WebView дал визуально «другой» тон плашки; z-index детей достаточен для кликов. */
+}
+
+/* 1:3671 — Total Balance */
+.fm-balance-title {
+  position: absolute;
+  left: calc(50% - 175px);
+  top: 0;
+  margin: 0;
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 500;
+  font-size: var(--font-h1-size);
+  line-height: normal;
+  color: var(--color-black);
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.fm-balance-divider {
+  position: absolute;
+  height: 0;
+  left: 20px;
+  top: 98px;
+  width: 175px;
+}
+
+.fm-balance-divider img {
+  width: 100%;
+  height: auto;
+}
+
+/* 1:3672 — left-[calc(50%-79.5px)] -translate-x-1/2 gap-[3px] top-[44px] */
+.fm-balance-main-amt {
+  position: absolute;
+  left: calc(50% - 79.5px);
+  top: 44px;
+  display: flex;
+  gap: 3px;
+  align-items: flex-start;
+  line-height: normal;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.fm-balance-main-amt strong {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 600;
+  font-size: 52px;
+  color: var(--color-black);
+}
+
+.fm-balance-main-amt span.u {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--color-grey-medium);
+}
+
+/*
+ * 1:3666 Referrals — невидимая hit-зона (сейчас <div role="button">, не <button> — в WebView не рисует
+ * нативный фон). z-index выше, чем у <a> Details.
+ */
+.fm-referral-hit {
+  position: absolute;
+  left: 0;
+  top: 117px;
+  width: 390px;
+  height: 48px;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Не use appearance: base — в новом Chrome/ WebView даёт видимую «нативную» подложку=серый прямоугольник. */
+
+.fm-referral-hit:focus {
+  outline: none;
+}
+
+.fm-referral-hit:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-blue-dark);
+  border-radius: 4px;
+}
+
+/* 1:3667 — left-[20px] top-[139px] относительно Balance */
+.fm-referral-caption {
+  position: absolute;
+  left: 20px;
+  top: 139px;
+  z-index: 4;
+  margin: 0;
+  pointer-events: none;
+  font-family: var(--font-caption-s-family), sans-serif;
+  font-weight: 400;
+  font-size: var(--font-caption-s-size);
+  color: var(--color-grey-dark);
+}
+
+/* 1:3344 Amount — right-[279px] top-[117px] относительно Balance */
+.fm-referral-amt {
+  position: absolute;
+  right: 279px;
+  left: auto;
+  top: 117px;
+  z-index: 4;
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.fm-referral-amt .v {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--color-black);
+}
+
+.fm-referral-amt .u {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--color-grey-dark);
+}
+
+.fm-mini-col {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  left: 244px;
+  top: 6px;
+}
+
+.fm-mini-topup {
+  display: block;
+  height: 40px;
+  width: 126px;
+  border-radius: var(--figma-radius-pill);
+  background-color: var(--color-green);
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.fm-mini-topup img {
+  position: absolute;
+  left: 24px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.fm-mini-topup span {
+  position: absolute;
+  left: 57px;
+  top: 12.5px;
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+.fm-mini-withdraw {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 126px;
+  border-radius: var(--figma-radius-pill);
+  background-color: var(--color-blue-light);
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px;
+}
+
+.fm-mini-withdraw img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.fm-mini-withdraw span {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+a.fm-mini-topup {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+a.fm-mini-withdraw {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 1:3660 — -translate-x-1/2 left-1/2 top-[172px] w-[350px] px-[20px] py-[14px] gap-[8px] */
+.fm-btn-details-balance {
+  position: absolute;
+  left: 50%;
+  top: 172px;
+  z-index: 1;
+  width: 350px;
+  max-width: 350px;
+  /* WebKit: без явной высоты hit-area <a> иногда тянулся; не перекрывать строку рефералов выше. */
+  box-sizing: border-box;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  /* Figma py-14; вписываем в height 52px, чтобы hit-area не рос вверх в зону рефералов */
+  padding: 14px 20px;
+  transform: translateX(-50%);
+  border-radius: var(--figma-radius-pill);
+  background-color: var(--color-blue-dark);
+  border: none;
+  cursor: pointer;
+}
+
+.fm-btn-details-balance img {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.fm-btn-details-balance span {
+  font-family: var(--font-h3-family), sans-serif;
+  font-weight: 400;
+  font-size: var(--font-h3-size);
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+a.fm-btn-details-balance,
+a.fm-btn-details-chart {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---------- Graphic (node 1:3649, y 384–686) ---------- */
+.fm-graphic {
+  top: 384px;
+  height: 302px;
+  width: 390px;
+  overflow: hidden;
+}
+
+/* Graphic card — эталон: h-[167px] w-[350px] relative (node 1:3505) */
+.fm-chart {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  width: 350px;
+  height: 167px;
+  overflow: hidden;
+  background-color: var(--fm-page-bg);
+}
+
+/* Scale — эталон: absolute left-0 top-0 flex flex-col items-start (node 1:3506) */
+.fm-chart-scale {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.fm-scale-row {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 14px;
+  box-sizing: content-box;
+}
+
+/* Текст шкалы — эталон: Outfit Regular 6px, #8494af, w-[20px], text-right */
+.fm-scale-label {
+  width: 20px;
+  margin: 0;
+  flex-shrink: 0;
+  font-family: var(--font-caption-xxs-family), sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 6px;
+  line-height: normal;
+  letter-spacing: var(--font-caption-xxs-letter-spacing, 0);
+  color: var(--color-grey-medium);
+  text-align: right;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Горизонталь линии сетки — эталон: h-0 w-[326px], img inset [-0.3px, 0] */
+.fm-scale-line {
+  height: 0;
+  width: 326px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.fm-scale-line-imgwrap {
+  position: absolute;
+  inset: -0.3px 0;
+}
+
+.fm-scale-line-imgwrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+
+/* Кривая + заливка — viewBox 325.753×122.8: без равномерного масштаба градиент и линия «плывут» */
+.fm-chart-line {
+  position: absolute;
+  z-index: 1;
+  left: 25px;
+  top: 42px;
+  width: 325px;
+  aspect-ratio: 325.753 / 122.8;
+  max-height: 123px;
+  pointer-events: none;
+  background-color: var(--fm-page-bg);
+}
+
+.fm-chart-line-imgwrap {
+  position: absolute;
+  inset: 0;
+}
+
+.fm-chart-line-imgwrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  object-position: center center;
+}
+
+.fm-graphic-status {
+  position: absolute;
+  left: 20px;
+  top: 187px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.fm-graphic-status > p {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-body-m-size);
+  font-weight: 400;
+  color: var(--color-grey-medium);
+  white-space: nowrap;
+}
+
+.fm-status-bot {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.fm-status-bot img.fm-dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.fm-status-bot span {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--color-green);
+  white-space: nowrap;
+}
+
+.fm-graphic-price {
+  position: absolute;
+  left: 20px;
+  top: 216px;
+  display: flex;
+  gap: 7px;
+  align-items: flex-end;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.fm-graphic-price > p {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-body-m-size);
+  color: var(--color-grey-medium);
+}
+
+.fm-price-amt {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.fm-price-amt .p {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--color-black);
+}
+
+.fm-price-amt .u {
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--color-grey-dark);
+}
+
+/* 1:3650 — как Details баланса, top-[250px] */
+.fm-btn-details-chart {
+  position: absolute;
+  left: 50%;
+  top: 250px;
+  width: 350px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  transform: translateX(-50%);
+  border-radius: var(--figma-radius-pill);
+  background-color: var(--color-blue-dark);
+  border: none;
+  cursor: pointer;
+}
+
+.fm-btn-details-chart img {
+  width: 24px;
+  height: 24px;
+}
+
+.fm-btn-details-chart span {
+  font-family: var(--font-h3-family), sans-serif;
+  font-size: var(--font-h3-size);
+  color: var(--color-white);
+}
+
+/* ---------- Social / Support (node 1:3646) ---------- */
+.fm-social {
+  top: 716px;
+  height: 52px;
+  width: 390px;
+  overflow: hidden;
+}
+
+.fm-social-a,
+.fm-social-b {
+  position: absolute;
+  top: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 168px;
+  padding: 14px 20px;
+  border-radius: var(--figma-radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.fm-social-a {
+  left: 21px;
+  background-color: var(--color-green-light);
+}
+
+.fm-social-b {
+  left: 201px;
+  background-color: var(--color-green);
+}
+
+.fm-social-a img,
+.fm-social-b img {
+  width: 24px;
+  height: 24px;
+}
+
+.fm-social-a span,
+.fm-social-b span {
+  font-family: var(--font-h3-family), sans-serif;
+  font-size: var(--font-h3-size);
+  color: var(--color-black);
+  white-space: nowrap;
+}
+
+.fm-mini-topup,
+.fm-mini-withdraw,
+.fm-btn-details-balance,
+.fm-btn-details-chart,
+.fm-social-a,
+.fm-social-b {
+  transition:
+    background-color var(--figma-duration) var(--figma-ease),
+    opacity var(--figma-duration) var(--figma-ease),
+    transform var(--figma-duration) var(--figma-ease);
+}
+
+.fm-mini-topup:active,
+.fm-mini-withdraw:active,
+.fm-btn-details-balance:active,
+.fm-btn-details-chart:active,
+.fm-social-a:active,
+.fm-social-b:active {
+  opacity: 0.92;
+}
+
+.fm-mini-topup:focus-visible,
+.fm-mini-withdraw:focus-visible,
+.fm-btn-details-balance:focus-visible,
+.fm-btn-details-chart:focus-visible,
+.fm-social-a:focus-visible,
+.fm-social-b:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 2px;
+}

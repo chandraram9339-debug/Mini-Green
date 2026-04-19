@@ -1,0 +1,17 @@
+{
+  "name": "miniapp",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k false -n backend,frontend,admin -c blue,green,magenta \"pnpm --filter miniapp-backend dev\" \"pnpm --filter miniapp-frontend dev\" \"pnpm --filter miniapp-admin-panel dev\"",
+    "build": "pnpm -r run build",
+    "smoke": "pnpm --filter miniapp-backend smoke",
+    "install:all": "pnpm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  }
+}

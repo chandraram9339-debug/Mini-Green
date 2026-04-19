@@ -1,0 +1,78 @@
+.fm-seed {
+  position: relative;
+  width: 390px;
+  min-height: 870px;
+  margin: 0 auto;
+  background-color: var(--fm-page-bg);
+  isolation: isolate;
+}
+
+.fm-seed-body {
+  left: 20px;
+  top: 130px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fm-seed-lead {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-body-m-size);
+  line-height: 1.45;
+  color: var(--color-grey-dark);
+}
+
+.fm-seed-grid {
+  list-style: none;
+  margin: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: var(--color-white);
+  border-radius: var(--figma-radius-card);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-black) 6%, transparent);
+}
+
+.fm-seed-word {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-black);
+}
+
+.fm-seed-idx {
+  width: 20px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-grey-medium);
+}
+
+.fm-seed-copy {
+  margin-top: 4px;
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: var(--figma-radius-card);
+  cursor: pointer;
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: var(--font-btn-size);
+  font-weight: 500;
+  color: var(--color-white);
+  background: var(--color-green);
+}
+
+.fm-seed-copy:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 2px;
+}
+
+.fm-seed .fm-tabbar {
+  top: 798px;
+}

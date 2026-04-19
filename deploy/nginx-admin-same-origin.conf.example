@@ -1,0 +1,35 @@
+# Пример: админка как статика + API того же домена через прокси (без VITE_API_BASE на клиенте).
+# Положите dist админки в root, бэкенд слушает 127.0.0.1:4000.
+
+server {
+  listen 443 ssl http2;
+  server_name admin.example.com;
+
+  ssl_certificate     /path/to/fullchain.pem;
+  ssl_certificate_key /path/to/privkey.pem;
+
+  root /var/www/miniapp-admin/dist;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  location /admin {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /health {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Если мини-апп и другие роуты бэкенда на этом же домене — добавьте их по необходимости.
+}

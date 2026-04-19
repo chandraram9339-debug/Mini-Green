@@ -1,0 +1,210 @@
+import type { Database } from "better-sqlite3";
+import type { AppConfig } from "../config.js";
+import { config } from "../config.js";
+import { logChain } from "../integrations/opsLog.js";
+import { logEvent } from "../httpEnvelope.js";
+import { addBalance, getUserById } from "../repos/userRepo.js";
+import { getLatestTradePositionByUserId } from "../repos/tradePositionRepo.js";
+
+export function hasPendingWithdrawApproval(db: Database, userId: number): boolean {
+  const r = db
+    .prepare(
+      "SELECT 1 as x FROM withdrawals WHERE user_id = ? AND status = 'pending_approval' LIMIT 1"
+    )
+    .get(userId) as { x: number } | undefined;
+  return Boolean(r);
+}
+
+function setSibFlags(db: Database, userId: number, active: boolean, needActivationClose: boolean) {
+  db.prepare("UPDATE users SET sib_active = ?, sib_need_activation_close = ? WHERE id = ?").run(
+    active ? 1 : 0,
+    needActivationClose ? 1 : 0,
+    userId
+  );
+}
+
+/** Call when balance hits zero (withdraw / admin). */
+export function sibOnBalanceZero(db: Database, userId: number) {
+  setSibFlags(db, userId, false, false);
+}
+
+/**
+ * After deposit / manual credit: if balance positive, align SIB with trade journal (last entry open vs closed).
+ */
+export function sibReevaluateAfterDeposit(db: Database, userId: number) {
+  const u = getUserById(db, userId);
+  if (!u) return;
+  if (u.balance_usdt_minor <= 0) {
+    sibOnBalanceZero(db, userId);
+    return;
+  }
+  const latest = getLatestTradePositionByUserId(db, userId);
+  if (!latest) {
+    setSibFlags(db, userId, false, true);
+    return;
+  }
+  const open = latest.closed_at == null || String(latest.closed_at).trim() === "";
+  if (open) {
+    setSibFlags(db, userId, false, true);
+  } else {
+    setSibFlags(db, userId, true, false);
+  }
+}
+
+/** Withdraw request entered admin queue — SIB becomes inactive (no % until resolved). */
+export function sibOnWithdrawRequest(db: Database, userId: number) {
+  const u = getUserById(db, userId);
+  if (!u) return;
+  setSibFlags(db, userId, false, false);
+}
+
+/** After withdrawal sent or auto-approved: wait for next closed trade if balance remains. */
+export function sibAfterWithdrawSent(db: Database, userId: number) {
+  const u = getUserById(db, userId);
+  if (!u) return;
+  if (u.balance_usdt_minor <= 0) {
+    sibOnBalanceZero(db, userId);
+  } else {
+    setSibFlags(db, userId, false, true);
+  }
+}
+
+export function sibAfterWithdrawRejected(db: Database, userId: number) {
+  sibReevaluateAfterDeposit(db, userId);
+}
+
+export type SibCloseRow = { id?: string; result?: number };
+
+/**
+ * Apply `closes[].result` as percent of current balance for each closed trade (idempotent per position).
+ * Skips entirely while a withdrawal waits for admin approval.
+ */
+export function sibApplyClosesFromIngest(
+  db: Database,
+  userId: number,
+  tgUserId: string,
+  closes: SibCloseRow[],
+  trace: string
+): { applied: number; skipped: number } {
+  if (!closes.length) return { applied: 0, skipped: 0 };
+  if (hasPendingWithdrawApproval(db, userId)) {
+    logEvent(trace, "sib.ingest.skip", { tg_user_id: tgUserId, reason: "withdraw_pending_approval" });
+    return { applied: 0, skipped: closes.length };
+  }
+
+  let applied = 0;
+  let skipped = 0;
+
+  const existsStmt = db.prepare(
+    "SELECT 1 as x FROM sib_adjustments WHERE user_id = ? AND position_id = ? LIMIT 1"
+  );
+
+  for (const row of closes) {
+    const positionId = String(row.id ?? "").trim();
+    if (!positionId) {
+      skipped += 1;
+      continue;
+    }
+    const rp = Number(row.result);
+    if (!Number.isFinite(rp)) {
+      skipped += 1;
+      continue;
+    }
+
+    const already = existsStmt.get(userId, positionId) as { x: number } | undefined;
+    if (already) {
+      skipped += 1;
+      continue;
+    }
+
+    const tr = db.transaction(() => {
+      const u0 = getUserById(db, userId);
+      if (!u0 || u0.balance_usdt_minor <= 0) {
+        throw new Error("no_balance");
+      }
+
+      let u = u0;
+      const active0 = Number(u.sib_active ?? 0) === 1;
+      const need0 = Number(u.sib_need_activation_close ?? 0) === 1;
+
+      if (!active0 && !need0) {
+        throw new Error("inactive_gate");
+      }
+
+      if (!active0 && need0) {
+        setSibFlags(db, userId, true, false);
+      }
+
+      u = getUserById(db, userId)!;
+      const balanceBefore = u.balance_usdt_minor;
+      const deltaMinor = Math.round((balanceBefore * rp) / 100);
+      addBalance(db, userId, deltaMinor);
+
+      const u1 = getUserById(db, userId)!;
+      const balAfter = u1.balance_usdt_minor;
+      const adjId = `sib_adj_${positionId}`;
+      const now = new Date().toISOString();
+      db.prepare(
+        `INSERT INTO sib_adjustments (id, user_id, position_id, result_percent, delta_minor, balance_after_minor, created_at)
+         VALUES (?,?,?,?,?,?,?)`
+      ).run(adjId, userId, positionId, rp, deltaMinor, balAfter, now);
+
+      logChain(
+        db,
+        userId,
+        "sib_close",
+        JSON.stringify({ position_id: positionId, result_percent: rp, delta_minor: deltaMinor })
+      );
+      logEvent(trace, "sib.adjust", {
+        tg_user_id: tgUserId,
+        position_id: positionId,
+        result_percent: rp,
+        delta_minor: deltaMinor,
+        balance_after_minor: balAfter
+      });
+
+      if (balAfter <= 0) {
+        sibOnBalanceZero(db, userId);
+      }
+    });
+
+    try {
+      tr();
+      applied += 1;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg === "inactive_gate" || msg === "no_balance") {
+        skipped += 1;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  return { applied, skipped };
+}
+
+/** Optional outbound ping so an external engine pushes/freshens the trading journal. */
+export function fireSibJournalSyncHook(c: AppConfig, tgUserId: string, trace: string): void {
+  const url = c.sibJournalSyncUrl.trim();
+  if (!url) return;
+  const payload = JSON.stringify({ tg_user_id: tgUserId });
+  void fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    signal: AbortSignal.timeout(8000)
+  })
+    .then(() => logEvent(trace, "sib.journal_hook.ok", { tg_user_id: tgUserId }))
+    .catch((e: unknown) =>
+      logEvent(trace, "sib.journal_hook.fail", {
+        tg_user_id: tgUserId,
+        error: e instanceof Error ? e.message : String(e)
+      })
+    );
+}
+
+/** Used when module loads without passing config (tests). */
+export function fireSibJournalSyncForUser(tgUserId: string, trace: string): void {
+  fireSibJournalSyncHook(config, tgUserId, trace);
+}

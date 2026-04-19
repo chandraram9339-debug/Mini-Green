@@ -6,22 +6,38 @@ This repository is a bootstrap for a Telegram Mini App project.
 
 - `frontend` - client app (React + Vite + TypeScript)
 - `backend` - API service (Node.js + Express + TypeScript)
-- `docker-compose.yml` - local Postgres and Redis
+- `admin-panel` - web admin (React + Vite; прокси к API на порту бэкенда)
+- `docker-compose.yml` - local Postgres and Redis (optional)
 - `figma-miniapp-design-system/` — offline CSS/JSON токены (снимок из Figma MCP / экспорта)
 - `figma-miniapp-spec/` — сборки экранов и codegen-фрагменты; `figma-miniapp-full-spec.json` — агрегированный JSON
 - Повторно подтянуть артефакты из локальной папки vsix: `scripts/sync-figma-vsix-artifacts.sh` (или `FIGMA_VSIX_ROOT=… ./scripts/sync-figma-vsix-artifacts.sh`)
 
 ## Quick start
 
-1. Install dependencies:
-   - `cd backend && pnpm install`
-   - `cd ../frontend && pnpm install`
-2. Start infrastructure:
-   - `docker compose up -d`
-3. Run backend:
-   - `cd backend && pnpm dev`
-4. Run frontend:
-   - `cd frontend && pnpm dev`
+1. **Клонировать репозиторий** и перейти в корень проекта.
+
+2. **Секреты не в git.** Скопировать примеры env и заполнить ключи локально:
+   - `cp backend/.env.example backend/.env`
+   - `cp frontend/.env.example frontend/.env`  
+   Во фронте для работы с API укажите например `VITE_API_BASE_URL=http://127.0.0.1:4000` (порт как в `backend/.env`).
+
+3. **Установить зависимости одной командой** (pnpm workspace):
+   - `pnpm install`
+
+4. **Поднять бэкенд + миниапп + админку вместе:**
+   - `pnpm dev`
+
+   Локальные адреса по умолчанию:
+
+   | Сервис    | URL                        |
+   |-----------|----------------------------|
+   | API       | http://127.0.0.1:4000      |
+   | Миниапп   | http://127.0.0.1:5173      |
+   | Админка   | http://127.0.0.1:5180      |
+
+5. Опционально инфраструктура из compose: `docker compose up -d`
+
+6. Проверка API без браузера (после `pnpm --filter miniapp-backend build`): `pnpm smoke`
 
 ## Frontend external links
 

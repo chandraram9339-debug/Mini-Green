@@ -1,0 +1,159 @@
+/* Notifications — frame 390×824, node 1:3770 */
+
+.fm-notifications {
+  position: relative;
+  width: 390px;
+  min-height: 824px;
+  margin: 0 auto;
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+}
+
+.fm-notifications * {
+  box-sizing: border-box;
+}
+
+.fm-notifications .fm-tabbar {
+  top: 752px;
+}
+
+.fm-notify-stack {
+  left: 20px;
+  top: 130px;
+  width: 350px;
+  max-height: calc(100vh - 220px);
+  max-height: calc(100dvh - 220px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding-bottom: 88px;
+  box-sizing: border-box;
+}
+
+.fm-notify-group {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.fm-notify-card {
+  position: relative;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px 10px;
+  background-color: var(--color-white);
+  border-radius: var(--figma-radius-card);
+}
+
+.fm-notify-title-row,
+.fm-notify-desc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fm-notify-type-badge {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.fm-notify-type-badge--ok {
+  background-color: var(--color-green);
+}
+
+.fm-notify-type-badge--err {
+  background-color: var(--color-red);
+}
+
+.fm-notify-type-badge img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.fm-notify-type-label {
+  margin: 0;
+  font-family: var(--font-h2-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 500;
+  letter-spacing: 0.18px;
+  color: var(--color-black);
+  white-space: nowrap;
+}
+
+.fm-notify-wallet-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-notify-wallet-icon img {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
+
+.fm-notify-desc-text {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--color-grey-dark);
+  white-space: nowrap;
+}
+
+.fm-notify-date {
+  position: absolute;
+  top: 21px;
+  right: 10px;
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--color-grey-medium);
+  text-transform: uppercase;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fm-notify-divider {
+  width: 348px;
+  height: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.fm-notify-divider img {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+}

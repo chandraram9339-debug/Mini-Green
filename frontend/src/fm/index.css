@@ -1,0 +1,127 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Outfit:wght@400;500;600&display=swap");
+/* Repo root: miniapp/figma-miniapp-design-system/ (variant A bundle) */
+@import "../../../figma-miniapp-design-system/figma-tokens--node-1-3643-Ready.css";
+@import "./figma/figma-layout-tokens.css";
+@import "./figma/figma-tab-bar.css";
+
+:root {
+  color-scheme: light only;
+  /* Рамка вокруг 390px — фон вне фрейма из превью; не в переменных Figma */
+  --color-app-chrome: #d8dde2;
+  /* Неактивные вкладки / мягкие панели — как muted-слои в макетах */
+  --color-surface-muted: #f4f7f8;
+  /*
+   * Единый фон экрана 390px: тема Telegram или токен Bg из Figma.
+   * Дублирование Ready+Ui убрано — палитра и шрифты только в figma-tokens--node-1-3643-Ready.css (+ доп. цвета из Ui).
+   */
+  --fm-page-bg: var(--tg-theme-bg-color, var(--color-bg));
+}
+
+:root[data-fm-theme="dark"] {
+  color-scheme: dark;
+  --fm-page-bg: var(--tg-theme-bg-color, #141920);
+  --color-bg: #141920;
+  --color-black: #e7edf5;
+  --color-white: #1e252e;
+  --color-grey-dark: #9aacbf;
+  --color-grey-medium: #7d8fa3;
+  --color-grey-super-light: #2d3540;
+  --color-grey-line: #2d3540;
+}
+
+body {
+  margin: 0;
+  background: var(--color-app-chrome);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.app-shell {
+  width: 390px;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  /* Один фон с колонкой 390px; шапка/статус — прозрачные, не дублируют --fm-page-bg */
+  background-color: var(--fm-page-bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-black) 8%, transparent);
+  box-sizing: border-box;
+  /* Telegram / iOS: «чёлка» и home indicator, без поломки ширины 390 */
+  padding-top: max(0px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+}
+
+.fm-session-banner {
+  padding: 8px 12px;
+  font-family: var(--font-body-m-family), system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--color-grey-dark);
+  background: color-mix(in srgb, var(--color-blue-primary) 12%, var(--color-bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-black) 8%, transparent);
+}
+
+.fm-session-banner--error {
+  color: #8b1d1d;
+  background: #fde8e8;
+  border-bottom-color: #f5c2c2;
+}
+
+/* Заглушки BUILD_INDEX — Status Bar + App Bar + таббар как на прочих Ready-экранах */
+.fm-route-stub-shell {
+  position: relative;
+  width: 390px;
+  min-height: 870px;
+  margin: 0 auto;
+  background-color: var(--fm-page-bg);
+  isolation: isolate;
+}
+
+.fm-route-stub-shell .fm-tabbar {
+  top: 798px;
+}
+
+.fm-route-stub-main {
+  position: relative;
+  min-height: calc(870px - 72px);
+  padding: 100px 20px 88px;
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
+.fm-route-stub-title {
+  margin: 0 0 12px;
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.4px;
+  color: var(--color-black);
+}
+
+.fm-route-stub-lead {
+  margin: 0 0 20px;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-body-m-size);
+  color: var(--color-grey-dark);
+  line-height: 1.45;
+}
+
+.fm-route-stub-back {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-body-m-size);
+  font-weight: 500;
+  color: var(--color-blue-dark);
+  text-decoration: none;
+}
+
+.fm-route-stub-back:hover {
+  text-decoration: underline;
+}

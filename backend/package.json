@@ -6,14 +6,25 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "mock:wallet-create": "node scripts/mock-deposit-wallet-create.mjs",
+    "gen:wallet-key": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('hex'))\"",
+    "gen:recovery-pepper": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\"",
+    "smoke": "node scripts/smoke-miniapp.mjs"
   },
   "dependencies": {
+    "bip32": "^4.0.0",
+    "bip39": "^3.1.0",
+    "better-sqlite3": "^11.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "jose": "^5.10.0",
+    "tiny-secp256k1": "^2.2.3",
+    "tronweb": "^6.0.0"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/node": "^22.13.8",

@@ -1,0 +1,354 @@
+/* Settings — frame 390×824, node 1:3783 + Tab Bar */
+
+/* Высоту ведёт контент + низ под таб. Без min-height: 100dvh — иначе под длиной списка
+   остаётся большая пустая полоса --fm-page-bg, на скриншоте смотрится «лишний» серый блок. */
+.fm-settings {
+  position: relative;
+  width: 390px;
+  margin: 0 auto;
+  /* Зона, где рисуется 72px таб; контент .fm-settings-body сидит выше, не залезает */
+  padding-bottom: 80px;
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+}
+
+.fm-settings * {
+  box-sizing: border-box;
+}
+
+/* Перебивает figma `top: 798px` + «лишняя» полоса: таб всегда у нижнего края экрана-фрейма */
+.fm-settings .fm-tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 0;
+  width: 390px;
+  max-width: 100%;
+  margin: 0;
+  height: 72px;
+}
+
+.fm-settings-body {
+  position: relative;
+  z-index: 2;
+  width: 350px;
+  margin-left: 19px;
+  margin-top: 118px;
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  box-sizing: content-box;
+}
+
+.fm-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.fm-settings-row {
+  position: relative;
+  width: 350px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px;
+  background-color: var(--color-white);
+  border-radius: var(--figma-radius-card);
+}
+
+.fm-settings-row--simple {
+  min-height: 44px;
+}
+
+.fm-settings-row--link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.fm-settings-row--toggle-row {
+  justify-content: flex-start;
+}
+
+/* —— Language: одна строка + выпадающий список —— */
+.fm-settings-lang-wrap {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+
+.fm-settings-row--lang-trigger {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  border: none;
+  background-color: var(--color-white);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fm-settings-row--lang-trigger:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 2px;
+}
+
+.fm-settings-lang-trigger-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding-left: 8px;
+}
+
+.fm-settings-lang-current {
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: var(--font-btn-size);
+  font-weight: 400;
+  line-height: var(--font-btn-line-height);
+  letter-spacing: var(--font-btn-letter-spacing);
+  color: var(--color-grey-dark);
+  white-space: nowrap;
+}
+
+.fm-settings-lang-chevron {
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--color-grey-dark);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.fm-settings-lang-chevron--open {
+  transform: rotate(180deg);
+}
+
+.fm-settings-lang-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  border-radius: var(--figma-radius-card);
+  background-color: var(--color-white);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-black) 14%, transparent);
+  overflow: hidden;
+}
+
+.fm-settings-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 10px;
+  border: none;
+  border-bottom: 1px solid var(--color-grey-line);
+  background-color: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fm-settings-lang-option--last {
+  border-bottom: none;
+}
+
+.fm-settings-lang-option:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: -2px;
+}
+
+.fm-settings-lang-option-label {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-h2-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 500;
+  letter-spacing: 0.18px;
+  line-height: var(--font-h2-line-height);
+  color: var(--color-black);
+}
+
+/* Мини-чек в списке языков */
+.fm-settings-mini-check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.fm-settings-mini-check--selected {
+  padding: 4px;
+  background-color: var(--color-green);
+}
+
+.fm-settings-mini-check img {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.fm-settings-mini-check-placeholder {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.6px solid var(--color-grey-line);
+  box-sizing: border-box;
+  background-color: transparent;
+}
+
+.fm-settings-lead-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-settings-lead-icon img {
+  width: 100%;
+  height: 100%;
+  max-width: 20px;
+  max-height: 20px;
+  display: block;
+  object-fit: contain;
+}
+
+/* Только иконки «реферал» и «сид» — +3px к глифу */
+.fm-settings-lead-icon--referral-boost {
+  width: 23px;
+  height: 23px;
+}
+
+.fm-settings-lead-icon--referral-boost img {
+  width: 17px;
+  height: 17px;
+  max-width: 17px;
+  max-height: 17px;
+}
+
+.fm-settings-lead-icon--seed-boost {
+  width: 23px;
+  height: 23px;
+}
+
+.fm-settings-lead-icon--seed-boost img {
+  width: 23px;
+  height: 23px;
+  max-width: 23px;
+  max-height: 23px;
+}
+
+.fm-settings-lead-icon--sm img {
+  width: 14px;
+  height: 14px;
+}
+
+.fm-settings-lead-icon--vibrate img {
+  width: 18px;
+  height: 18px;
+}
+
+.fm-settings-row-label {
+  font-family: var(--font-h2-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 500;
+  letter-spacing: 0.18px;
+  line-height: var(--font-h2-line-height);
+  color: var(--color-black);
+  white-space: nowrap;
+}
+
+.fm-settings-row--button {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  border: none;
+  background-color: var(--color-white);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fm-settings-divider {
+  width: 348px;
+  height: 0;
+  position: relative;
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0;
+}
+
+.fm-settings-divider img {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fm-settings-toggle {
+  position: absolute;
+  left: 296px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.fm-settings-toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background-color: var(--color-grey-super-light);
+}
+
+.fm-settings-toggle-knob {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 58.82%;
+  border-radius: 10px;
+  background-color: var(--color-green);
+  transition: left 0.15s ease;
+}
+
+.fm-settings-toggle--on .fm-settings-toggle-knob {
+  left: 41.18%;
+}
+
+.fm-settings-toggle:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 2px;
+}

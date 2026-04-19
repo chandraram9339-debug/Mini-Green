@@ -1,0 +1,570 @@
+/* Detail Bot — node 1:3701, frame 390×1288 */
+
+.fm-bot {
+  position: relative;
+  width: 390px;
+  min-height: 1288px;
+  margin: 0 auto;
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+  /* Слои как в Figma: нижние секции перекрывают график, без «наслоения» линии на карточки */
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+.fm-bot * {
+  box-sizing: border-box;
+}
+
+.fm-bot .fm-tabbar {
+  top: 1216px;
+}
+
+/* ---------- Status Bot block y 100–255 ---------- */
+.fm-bot-status-panel {
+  top: 100px;
+  width: 390px;
+  height: 155px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.fm-bot-status-row {
+  position: absolute;
+  left: 20px;
+  top: 30px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.fm-bot-caption {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-grey-medium);
+  white-space: nowrap;
+}
+
+.fm-bot-status-live {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.fm-bot-dot {
+  width: 10px;
+  height: 10px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.fm-bot-active-label {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-green);
+  white-space: nowrap;
+}
+
+.fm-bot-price-row {
+  position: absolute;
+  left: 20px;
+  top: 59px;
+  display: flex;
+  gap: 7px;
+  align-items: flex-end;
+  white-space: nowrap;
+}
+
+.fm-bot-price-amt {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.fm-bot-price-num {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-black);
+}
+
+.fm-bot-price-unit {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-weight: 400;
+  font-size: 9px;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-grey-dark);
+  margin-top: 6px;
+}
+
+.fm-bot-pill {
+  position: absolute;
+  top: 103px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 169px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: var(--figma-radius-pill);
+  cursor: pointer;
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: var(--font-btn-size);
+  font-weight: var(--font-btn-weight);
+  color: var(--color-white);
+  transition:
+    background-color var(--figma-duration) var(--figma-ease),
+    opacity var(--figma-duration) var(--figma-ease);
+}
+
+.fm-bot-pill--start {
+  left: 20px;
+  background-color: var(--color-blue-dark);
+}
+
+.fm-bot-pill--stop {
+  left: 201px;
+  background-color: var(--color-red);
+}
+
+.fm-bot-pill-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.fm-bot-pill-icon img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  max-width: none;
+}
+
+/* Глиф Stop в макете — крест (плюс с поворотом 45°) */
+.fm-bot-pill-icon--stop img {
+  transform: rotate(45deg);
+}
+
+.fm-bot-pill--dim {
+  opacity: 0.42;
+  filter: saturate(0.85);
+}
+
+.fm-bot-pill:disabled {
+  cursor: not-allowed;
+}
+
+/* ---------- Graphic y 285–452 — тот же блок, что fm-chart на Home ---------- */
+.fm-bot-chart-shell {
+  top: 285px;
+  width: 390px;
+  height: 167px;
+  overflow: hidden;
+  background-color: var(--fm-page-bg);
+  z-index: 1;
+}
+
+.fm-bot-chart-shell .fm-chart {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  z-index: 0;
+}
+
+/* ---------- Stats «Trading bot statistics» y 482–747 ---------- */
+.fm-bot-period-stats {
+  top: 482px;
+  width: 390px;
+  height: 265px;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.fm-bot-period-title {
+  position: absolute;
+  left: calc(50% - 175px);
+  top: 0;
+  margin: 0;
+  max-width: 350px;
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: normal;
+  /* codegen `tracking-[0.4px]`; не токен H1 `--font-h1-letter-spacing` (2px) */
+  letter-spacing: 0.4px;
+  color: var(--color-black);
+}
+
+.fm-bot-period-tabs {
+  position: absolute;
+  left: 20px;
+  top: 45px;
+  display: flex;
+  gap: 10px;
+}
+
+.fm-bot-stat-tab {
+  flex: 0 0 80px;
+  width: 80px;
+  padding: 10px 0;
+  border: none;
+  border-radius: var(--figma-radius-card-sm);
+  cursor: pointer;
+  font-family: var(--font-h2-family), sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: normal;
+  letter-spacing: 0.18px;
+  color: var(--color-blue-dark);
+  background-color: var(--color-surface-muted);
+  transition: background-color var(--figma-duration) var(--figma-ease);
+}
+
+.fm-bot-stat-tab--on {
+  background-color: var(--color-white);
+  box-shadow: inset 0 0 0 1px var(--color-blue-dark);
+}
+
+.fm-bot-period-card {
+  position: absolute;
+  left: 20px;
+  top: 101px;
+  width: 350px;
+  padding: 16px 10px;
+  border-radius: var(--figma-radius-card);
+  background-color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fm-bot-stat-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.fm-bot-stat-label {
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-grey-dark);
+}
+
+.fm-bot-stat-val {
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-black);
+}
+
+/* Слот иконки 24×24, глиф 16px — на 2px компактнее предыдущей версии */
+.fm-bot-stat-ico {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-bot-stat-ico img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.fm-bot-stat-ico--fail img {
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
+.fm-bot-stat-ico--profit-trend img {
+  transform: rotate(180deg) scaleX(-1);
+  transform-origin: center;
+}
+
+/* ---------- Trading feed y 777–1186 ---------- */
+.fm-bot-trading-feed {
+  top: 777px;
+  width: 390px;
+  height: 409px;
+  overflow: hidden;
+  z-index: 4;
+}
+
+.fm-bot-feed-title {
+  position: absolute;
+  left: calc(50% - 175px);
+  top: 0;
+  margin: 0;
+  max-width: 350px;
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: 0.4px;
+  color: var(--color-black);
+}
+
+.fm-bot-feed-cards {
+  position: absolute;
+  left: 20px;
+  top: 45px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.fm-bot-feed-cards--scroll {
+  max-height: 340px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+}
+
+.fm-bot-feed-placeholder {
+  margin: 16px 20px 24px;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-grey-medium);
+}
+
+.fm-bot-card {
+  position: relative;
+  width: 350px;
+  padding: 16px 10px;
+  border-radius: var(--figma-radius-card);
+  background-color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background-color var(--figma-duration) var(--figma-ease);
+  /* rotate() на бейджах не вылезает на соседние карточки */
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.fm-bot-card--gap {
+  gap: 12px;
+}
+
+.fm-bot-card-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.fm-bot-card-badge {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-bot-card-badge--muted {
+  transform: none;
+}
+
+.fm-bot-card-badge-inner {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-grey-light);
+  border-radius: var(--figma-radius-icon-hit);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-bot-card-badge-inner img {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
+
+.fm-bot-card-badge--ok {
+  transform: none;
+}
+
+.fm-bot-card-badge--ok.fm-bot-card-badge {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border-radius: var(--figma-radius-icon-hit);
+  background-color: var(--color-green);
+}
+
+.fm-bot-check {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
+
+.fm-bot-card-badge--bad {
+  transform: none;
+}
+
+.fm-bot-card-badge--bad.fm-bot-card-badge {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border-radius: var(--figma-radius-icon-hit);
+  background-color: var(--color-red);
+}
+
+.fm-bot-x {
+  width: 14px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
+/* Строки карточек — слот 24×24, глиф 10px */
+.fm-bot-feed-ico-wrap {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-bot-feed-ico {
+  width: 10px;
+  height: 10px;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.fm-bot-feed-ico--actual {
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+.fm-bot-feed-ico--down {
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+.fm-bot-feed-ico--trend-profit {
+  transform: rotate(180deg) scaleX(-1);
+  transform-origin: center;
+}
+
+.fm-bot-feed-ico--up {
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+.fm-bot-feed-ico--trend-loss {
+  transform: rotate(180deg) scaleX(-1);
+  transform-origin: center;
+}
+
+/* Первая карточка списка — без tracking (см. codegen I1:3705;1:3410); 2–3 — tracking-[0.18px] */
+.fm-bot-feed-cards .fm-bot-card:first-child .fm-bot-card-title {
+  letter-spacing: 0;
+}
+
+.fm-bot-feed-cards .fm-bot-card:not(:first-child) .fm-bot-card-title {
+  letter-spacing: 0.18px;
+}
+
+.fm-bot-card-title {
+  margin: 0;
+  font-family: var(--font-h2-family), sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-black);
+}
+
+.fm-bot-card-line {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.fm-bot-card-dim {
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-grey-dark);
+  white-space: nowrap;
+}
+
+.fm-bot-card-amt {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  white-space: nowrap;
+}
+
+.fm-bot-card-num {
+  font-family: var(--font-btn-family), sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-black);
+}
+
+.fm-bot-card-unit {
+  font-family: var(--font-btn-family), sans-serif;
+  font-weight: 400;
+  font-size: 9px;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-grey-dark);
+  margin-top: 4px;
+}
+
+.fm-bot-card-plain {
+  font-family: var(--font-btn-family), sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0;
+  color: var(--color-black);
+}

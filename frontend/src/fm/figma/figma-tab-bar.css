@@ -1,0 +1,77 @@
+/**
+ * Tab Bar — node 1:3645 (Ready). Один источник: тени/радиусы из `figma-layout-tokens.css`.
+ * Вертикальное положение задаётся на уровне экрана: Home/заглушки 798px; Deposit 1038px; Bot 1216px.
+ */
+.fm-tabbar {
+  position: absolute;
+  left: 0;
+  top: 798px;
+  height: 72px;
+  width: 390px;
+  /* Выше всех абсолютных секций экрана (графики, история), иначе иконки «пропадают» под слоями */
+  z-index: 100;
+  background-color: var(--color-white);
+  border-top-left-radius: var(--figma-radius-tab-bar-top);
+  border-top-right-radius: var(--figma-radius-tab-bar-top);
+  box-shadow: var(--figma-shadow-tab-bar);
+  overflow: hidden;
+}
+
+.fm-tabbar-nav {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.fm-tab {
+  border: none;
+  background: transparent;
+  padding: 14px;
+  border-radius: var(--figma-radius-icon-hit);
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  transition:
+    background-color var(--figma-duration) var(--figma-ease),
+    transform 0.12s ease;
+}
+
+a.fm-tab {
+  text-decoration: none;
+  color: inherit;
+}
+
+.fm-tab img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Активная вкладка: глиф белый на pill #2D6E93 (иконки в макете — отдельные белые экспорты; для <img> — фильтр) */
+.fm-tab--active img {
+  filter: brightness(0) invert(1);
+}
+
+.fm-tab--active {
+  background-color: var(--color-blue-dark);
+}
+
+.fm-tab:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .fm-tab:not(.fm-tab--active):hover {
+    background-color: color-mix(in srgb, var(--color-blue-dark) 10%, transparent);
+  }
+}
+
+/* Короткая отдача при нажатии (без затемнения белого глифа на активном табе) */
+.fm-tab:active {
+  transform: scale(0.94);
+}

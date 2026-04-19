@@ -1,0 +1,490 @@
+/* Detail Balance | Deposit — frame 390×1110, node 1:3675 */
+
+.fm-deposit {
+  position: relative;
+  width: 390px;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  background-color: var(--fm-page-bg);
+  box-sizing: border-box;
+}
+
+.fm-deposit * {
+  box-sizing: border-box;
+}
+
+.fm-deposit-chrome-spacer {
+  height: 100px;
+  flex-shrink: 0;
+}
+
+/* Current Balance — y 130–317 (от верха страницы: spacer 100 + 30) */
+.fm-deposit-balance {
+  position: relative;
+  margin-top: 30px;
+  width: 390px;
+  height: 187px;
+  overflow: hidden;
+}
+
+.fm-deposit-balance-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  text-align: center;
+}
+
+.fm-deposit-balance-title {
+  margin: 0;
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: var(--font-h1-size);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  color: var(--color-black);
+}
+
+.fm-deposit-balance-amt {
+  position: absolute;
+  left: 50%;
+  top: 41px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.fm-deposit-balance-amt strong {
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+  font-size: 52px;
+  line-height: 1;
+  color: var(--color-black);
+}
+
+.fm-deposit-u {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-grey-medium);
+  margin-top: 8px;
+}
+
+.fm-deposit-balance-addr {
+  position: absolute;
+  left: 50%;
+  top: 92px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: var(--font-caption-s-family), sans-serif;
+  font-size: var(--font-caption-s-size);
+  color: var(--color-grey-dark);
+  white-space: nowrap;
+}
+
+a.fm-deposit-act {
+  text-decoration: none;
+}
+
+.fm-deposit-act {
+  position: absolute;
+  top: 135px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 169px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: var(--figma-radius-pill);
+  cursor: pointer;
+  font-family: var(--font-btn-family), sans-serif;
+  font-size: var(--font-btn-size);
+  font-weight: var(--font-btn-weight);
+  line-height: 1;
+  color: var(--color-white);
+  -webkit-font-smoothing: antialiased;
+}
+
+.fm-deposit-act--topup {
+  left: 20px;
+  background-color: var(--color-green);
+}
+
+.fm-deposit-act--withdraw {
+  left: 201px;
+  background-color: var(--color-blue-light);
+}
+
+.fm-deposit-act-icon-wrap {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fm-deposit-act-icon-wrap img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Actions History — как в макете gap 30 от блока баланса */
+.fm-deposit-history {
+  position: relative;
+  margin-top: 30px;
+  margin-left: 20px;
+  margin-right: 20px;
+  width: 350px;
+  max-width: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.fm-deposit-history-tabs {
+  display: flex;
+  gap: 13px;
+  align-items: stretch;
+}
+
+.fm-deposit-tab {
+  position: relative;
+  flex: 0 0 108px;
+  width: 108px;
+  min-height: 137px;
+  border-radius: var(--figma-radius-card-sm);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 10px 8px 34px 10px;
+  gap: 6px;
+}
+
+a.fm-deposit-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.fm-deposit-tab:focus-visible {
+  outline: 2px solid var(--color-blue-dark);
+  outline-offset: 2px;
+}
+
+/* Эталон: вкладка Deposit — bg-white; Withdraw / Referral — --color-surface-muted */
+.fm-deposit-tab--active {
+  background-color: var(--color-white);
+}
+
+.fm-deposit-tab--muted {
+  background-color: var(--color-surface-muted);
+}
+
+.fm-deposit-tab-label {
+  position: static;
+  margin: 0;
+  flex-shrink: 0;
+  font-family: var(--font-h2-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 500;
+  letter-spacing: 0.18px;
+  color: var(--color-blue-dark);
+}
+
+.fm-deposit-tab-label--deposit {
+  font-weight: 400;
+  color: var(--color-blue-dark);
+}
+
+.fm-deposit-tab-block--total {
+  position: static;
+  width: 100%;
+  min-width: 0;
+}
+
+.fm-deposit-tab-block--count {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  margin-top: 2px;
+}
+
+.fm-deposit-tab-caption {
+  margin: 0 0 4px;
+  font-family: var(--font-caption-xs-family), sans-serif;
+  font-size: var(--font-caption-xs-size);
+  line-height: 1.25;
+  color: var(--color-grey-dark);
+}
+
+.fm-deposit-tab-caption--tight {
+  margin-bottom: 4px;
+}
+
+.fm-deposit-tab-amt {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.fm-deposit-tab-num {
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.1;
+  color: var(--color-black);
+}
+
+.fm-deposit-tab-unit {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--color-grey-medium);
+  flex-shrink: 0;
+}
+
+.fm-deposit-tab-block--count .fm-deposit-tab-count {
+  margin-top: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  flex-wrap: nowrap;
+}
+
+.fm-deposit-tab-count span:first-child {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 12px;
+  color: var(--color-black);
+}
+
+.fm-deposit-tab-times {
+  font-family: var(--font-caption-xxs-family), sans-serif;
+  font-size: var(--font-caption-xxs-size);
+  color: var(--color-grey-medium);
+}
+
+/* Стрелки вкладок — node 1:3821: активная Green Light + вниз, остальные Blue dark */
+.fm-deposit-tab-chevron {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-blue-dark);
+  box-sizing: border-box;
+}
+
+a.fm-deposit-tab-chevron {
+  text-decoration: none;
+}
+
+.fm-deposit-tab-chevron img {
+  width: 16px;
+  height: 16px;
+  display: block;
+  transition: transform var(--figma-duration) var(--figma-ease);
+}
+
+/* Базовый глиф — «влево»; поворот вниз для выбранной вкладки */
+.fm-deposit-tab-chevron--active {
+  background-color: var(--color-green-light);
+  border-radius: 30px;
+}
+
+.fm-deposit-tab-chevron--active img {
+  transform: rotate(90deg);
+}
+
+.fm-deposit-tab-chevron:not(.fm-deposit-tab-chevron--active) img {
+  transform: rotate(-90deg);
+}
+
+/* Скролл только у окна Telegram / страницы, без вложенной области */
+.fm-deposit-list-scroll {
+  width: 100%;
+  overflow: visible;
+}
+
+.fm-deposit-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.fm-deposit-row {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 16px 10px;
+  background-color: var(--color-white);
+  border-radius: var(--figma-radius-card);
+}
+
+.fm-deposit-row--referral {
+  align-items: center;
+}
+
+.fm-deposit-row-icon-wrap {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-deposit-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--figma-radius-icon-hit);
+  padding: 4px;
+}
+
+.fm-deposit-row-icon--deposit {
+  background-color: var(--color-green);
+}
+
+.fm-deposit-row-icon--withdraw {
+  background-color: var(--color-blue-light);
+}
+
+.fm-deposit-row-icon--referral {
+  background-color: var(--color-grey-medium);
+}
+
+.fm-deposit-row-icon img {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.fm-deposit-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fm-deposit-row-title {
+  margin: 0;
+  font-family: var(--font-h2-family), sans-serif;
+  font-size: var(--font-h2-size);
+  font-weight: 500;
+  letter-spacing: 0.18px;
+  color: var(--color-black);
+}
+
+.fm-deposit-row-meta {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: var(--font-body-m-size);
+  color: var(--color-grey-medium);
+}
+
+.fm-deposit-row-side {
+  margin-left: auto;
+  flex-shrink: 0;
+  text-align: right;
+  padding-top: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-end;
+}
+
+.fm-deposit-row--referral .fm-deposit-row-side {
+  padding-top: 0;
+  gap: 0;
+}
+
+.fm-deposit-row-amt,
+.fm-deposit-row-fee {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.fm-deposit-row-amt span:first-child {
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--color-black);
+}
+
+.fm-deposit-row-fee span:first-child {
+  font-family: "Outfit", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--color-grey-medium);
+}
+
+.fm-deposit-row-unit {
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 9px;
+  color: var(--color-grey-medium);
+  margin-top: 2px;
+}
+
+.fm-deposit-row-date {
+  margin: 0;
+  font-family: var(--font-body-m-family), sans-serif;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--color-grey-medium);
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fm-deposit-act,
+.fm-deposit-tab-chevron,
+.fm-deposit-row {
+  transition:
+    background-color var(--figma-duration) var(--figma-ease),
+    opacity var(--figma-duration) var(--figma-ease);
+}
+
+.fm-deposit-act:active,
+a.fm-deposit-tab-chevron:active {
+  opacity: 0.92;
+}
+
+.fm-deposit .fm-tabbar {
+  position: relative;
+  top: auto;
+  left: auto;
+  margin-top: 24px;
+  width: 390px;
+  max-width: 100%;
+  z-index: 10;
+}

@@ -1,0 +1,27 @@
+/**
+ * Геометрия эффектов как в codegen Figma (Tailwind из get_design_context).
+ * fileKey BBrbpnfGElX0afHLm7ccxP — секция Ready (390px).
+ */
+
+:root {
+  /* Tab Bar — shadow-[0px_-4px_20px_0px_rgba(45,110,147,0.08)] rounded-tl/tr-[12px] */
+  --figma-shadow-tab-bar: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  --figma-radius-tab-bar-top: 12px;
+
+  --figma-radius-icon-hit: 30px;
+  --figma-radius-pill: 54px;
+  --figma-radius-card: 12px;
+  --figma-radius-card-sm: 8px;
+  /* Маленькие круглые кнопки (28×28 node) */
+  --figma-radius-pill-tight: 20px;
+
+  /* Интерактив: в макете длительность не задана — короткая ease как в Material / iOS HIG */
+  --figma-duration: 180ms;
+  --figma-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --figma-duration: 0.01ms;
+  }
+}
