@@ -21,16 +21,15 @@
   left: 20px;
   top: 130px;
   width: 350px;
-  max-height: calc(100vh - 220px);
-  max-height: calc(100dvh - 220px);
+  height: 507px;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 30px;
-  padding-bottom: 88px;
+  padding-bottom: 0;
   box-sizing: border-box;
 }
 
@@ -45,6 +44,8 @@
 .fm-notify-card {
   position: relative;
   width: 350px;
+  min-height: 84px;
+  height: 84px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -53,6 +54,7 @@
   padding: 16px 10px;
   background-color: var(--color-white);
   border-radius: var(--figma-radius-card);
+  overflow: hidden;
 }
 
 .fm-notify-title-row,
@@ -60,6 +62,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 24px;
+  width: 100%;
 }
 
 .fm-notify-type-badge {
@@ -123,6 +127,8 @@
   line-height: normal;
   color: var(--color-grey-dark);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fm-notify-date {
@@ -143,9 +149,10 @@
 
 .fm-notify-divider {
   width: 348px;
-  height: 0;
+  height: 1.6px;
   position: relative;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .fm-notify-divider img {
@@ -154,6 +161,6 @@
   right: 0;
   top: 0;
   width: 100%;
-  height: auto;
+  height: 1.6px;
   display: block;
 }

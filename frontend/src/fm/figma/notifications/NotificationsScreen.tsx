@@ -5,9 +5,9 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
+import type { AppBarAssetUrls } from "../types/appBarAssets";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
-import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
 import { MOCK_NOTIFICATIONS } from "./notificationsMock";
 import { notificationAssets as n } from "./notificationAssets";
@@ -25,6 +25,13 @@ const notificationTabIcons: TabBarIconUrls = {
   wallet: n.tabWallet,
   bot: n.tabBot,
   support: n.tabSupport,
+};
+
+const notificationAppBarAssets: AppBarAssetUrls = {
+  backIcon: n.group1,
+  dividerLine: n.lineAppBar,
+  settingsIcon: n.settingsIcon,
+  bellIcon: n.bellIcon,
 };
 
 function NotificationCard({
@@ -65,7 +72,7 @@ export default function NotificationsScreen() {
       <FigmaStatusBar assets={notificationStatusAssets} />
 
       <FigmaAppBar
-        assets={defaultAppBarAssetUrls}
+        assets={notificationAppBarAssets}
         backTo={routes.home}
         title={t("notifications.appBarTitle")}
         bellBadge="3"

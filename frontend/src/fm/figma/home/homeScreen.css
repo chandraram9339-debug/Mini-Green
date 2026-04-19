@@ -282,8 +282,8 @@ a.fm-back-btn {
   overflow: hidden;
   direction: ltr;
   unicode-bidi: isolate;
-  background-color: var(--fm-page-bg);
-  /* `isolation: isolate` в части WebView дал визуально «другой» тон плашки; z-index детей достаточен для кликов. */
+  background-color: transparent;
+  /* В Figma у Balance нет собственной плашки; отдельный фон здесь может проявляться как серый прямоугольник в WebView. */
 }
 
 /* 1:3671 — Total Balance */
@@ -303,15 +303,17 @@ a.fm-back-btn {
 
 .fm-balance-divider {
   position: absolute;
-  height: 0;
+  height: 1.6px;
   left: 20px;
   top: 98px;
   width: 175px;
+  overflow: hidden;
 }
 
 .fm-balance-divider img {
   width: 100%;
-  height: auto;
+  height: 1.6px;
+  display: block;
 }
 
 /* 1:3672 — left-[calc(50%-79.5px)] -translate-x-1/2 gap-[3px] top-[44px] */
