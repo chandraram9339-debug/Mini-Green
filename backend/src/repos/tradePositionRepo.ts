@@ -88,10 +88,21 @@ export function upsertTradePosition(
   const createdAt = row.created_at ?? new Date().toISOString();
   const closedAt = row.closed_at ?? null;
   db.prepare(
-    `INSERT OR REPLACE INTO trade_positions (
+    `INSERT INTO trade_positions (
       id, user_id, symbol, side, size_minor, opened_at, created_at, closed_at,
       entry_price, exit_price, close_result_percent)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)
+     ON CONFLICT(id) DO UPDATE SET
+       user_id = excluded.user_id,
+       symbol = excluded.symbol,
+       side = excluded.side,
+       size_minor = excluded.size_minor,
+       opened_at = excluded.opened_at,
+       closed_at = excluded.closed_at,
+       entry_price = excluded.entry_price,
+       exit_price = excluded.exit_price,
+       close_result_percent = excluded.close_result_percent,
+       created_at = trade_positions.created_at`,
   ).run(
     row.id,
     row.user_id,
@@ -126,4 +137,15 @@ export function closeTradePositionAt(
 export function deleteTradePositionById(db: Database, id: string): boolean {
   const r = db.prepare("DELETE FROM trade_positions WHERE id = ?").run(id);
   return r.changes > 0;
+}
+
+/**
+ * AL mirror rows are a snapshot of the external feed, not an append-only history.
+ * Remove mirrored positions that disappeared from the latest feed payload.
+ */
+export function deleteTradePositionsByIds(db: Database, ids: string[]): number {
+  if (ids.length === 0) return 0;
+  const q = ids.map(() => "?").join(",");
+  const r = db.prepare(`DELETE FROM trade_positions WHERE id IN (${q})`).run(...ids);
+  return r.changes;
 }

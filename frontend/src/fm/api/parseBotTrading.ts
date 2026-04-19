@@ -13,7 +13,15 @@ const PERIODS = ["24h", "3d", "7d", "1m"] as const;
 
 type PeriodKey = (typeof PERIODS)[number];
 
-function parseOneStats(o: Record<string, unknown>): BotTradingPeriodStats {
+/** Один блок статистики периода (`stats.24h`, `journal.meta.period_stats`). */
+export function parseTradingPeriodStats(o: Record<string, unknown>): BotTradingPeriodStats {
+  const neutral = Math.round(num(o.neutral) ?? num(o.breakeven) ?? 0);
+  const openInPeriod = Math.round(
+    num(o.openInPeriod) ?? num(o.open_in_period) ?? num(o.open) ?? 0,
+  );
+  const closedWithoutResult = Math.round(
+    num(o.closedWithoutResult) ?? num(o.closed_without_result) ?? num(o.closedUnknown) ?? 0,
+  );
   return {
     totalDeals: Math.round(
       num(o.totalDeals) ?? num(o.total) ?? num(o.deals) ?? num(o.trades) ?? 0,
@@ -25,6 +33,9 @@ function parseOneStats(o: Record<string, unknown>): BotTradingPeriodStats {
       num(o.unsuccessful) ?? num(o.fails) ?? num(o.negative) ?? 0,
     ),
     profitPercent: num(o.profitPercent) ?? num(o.pnlPercent) ?? num(o.resultPercent) ?? 0,
+    neutral: neutral || undefined,
+    openInPeriod: openInPeriod || undefined,
+    closedWithoutResult: closedWithoutResult || undefined,
   };
 }
 
@@ -66,7 +77,7 @@ export function parseBotTradingPayload(root: unknown): BotTradingSnapshot | null
     for (const p of PERIODS) {
       const raw = (statsBlock as Record<string, unknown>)[p] ?? (statsBlock as Record<string, unknown>)[p.replace("h", "H")];
       if (raw && typeof raw === "object") {
-        byPeriod[p] = parseOneStats(raw as Record<string, unknown>);
+        byPeriod[p] = parseTradingPeriodStats(raw as Record<string, unknown>);
       }
     }
   }
@@ -74,7 +85,7 @@ export function parseBotTradingPayload(root: unknown): BotTradingSnapshot | null
   if (Object.keys(byPeriod).length === 0) {
     const one = o.summary ?? o.period ?? o.aggregate;
     if (one && typeof one === "object") {
-      const s = parseOneStats(one as Record<string, unknown>);
+      const s = parseTradingPeriodStats(one as Record<string, unknown>);
       for (const p of PERIODS) {
         byPeriod[p] = { ...s };
       }
@@ -82,7 +93,7 @@ export function parseBotTradingPayload(root: unknown): BotTradingSnapshot | null
       for (const p of PERIODS) {
         const b = o[p] ?? o[`p_${p}`];
         if (b && typeof b === "object") {
-          byPeriod[p] = parseOneStats(b as Record<string, unknown>);
+          byPeriod[p] = parseTradingPeriodStats(b as Record<string, unknown>);
         }
       }
     }
@@ -97,7 +108,15 @@ export function parseBotTradingPayload(root: unknown): BotTradingSnapshot | null
     byPeriod: hasAnyStat
       ? byPeriod
       : {
-          "24h": { totalDeals: 78, successful: 39, unsuccessful: 39, profitPercent: -0.72 },
+          "24h": {
+            totalDeals: 78,
+            successful: 39,
+            unsuccessful: 39,
+            profitPercent: -0.72,
+            neutral: 0,
+            openInPeriod: 0,
+            closedWithoutResult: 0,
+          },
         },
   };
 }

@@ -344,12 +344,15 @@ a.fm-back-btn {
 /*
  * 1:3666 Referrals — невидимая hit-зона (сейчас <div role="button">, не <button> — в WebView не рисует
  * нативный фон). z-index выше, чем у <a> Details.
+ * Ширина ~как кластер «сумма + подпись» в Figma (фрейм Referrals ~110px, с запасом) — не 390px: полоса
+ * на всю ширину в WebView иногда даёт лишний «серый» слой слева от Top up/Withdraw.
  */
 .fm-referral-hit {
   position: absolute;
-  left: 0;
+  left: 12px;
   top: 117px;
-  width: 390px;
+  width: 280px;
+  max-width: calc(100% - 24px);
   height: 48px;
   z-index: 3;
   margin: 0;
@@ -642,6 +645,12 @@ a.fm-btn-details-chart {
   max-width: none;
   object-fit: contain;
   object-position: center center;
+}
+
+.fm-chart-line-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .fm-graphic-status {

@@ -126,6 +126,7 @@ export const messagesEn = {
   "bot.feedEmpty": "No trades recorded by the trading system yet.",
   "bot.feedLoading": "Loading…",
   "bot.feedNeedApi": "Configure API URL to load trade history.",
+  "bot.feedShowingPartial": "Showing {shown} of {total} trades for this period.",
   "bot.journalOpened": "Opened",
   "bot.journalClosedAt": "Closed",
   "bot.journalOpen": "Open position",
@@ -133,6 +134,7 @@ export const messagesEn = {
   "bot.journalSideLong": "Long",
   "bot.journalSideShort": "Short",
   "bot.journalNotional": "Notional",
+  "bot.journalBalanceDelta": "Balance change:",
 
   "wallet.currentBalance": "Current balance",
   "deposit.tab": "Deposit",
@@ -335,6 +337,7 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "bot.feedEmpty": "Aún no hay operaciones registradas por el sistema de trading.",
   "bot.feedLoading": "Cargando…",
   "bot.feedNeedApi": "Configura la URL de la API para ver el historial.",
+  "bot.feedShowingPartial": "Mostrando {shown} de {total} operaciones en este periodo.",
   "bot.journalOpened": "Apertura",
   "bot.journalClosedAt": "Cierre",
   "bot.journalOpen": "Posición abierta",
@@ -342,6 +345,7 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "bot.journalSideLong": "Long",
   "bot.journalSideShort": "Short",
   "bot.journalNotional": "Nominal",
+  "bot.journalBalanceDelta": "Cambio de saldo:",
 
   "wallet.currentBalance": "Saldo actual",
   "deposit.tab": "Depósito",

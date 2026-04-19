@@ -79,13 +79,17 @@ export function registerMiniappContract(app: express.Express) {
     res.json(buildWalletHistoryForUser(req.userId!));
   });
 
-  app.get("/trading/summary", requireMiniappAuth, (req, res) => {
+  app.get("/trading/summary", requireMiniappAuth, async (req, res) => {
     const period = String(req.query.period ?? "24h");
     if (!isAllowedTradingPeriod(period)) {
       res.status(400).json({ message: "Invalid period" });
       return;
     }
-    res.json(buildTradingSummaryForUser(req.userId!));
+    try {
+      res.json(await buildTradingSummaryForUser(req.userId!));
+    } catch (e) {
+      res.status(500).json({ message: e instanceof Error ? e.message : "summary failed" });
+    }
   });
 
   /** Журнал сделок: торговая система + SIB (результат % / дельта при закрытии). */
@@ -93,12 +97,20 @@ export function registerMiniappContract(app: express.Express) {
     const db = getDb();
     const rawLimit = Number(req.query.limit);
     const limit = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 30;
-    const u = getUserByTg(db, req.userId!);
-    if (!u) {
-      res.json(buildTradingJournalEmptyPayload(limit, req.userId!, config));
+    const period = String(req.query.period ?? "24h");
+    if (!isAllowedTradingPeriod(period)) {
+      res.status(400).json({ message: "Invalid period" });
       return;
     }
-    res.json(buildTradingJournalPayload(db, u.id, req.userId!, limit, config));
+    const u = getUserByTg(db, req.userId!);
+    try {
+      const payload = !u
+        ? buildTradingJournalEmptyPayload(limit, req.userId!, config, period)
+        : buildTradingJournalPayload(db, u.id, req.userId!, limit, config, period);
+      res.json(payload);
+    } catch (e) {
+      res.status(500).json({ message: e instanceof Error ? e.message : "journal failed" });
+    }
   });
 
   app.post("/withdrawals", requireMiniappAuth, (req, res) => {

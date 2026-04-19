@@ -1,6 +1,12 @@
 import type { Database } from "better-sqlite3";
 import type { AppConfig } from "../config.js";
 import { getAlTradeFeedPollerStatus, isAlTradeFeedConfigured } from "../services/alTradeFeedSync.js";
+import {
+  aggregateDealStatsForWindow,
+  emptyDealStatsPayload,
+  FIGMA_TRADING_PERIOD_SEC,
+  type DealStatsPayload,
+} from "./tradingPeriodStats.js";
 
 /** Элементы `items` в ответе `/trading/journal`. */
 export type TradingJournalItemPayload = {
@@ -23,6 +29,13 @@ export type TradingJournalMeta = {
   positions_total: number;
   positions_open: number;
   positions_closed: number;
+  /**
+   * Статистика за выбранный период — те же числа, что и в `/trading/summary` → `stats[period]`.
+   * Инвариант: totalDeals = successful + unsuccessful + neutral + closedWithoutResult.
+   */
+  period_stats: DealStatsPayload;
+  /** Фильтр журнала по вкладке Figma (24h | 3d | 7d | 1m). */
+  period_filter: string | null;
   al_feed_configured: boolean;
   /** Этот Telegram user входит в AL_TRADE_FEED_SYNC_TG_IDS (зеркалирование с trade-feed). */
   al_sync_includes_user: boolean;
@@ -58,6 +71,7 @@ export function buildTradingJournalEmptyPayload(
   limit: number,
   tgUserId: string,
   cfg: AppConfig,
+  period: string | null,
 ): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta } {
   const poll = getAlTradeFeedPollerStatus();
   return {
@@ -68,6 +82,8 @@ export function buildTradingJournalEmptyPayload(
       positions_total: 0,
       positions_open: 0,
       positions_closed: 0,
+      period_stats: emptyDealStatsPayload(),
+      period_filter: period,
       al_feed_configured: isAlTradeFeedConfigured(cfg),
       al_sync_includes_user: alSyncIncludesUser(cfg, tgUserId),
       al_last_ok_at: poll.last_ok_at,
@@ -87,7 +103,16 @@ export function buildTradingJournalPayload(
   tgUserId: string,
   limit: number,
   cfg: AppConfig,
+  period: string,
 ): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta } {
+  const sec = FIGMA_TRADING_PERIOD_SEC[period] ?? FIGMA_TRADING_PERIOD_SEC["24h"];
+  const nowMs = Date.now();
+  const fromMs = nowMs - sec * 1000;
+  const fromIso = new Date(fromMs).toISOString();
+  const toIso = new Date(nowMs).toISOString();
+
+  const period_stats = aggregateDealStatsForWindow(db, internalUserId, fromMs, nowMs);
+
   const rows = db
     .prepare(
       `SELECT tp.id, tp.symbol, tp.side, tp.size_minor, tp.opened_at, tp.closed_at,
@@ -97,10 +122,15 @@ export function buildTradingJournalPayload(
        FROM trade_positions tp
        LEFT JOIN sib_adjustments sa ON sa.position_id = tp.id AND sa.user_id = tp.user_id
        WHERE tp.user_id = ?
-       ORDER BY tp.opened_at DESC, tp.id DESC
+         AND (
+           (tp.closed_at IS NOT NULL AND length(trim(tp.closed_at)) > 0 AND tp.closed_at >= ? AND tp.closed_at <= ?)
+           OR
+           ((tp.closed_at IS NULL OR length(trim(tp.closed_at)) = 0) AND tp.opened_at >= ? AND tp.opened_at <= ?)
+         )
+       ORDER BY COALESCE(NULLIF(trim(tp.closed_at), ''), tp.opened_at) DESC, tp.id DESC
        LIMIT ?`,
     )
-    .all(internalUserId, limit) as Array<{
+    .all(internalUserId, fromIso, toIso, fromIso, toIso, limit) as Array<{
       id: string;
       symbol: string;
       side: string;
@@ -126,6 +156,8 @@ export function buildTradingJournalPayload(
       positions_total: counts.total,
       positions_open: counts.open,
       positions_closed: counts.closed,
+      period_stats,
+      period_filter: period,
       al_feed_configured: isAlTradeFeedConfigured(cfg),
       al_sync_includes_user: alSyncIncludesUser(cfg, tgUserId),
       al_last_ok_at: poll.last_ok_at,

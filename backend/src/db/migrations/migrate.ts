@@ -115,6 +115,8 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration012AccountRecoveryCode(db);
   runMigration013SibBalanceEngine(db);
   runMigration014TradePositionFeedMeta(db);
+  runMigration015TradePositionsCloseResultRepair(db);
+  runMigration016AlTradeFeedSnapshots(db);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -354,4 +356,41 @@ function runMigration014TradePositionFeedMeta(db: Database) {
     db.exec("ALTER TABLE trade_positions ADD COLUMN close_result_percent REAL");
   }
   db.prepare("INSERT INTO _migrations (id, name) VALUES (14, '014_trade_positions_feed_meta')").run();
+}
+
+/**
+ * Базы, где id=14 уже записан старым релизом без `close_result_percent`
+ * (остался только legacy `pnl_percent`) — добавляем колонку и переносим значения.
+ */
+function runMigration015TradePositionsCloseResultRepair(db: Database) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=15").get() as { ok: number } | undefined;
+  if (m) return;
+  if (!tableHasColumn(db, "trade_positions", "close_result_percent")) {
+    db.exec("ALTER TABLE trade_positions ADD COLUMN close_result_percent REAL");
+  }
+  if (tableHasColumn(db, "trade_positions", "pnl_percent")) {
+    db.exec(
+      `UPDATE trade_positions
+       SET close_result_percent = pnl_percent
+       WHERE close_result_percent IS NULL AND pnl_percent IS NOT NULL`,
+    );
+  }
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (15, '015_trade_positions_close_result_repair')").run();
+}
+
+/** Полный ответ GET /api/trade-feed (JSON) при каждом успешном pull — для аудита и отладки. */
+function runMigration016AlTradeFeedSnapshots(db: Database) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=16").get() as { ok: number } | undefined;
+  if (m) return;
+  db.exec(`
+CREATE TABLE IF NOT EXISTS al_trade_feed_snapshots (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fetched_at TEXT NOT NULL,
+  opens_n INTEGER NOT NULL,
+  closes_n INTEGER NOT NULL,
+  payload_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_al_tf_snap_fetched ON al_trade_feed_snapshots (fetched_at DESC);
+`);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (16, '016_al_trade_feed_snapshots')").run();
 }

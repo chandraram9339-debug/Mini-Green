@@ -1,60 +1,34 @@
-import {
-  getAccountSnapshot,
-  getTradingDetailsForPeriod,
-  type TradingPeriodKey
-} from "../ledger.js";
+import { getAccountSnapshot } from "../ledger.js";
+import { getDb } from "../db/connection.js";
+import { config } from "../config.js";
+import { getUserByTg } from "../repos/userRepo.js";
+import { emptyDealStatsPayload, tradingStatsForAllFigmaPeriods } from "./tradingPeriodStats.js";
+import { fetchAlLiveTradingPrice } from "../services/alStatePrice.js";
 
 const PERIODS = ["24h", "3d", "7d", "1m"] as const;
 
-/** Legacy Figma periods use `1m`; ledger windows use `30d`. */
-function legacyPeriodToLedgerKey(p: string): TradingPeriodKey {
-  if (p === "1m") return "30d";
-  if (p === "24h" || p === "3d" || p === "7d") return p;
-  return "7d";
-}
-
-function statsFromPositions(positions: { side: string }[]): {
-  totalDeals: number;
-  successful: number;
-  unsuccessful: number;
-  profitPercent: number;
-} {
-  let long = 0;
-  let short = 0;
-  for (const x of positions) {
-    if (String(x.side).toLowerCase() === "short") short += 1;
-    else long += 1;
-  }
-  const totalDeals = positions.length;
-  return {
-    totalDeals,
-    successful: long,
-    unsuccessful: short,
-    profitPercent: 0
-  };
-}
-
 /**
  * Shapes a payload compatible with `parseBotTrading` in the Figma app.
- * Period stats reflect open positions in `trade_positions` whose `opened_at` falls in each window.
- * Price fields are a deterministic display scalar (no live market feed in-repo).
+ * Period stats: события из зеркала торговой системы (`trade_positions` + SIB) за окно вкладки.
  */
-export function buildTradingSummaryForUser(userId: string) {
+export async function buildTradingSummaryForUser(userId: string) {
   const s = getAccountSnapshot(userId);
   const sumNotional = s.positions.reduce((acc, p) => acc + p.size_minor, 0);
   const tick = sumNotional + s.wallet_minor + (userId.length << 8);
   const last = 50_000 + (Math.abs(tick) % 8000);
   const current = last + (Math.abs(tick) % 23) - 11;
 
-  const stats: Record<string, ReturnType<typeof statsFromPositions>> = {};
-  for (const p of PERIODS) {
-    const details = getTradingDetailsForPeriod(userId, legacyPeriodToLedgerKey(p));
-    stats[p] = statsFromPositions(details.positions);
-  }
+  const db = getDb();
+  const u = getUserByTg(db, userId);
+  const stats = u
+    ? tradingStatsForAllFigmaPeriods(db, u.id)
+    : Object.fromEntries(PERIODS.map((p) => [p, emptyDealStatsPayload()]));
+  const livePrice = await fetchAlLiveTradingPrice(config);
+
   return {
-    currentPrice: current,
+    currentPrice: livePrice?.currentPrice ?? current,
     lastPrice: last,
-    pricePair: "USDT/BTC",
+    pricePair: livePrice?.pricePair ?? "USDT/BTC",
     stats
   };
 }

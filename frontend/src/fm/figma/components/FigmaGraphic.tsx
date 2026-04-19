@@ -1,4 +1,5 @@
 import { homeAssets } from "../home/homeAssets";
+import type { GraphicPoint } from "./tradingChartPoints";
 
 export type GraphicChartAssets = {
   vector25: string;
@@ -24,16 +25,85 @@ const CHART_SCALES = [
  *
  * Прим.: графику на экранах не дорабатываем до отдельной задачи «полная реализация графики» — только связанный с этим блоком рефакторинг/правки верстки вне графика.
  */
-export function FigmaGraphic({ chart }: { chart?: GraphicChartAssets }) {
+function formatScaleLabel(v: number): string {
+  return `${v.toFixed(2)}%`;
+}
+
+function buildPercentChartGeom(points: GraphicPoint[]) {
+  const plotLeft = 0;
+  const plotRight = 325;
+  const plotTop = 0;
+  const plotBottom = 123;
+
+  if (points.length === 0) {
+    return {
+      isEmpty: true,
+      pathLine: "",
+      pathArea: "",
+      dots: [] as Array<[number, number]>,
+      yLabels: CHART_SCALES,
+    };
+  }
+
+  const sorted = [...points].sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at));
+  const vals = sorted.map((p) => p.value_pct);
+  const ts = sorted.map((p) => Date.parse(p.occurred_at));
+  const minV0 = Math.min(0, ...vals);
+  const maxV0 = Math.max(0, ...vals);
+  const spanV = Math.max(0.5, maxV0 - minV0);
+  const padV = spanV * 0.18;
+  const minV = minV0 - padV;
+  const maxV = maxV0 + padV;
+  const t0 = ts[0]!;
+  const t1 = ts[ts.length - 1]!;
+  const spanT = Math.max(t1 - t0, 1);
+
+  const coords: Array<[number, number]> = sorted.map((p, i) => {
+    const ti = ts[i]!;
+    const x = plotLeft + ((ti - t0) / spanT) * (plotRight - plotLeft);
+    const norm = (p.value_pct - minV) / Math.max(maxV - minV, 0.0001);
+    const y = plotBottom - norm * (plotBottom - plotTop);
+    return [x, y];
+  });
+
+  if (coords.length === 1) {
+    coords.push([plotRight, coords[0]![1]]);
+  }
+
+  let pathLine = `M ${coords[0]![0].toFixed(2)} ${coords[0]![1].toFixed(2)}`;
+  for (let i = 1; i < coords.length; i += 1) {
+    pathLine += ` L ${coords[i]![0].toFixed(2)} ${coords[i]![1].toFixed(2)}`;
+  }
+  const first = coords[0]!;
+  const last = coords[coords.length - 1]!;
+  const pathArea = `${pathLine} L ${last[0].toFixed(2)} ${plotBottom} L ${first[0].toFixed(2)} ${plotBottom} Z`;
+
+  const yLabels = Array.from({ length: 10 }, (_, i) => {
+    const v = maxV - (i * (maxV - minV)) / 9;
+    return formatScaleLabel(v);
+  });
+
+  return {
+    isEmpty: false,
+    pathLine,
+    pathArea,
+    dots: coords,
+    yLabels,
+  };
+}
+
+export function FigmaGraphic({ chart, points }: { chart?: GraphicChartAssets; points?: GraphicPoint[] }) {
   const assets = chart ?? {
     vector25: homeAssets.vector25,
     line: homeAssets.line,
   };
+  const geom = buildPercentChartGeom(points ?? []);
+  const useDynamicLine = Array.isArray(points) && points.length > 0 && !geom.isEmpty;
 
   return (
     <div className="fm-chart" data-node-id="1:3505" data-name="Graphic">
       <div className="fm-chart-scale">
-        {CHART_SCALES.map((label) => (
+        {(useDynamicLine ? geom.yLabels : CHART_SCALES).map((label) => (
           <div key={label} className="fm-scale-row">
             <p className="fm-scale-label">{label}</p>
             <div className="fm-scale-line">
@@ -45,9 +115,34 @@ export function FigmaGraphic({ chart }: { chart?: GraphicChartAssets }) {
         ))}
       </div>
       <div className="fm-chart-line">
-        <div className="fm-chart-line-imgwrap">
-          <img alt="" src={assets.line} />
-        </div>
+        {useDynamicLine ? (
+          <svg className="fm-chart-line-svg" viewBox="0 0 325 123" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="fm-chart-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2d6e93" stopOpacity="0.26" />
+                <stop offset="60%" stopColor="#759ac6" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={geom.pathArea} fill="url(#fm-chart-area-gradient)" />
+            <path
+              d={geom.pathLine}
+              fill="none"
+              stroke="#55647b"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+            {geom.dots.map(([cx, cy], i) => (
+              <circle key={`${cx}-${cy}-${i}`} cx={cx} cy={cy} r="2.5" fill="#2d6e93" />
+            ))}
+          </svg>
+        ) : (
+          <div className="fm-chart-line-imgwrap">
+            <img alt="" src={assets.line} />
+          </div>
+        )}
       </div>
     </div>
   );

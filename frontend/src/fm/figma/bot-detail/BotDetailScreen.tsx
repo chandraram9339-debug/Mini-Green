@@ -5,7 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { hasApiBase } from "../../api/env";
-import { fetchTradingJournal, type TradingJournalItem } from "../../api/fetchTradingJournal";
+import {
+  fetchTradingJournal,
+  type TradingJournalItem,
+  type TradingJournalMeta,
+} from "../../api/fetchTradingJournal";
 import { botTradingStaticFallback, fetchBotTrading } from "../../api/fetchBotTrading";
 import { getStatsForPeriod } from "../../api/parseBotTrading";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
@@ -13,13 +17,16 @@ import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaGraphic } from "../components/FigmaGraphic";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
+import { buildCompoundedChartPoints } from "../components/tradingChartPoints";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
+import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { botDetailAssets } from "./botDetailAssets";
+import { BotJournalTradeCard } from "./BotJournalTradeCard";
 
 const botStatusAssets: StatusBarAssetUrls = {
   networkSignalLight: botDetailAssets.networkSignalLight,
@@ -38,23 +45,23 @@ const botTabIcons: TabBarIconUrls = {
 
 type BotPeriod = "24h" | "3d" | "7d" | "1m";
 
-function formatJournalIso(iso: string): string {
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
-  } catch {
-    return iso;
-  }
+/** Интервал обновления журнала и статистики на экране (мс). Env: VITE_BOT_DETAIL_REFRESH_MS, мин. 2 с. */
+function botDetailRefreshMs(): number {
+  const raw = import.meta.env.VITE_BOT_DETAIL_REFRESH_MS;
+  if (raw == null || String(raw).trim() === "") return 5_000;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 2_000 ? n : 5_000;
 }
 
 /** Экран «1| Detail Bot» — node 1:3701, 390×1288, `bot-detail__full-screen__1-3701.tsx`. */
 export default function BotDetailScreen() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
+  const { phase } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
+  const [journalMeta, setJournalMeta] = useState<TradingJournalMeta | null>(null);
   const [journalLoading, setJournalLoading] = useState(false);
 
   const trading = useMemo(() => {
@@ -67,51 +74,87 @@ export default function BotDetailScreen() {
   const [period, setPeriod] = useState<BotPeriod>("24h");
   const [botRunning, setBotRunning] = useState(true);
 
-  useEffect(() => {
-    if (!hasApiBase()) return;
-    let cancel = false;
-    void (async () => {
-      const r = await fetchBotTrading(period);
-      if (!cancel && r) setTradingFromApi(r);
-    })();
-    return () => {
-      cancel = true;
-    };
-  }, [period]);
+  const apiSessionReady = !hasApiBase() || phase === "ready";
+  /** Пока сессия не готова (идёт auth), не показываем ложное «пусто»; при error не блокируем ленту бесконечным спиннером. */
+  const feedWaitingForSession =
+    hasApiBase() && (phase === "idle" || phase === "bootstrapping");
 
+  /** Первый запрос + постоянный refetch (журнал и сводка по текущему периоду), пока экран открыт. */
   useEffect(() => {
     if (!hasApiBase()) {
       setJournalRows([]);
+      setJournalMeta(null);
       return;
     }
-    let cancel = false;
-    setJournalLoading(true);
-    void (async () => {
-      try {
-        const { items: rows } = await fetchTradingJournal();
-        if (!cancel) setJournalRows(rows);
-      } finally {
-        if (!cancel) setJournalLoading(false);
+    if (!apiSessionReady) return;
+
+    let cancelled = false;
+    const refreshMs = botDetailRefreshMs();
+
+    const load = async (showSpinner: boolean) => {
+      if (showSpinner) {
+        setJournalLoading(true);
+        setJournalRows([]);
+        setJournalMeta(null);
       }
-    })();
-    return () => {
-      cancel = true;
+      try {
+        const [jr, snap] = await Promise.all([
+          fetchTradingJournal(100, period),
+          fetchBotTrading(period),
+        ]);
+        if (cancelled) return;
+        setJournalRows(jr.items);
+        setJournalMeta(jr.meta);
+        if (snap) setTradingFromApi(snap);
+      } finally {
+        if (showSpinner && !cancelled) setJournalLoading(false);
+      }
     };
-  }, []);
+
+    void load(true);
+    const intervalId = window.setInterval(() => void load(false), refreshMs);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [apiSessionReady, period]);
 
   const defaultStat = {
     totalDeals: 78,
     successful: 39,
     unsuccessful: 39,
     profitPercent: -0.72,
+    neutral: 0,
+    openInPeriod: 0,
+    closedWithoutResult: 0,
   };
-  const periodStats = getStatsForPeriod(
-    trading,
-    period,
-    tradingFromApi
-      ? { totalDeals: 0, successful: 0, unsuccessful: 0, profitPercent: 0 }
-      : (botTradingStaticFallback.byPeriod[period] ?? botTradingStaticFallback.byPeriod["24h"] ?? defaultStat),
-  );
+  const zeroStat = {
+    totalDeals: 0,
+    successful: 0,
+    unsuccessful: 0,
+    profitPercent: 0,
+    neutral: 0,
+    openInPeriod: 0,
+    closedWithoutResult: 0,
+  };
+  const periodStats = useMemo(() => {
+    const ps = journalMeta?.period_stats;
+    const pf = journalMeta?.period_filter;
+    if (ps != null && (pf == null || pf === "" || pf === period)) {
+      return ps;
+    }
+    return getStatsForPeriod(
+      trading,
+      period,
+      tradingFromApi
+        ? zeroStat
+        : (botTradingStaticFallback.byPeriod[period] ??
+            botTradingStaticFallback.byPeriod["24h"] ??
+            defaultStat),
+    );
+  }, [journalMeta, period, trading, tradingFromApi]);
+  const chartPoints = useMemo(() => buildCompoundedChartPoints(journalRows), [journalRows]);
 
   const startDimmed = balance > 0 && botRunning;
   const stopDimmed = balance <= 0 || !botRunning;
@@ -185,6 +228,7 @@ export default function BotDetailScreen() {
             vector25: botDetailAssets.vector25,
             line: botDetailAssets.line1,
           }}
+          points={chartPoints}
         />
       </div>
 
@@ -252,53 +296,23 @@ export default function BotDetailScreen() {
         className="fm-abs fm-bot-trading-feed"
         aria-label={fromJournal ? t("bot.feedAriaJournal") : t("bot.feedAriaAlgo")}
       >
-        <h2 className="fm-bot-feed-title">{fromJournal ? t("bot.feedTitleJournal") : t("bot.feedTitleAlgo")}</h2>
+        <h2 className="fm-bot-feed-title">{t("bot.feedTitleAlgo")}</h2>
 
         <div className="fm-bot-feed-cards fm-bot-feed-cards--scroll">
           {!hasApiBase() ? (
             <p className="fm-bot-feed-placeholder">{t("bot.feedNeedApi")}</p>
+          ) : feedWaitingForSession ? (
+            <p className="fm-bot-feed-placeholder">{t("bot.feedLoading")}</p>
           ) : journalLoading ? (
             <p className="fm-bot-feed-placeholder">{t("bot.feedLoading")}</p>
           ) : journalRows.length === 0 ? (
             <p className="fm-bot-feed-placeholder">{t("bot.feedEmpty")}</p>
           ) : (
-            journalRows.map((row) => {
-              const isShort = String(row.side).toLowerCase() === "short";
-              return (
-                <article key={row.id} className="fm-bot-card">
-                  <div className="fm-bot-card-head">
-                    {row.status === "open" ? (
-                      <span className="fm-bot-card-badge fm-bot-card-badge--muted">
-                        <span className="fm-bot-card-badge-inner">
-                          <img alt="" src={botDetailAssets.feedFlag} />
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="fm-bot-card-badge fm-bot-card-badge--ok">
-                        <img alt="" className="fm-bot-check" src={botDetailAssets.feedCheck} />
-                      </span>
-                    )}
-                    <p className="fm-bot-card-title">
-                      {row.symbol} · {isShort ? t("bot.journalSideShort") : t("bot.journalSideLong")}
-                    </p>
-                  </div>
-                  <div className="fm-bot-card-line">
-                    <span className="fm-bot-card-dim">{t("bot.journalNotional")}</span>
-                    <span className="fm-bot-card-plain">{(row.size_minor / 100).toFixed(2)} USDT</span>
-                  </div>
-                  <div className="fm-bot-card-line">
-                    <span className="fm-bot-card-dim">{t("bot.journalOpened")}</span>
-                    <span className="fm-bot-card-plain">{formatJournalIso(row.opened_at)}</span>
-                  </div>
-                  {row.closed_at ? (
-                    <div className="fm-bot-card-line">
-                      <span className="fm-bot-card-dim">{t("bot.journalClosedAt")}</span>
-                      <span className="fm-bot-card-plain">{formatJournalIso(row.closed_at)}</span>
-                    </div>
-                  ) : null}
-                </article>
-              );
-            })
+            <>
+              {journalRows.map((row) => (
+                <BotJournalTradeCard key={row.id} row={row} t={t} />
+              ))}
+            </>
           )}
         </div>
       </section>

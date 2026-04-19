@@ -5,11 +5,18 @@
 .fm-settings {
   position: relative;
   width: 390px;
+  min-height: 824px;
   margin: 0 auto;
   /* Зона, где рисуется 72px таб; контент .fm-settings-body сидит выше, не залезает */
   padding-bottom: 80px;
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
+  isolation: isolate;
+}
+
+.fm-settings .fm-status,
+.fm-settings .fm-appbar {
+  z-index: 3;
 }
 
 .fm-settings * {
@@ -30,17 +37,19 @@
 }
 
 .fm-settings-body {
-  position: relative;
+  position: absolute;
   z-index: 2;
+  left: 20px;
+  top: 130px;
   width: 350px;
-  margin-left: 19px;
-  margin-top: 118px;
+  margin: 0;
   padding-bottom: 16px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
   box-sizing: content-box;
+  background-color: transparent;
 }
 
 .fm-settings-section {
@@ -49,6 +58,8 @@
   gap: 10px;
   align-items: flex-start;
   width: 100%;
+  /* Figma: карточки белые на Bg; у секции нет отдельной плашки. Явно, чтобы WebView/UA не подставил фон. */
+  background-color: transparent;
 }
 
 .fm-settings-row {

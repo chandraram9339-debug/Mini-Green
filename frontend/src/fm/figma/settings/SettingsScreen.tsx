@@ -9,12 +9,13 @@ import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
+import type { AppBarAssetUrls } from "../types/appBarAssets";
 import { useFmLocale } from "../../i18n/useFmLocale";
-import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { homeAssets } from "../home/homeAssets";
 import { routes } from "../routes";
 import { settingsAssets as s } from "./settingsAssets";
 import { openTelegramReferralShare } from "../../config/links";
+import { logGreySurfaces } from "../../debug/logGreySurfaces";
 
 const PUSH_KEY = "fm-push";
 const VIB_KEY = "fm-vibration";
@@ -34,6 +35,13 @@ const settingsTabIcons: TabBarIconUrls = {
   wallet: homeAssets.group3,
   bot: homeAssets.group4,
   support: homeAssets.group5,
+};
+
+const settingsAppBarAssets: AppBarAssetUrls = {
+  backIcon: s.back,
+  dividerLine: s.lineAppBar,
+  bellIcon: s.bell,
+  settingsIcon: s.gear,
 };
 
 function SettingsToggle({
@@ -79,6 +87,15 @@ export default function SettingsScreen() {
     return () => document.removeEventListener("mousedown", onDown);
   }, [langOpen]);
 
+  // #region agent log (debug a5e1ad — grey surfaces)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      logGreySurfaces("settings", ".fm-settings");
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+  // #endregion
+
   const togglePush = useCallback(() => {
     setPushOn((prev) => {
       const next = !prev;
@@ -111,7 +128,7 @@ export default function SettingsScreen() {
       <FigmaStatusBar assets={settingsStatusAssets} />
 
       <FigmaAppBar
-        assets={defaultAppBarAssetUrls}
+        assets={settingsAppBarAssets}
         backTo={routes.home}
         title={t("settings.title")}
         bellBadge="3"

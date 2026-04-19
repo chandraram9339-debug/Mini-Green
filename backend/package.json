@@ -10,7 +10,9 @@
     "mock:wallet-create": "node scripts/mock-deposit-wallet-create.mjs",
     "gen:wallet-key": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('hex'))\"",
     "gen:recovery-pepper": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\"",
-    "smoke": "node scripts/smoke-miniapp.mjs"
+    "smoke": "node scripts/smoke-miniapp.mjs",
+    "verify:trading": "node scripts/verify-miniapp-trading-http.mjs",
+    "al:feed-last-hour": "node scripts/al-trade-feed-last-hour.mjs"
   },
   "dependencies": {
     "bip32": "^4.0.0",

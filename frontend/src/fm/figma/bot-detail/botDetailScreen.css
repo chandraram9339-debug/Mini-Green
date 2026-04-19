@@ -334,17 +334,21 @@
   left: 20px;
   top: 45px;
   width: 350px;
+  height: 364px;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 9px;
 }
 
 .fm-bot-feed-cards--scroll {
-  max-height: 340px;
+  height: 364px;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-right: 4px;
+  padding-right: 6px;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
 }
 
 .fm-bot-feed-placeholder {
@@ -361,23 +365,33 @@
   padding: 16px 10px;
   border-radius: var(--figma-radius-card);
   background-color: var(--color-white);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: block;
+  flex: 0 0 auto;
+  flex-shrink: 0;
   transition: background-color var(--figma-duration) var(--figma-ease);
   /* rotate() на бейджах не вылезает на соседние карточки */
   overflow: hidden;
   isolation: isolate;
 }
 
-.fm-bot-card--gap {
-  gap: 12px;
+.fm-bot-card--pending {
+  height: 90px;
+}
+
+.fm-bot-card--profit,
+.fm-bot-card--loss {
+  height: 128px;
 }
 
 .fm-bot-card-head {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 16px;
   display: flex;
   gap: 10px;
   align-items: center;
+  height: 24px;
 }
 
 .fm-bot-card-badge {
@@ -515,13 +529,26 @@
   line-height: normal;
   letter-spacing: 0;
   color: var(--color-black);
+  white-space: nowrap;
 }
 
 .fm-bot-card-line {
+  position: absolute;
+  left: 10px;
+  right: 10px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
+  height: 24px;
+}
+
+.fm-bot-card-line--primary {
+  top: 50px;
+}
+
+.fm-bot-card-line--secondary {
+  top: 86px;
 }
 
 .fm-bot-card-dim {
@@ -539,6 +566,7 @@
   gap: 4px;
   align-items: flex-start;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .fm-bot-card-num {
@@ -548,6 +576,7 @@
   line-height: normal;
   letter-spacing: 0;
   color: var(--color-black);
+  white-space: nowrap;
 }
 
 .fm-bot-card-unit {
@@ -560,11 +589,18 @@
   margin-top: 4px;
 }
 
-.fm-bot-card-plain {
+.fm-bot-card-time {
+  position: absolute;
+  right: 10px;
+  bottom: 6px;
+  margin: 0;
   font-family: var(--font-btn-family), sans-serif;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 10px;
   line-height: normal;
   letter-spacing: 0;
-  color: var(--color-black);
+  color: var(--color-grey-medium);
+  text-transform: uppercase;
+  white-space: nowrap;
 }
+

@@ -1,10 +1,15 @@
 import "./homeScreen.css";
 
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { hasApiBase } from "../../api/env";
+import { fetchTradingJournal, type TradingJournalItem } from "../../api/fetchTradingJournal";
+import { fetchBotTrading } from "../../api/fetchBotTrading";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaGraphic } from "../components/FigmaGraphic";
+import { buildCompoundedChartPoints } from "../components/tradingChartPoints";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
@@ -16,9 +21,12 @@ import {
 } from "../../config/links";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
+import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { getHomeChartMode } from "./homeChartMode";
 import { homeAssets } from "./homeAssets";
+import { logGreySurfaces } from "../../debug/logGreySurfaces";
+import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 
 const homeStatusAssets: StatusBarAssetUrls = {
   networkSignalLight: homeAssets.networkSignalLight,
@@ -42,10 +50,52 @@ const homeTabIcons: TabBarIconUrls = {
 export default function HomeScreen() {
   const { t } = useFmLocale();
   const navigate = useNavigate();
+  const { phase } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
   const chartMode = getHomeChartMode(balanceUsdt);
   const balanceDisplay = balanceUsdt;
   const referralDisplay = referralReceivedUsdt;
+  const [chartRows, setChartRows] = useState<TradingJournalItem[]>([]);
+  const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
+  const apiSessionReady = !hasApiBase() || phase === "ready";
+
+  // #region agent log (debug a5e1ad — grey surfaces)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      logGreySurfaces("home", ".fm-home");
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+  // #endregion
+
+  useEffect(() => {
+    if (!hasApiBase()) {
+      setChartRows([]);
+      setTradingFromApi(null);
+      return;
+    }
+    if (!apiSessionReady) return;
+
+    let cancelled = false;
+
+    const load = async () => {
+      const [jr, snap] = await Promise.all([fetchTradingJournal(100, "1m"), fetchBotTrading("1m")]);
+      if (cancelled) return;
+      setChartRows(jr.items);
+      if (snap) setTradingFromApi(snap);
+    };
+
+    void load();
+    const intervalId = window.setInterval(() => void load(), 5_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [apiSessionReady]);
+
+  const chartPoints = useMemo(() => buildCompoundedChartPoints(chartRows), [chartRows]);
+  const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
+  const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
 
   return (
     <main className="fm-home" data-node-id="1:3644" aria-label={t("home.title")}>
@@ -118,7 +168,7 @@ export default function HomeScreen() {
             : t("home.chartBalanceAria")
         }
       >
-        <FigmaGraphic />
+        <FigmaGraphic points={chartPoints} />
 
         <div className="fm-graphic-status">
           <p>{t("home.botStatus")}</p>
@@ -131,8 +181,8 @@ export default function HomeScreen() {
         <div className="fm-graphic-price">
           <p>{t("home.actualPrice")}</p>
           <div className="fm-price-amt">
-            <span className="p">69 425.22</span>
-            <span className="u">USDT/BTC</span>
+            <span className="p">{priceDisplay}</span>
+            <span className="u">{pricePair}</span>
           </div>
         </div>
 

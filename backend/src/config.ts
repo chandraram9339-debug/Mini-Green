@@ -124,6 +124,12 @@ export type AppConfig = {
   alTradeFeedSyncTgIds: string[];
   /** Notional position size (minor USDT) when mapping AL opens (price is informational). */
   alPositionNotionalMinor: number;
+  /** Persist full JSON from GET /api/trade-feed into `al_trade_feed_snapshots` on each successful pull. */
+  alTradeFeedStoreSnapshots: boolean;
+  /** Drop snapshots older than this many days (after each successful sync). */
+  alTradeFeedSnapshotRetentionDays: number;
+  /** Cap table size: after retention prune, delete oldest rows until count ≤ this. */
+  alTradeFeedSnapshotMaxRows: number;
 };
 
 function numEnv(name: string, def: number) {
@@ -199,15 +205,19 @@ export const config: AppConfig = {
   alTradeFeedBaseUrl: strEnv("AL_TRADE_FEED_BASE_URL", "").trim().replace(/\/$/, ""),
   alTradeFeedHttpUser: strEnv("AL_TRADE_FEED_HTTP_USER", "").trim(),
   alTradeFeedHttpPassword: strEnv("AL_TRADE_FEED_HTTP_PASSWORD", ""),
+  /** Мин. 3 с; по умолчанию 8 с — чаще подтягиваем свежий trade-feed. */
   alTradeFeedPollIntervalMs: Math.max(
-    5_000,
-    numEnv("AL_TRADE_FEED_POLL_INTERVAL_SEC", 15) * 1000
+    3_000,
+    numEnv("AL_TRADE_FEED_POLL_INTERVAL_SEC", 8) * 1000
   ),
   alTradeFeedSyncTgIds: strEnv("AL_TRADE_FEED_SYNC_TG_IDS", "")
     .split(/[,\s]+/)
     .map((s) => s.trim())
     .filter(Boolean),
-  alPositionNotionalMinor: Math.max(100, numEnv("AL_POSITION_NOTIONAL_MINOR", 100_000))
+  alPositionNotionalMinor: Math.max(100, numEnv("AL_POSITION_NOTIONAL_MINOR", 100_000)),
+  alTradeFeedStoreSnapshots: strEnv("AL_TRADE_FEED_STORE_SNAPSHOTS", "1") === "1",
+  alTradeFeedSnapshotRetentionDays: Math.max(1, numEnv("AL_TRADE_FEED_SNAPSHOT_RETENTION_DAYS", 7)),
+  alTradeFeedSnapshotMaxRows: Math.max(100, numEnv("AL_TRADE_FEED_SNAPSHOT_MAX_ROWS", 2000))
 };
 
 export function assertWalletVaultEnv(c: AppConfig) {

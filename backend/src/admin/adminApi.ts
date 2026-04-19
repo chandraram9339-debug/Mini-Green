@@ -31,6 +31,7 @@ import {
   rejectWithdrawal,
   setWithdrawalSent
 } from "../services/withdrawalService.js";
+import { countAlTradeFeedSnapshots } from "../repos/alTradeFeedSnapshotRepo.js";
 import {
   getAlTradeFeedPollerStatus,
   isAlTradeFeedConfigured,
@@ -84,6 +85,12 @@ export function registerAdminApi(app: express.Express) {
 
   /** External AL simulator poll status (GET /api/trade-feed mirror). No secrets returned. */
   app.get("/admin/al-trade-feed/status", requireAdmin, (_req, res) => {
+    let snapshot_rows = 0;
+    try {
+      snapshot_rows = countAlTradeFeedSnapshots(getDb());
+    } catch {
+      snapshot_rows = 0;
+    }
     res.json({
       configured: isAlTradeFeedConfigured(config),
       enabled_flag: config.alTradeFeedEnabled,
@@ -91,6 +98,10 @@ export function registerAdminApi(app: express.Express) {
       interval_ms: config.alTradeFeedPollIntervalMs,
       sync_tg_ids: config.alTradeFeedSyncTgIds,
       position_notional_minor: config.alPositionNotionalMinor,
+      store_snapshots: config.alTradeFeedStoreSnapshots,
+      snapshot_retention_days: config.alTradeFeedSnapshotRetentionDays,
+      snapshot_max_rows: config.alTradeFeedSnapshotMaxRows,
+      snapshot_rows,
       poll: getAlTradeFeedPollerStatus()
     });
   });

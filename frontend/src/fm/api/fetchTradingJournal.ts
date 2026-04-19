@@ -1,4 +1,6 @@
 import { apiFetch } from "./http";
+import { parseTradingPeriodStats } from "./parseBotTrading";
+import type { BotTradingPeriodStats } from "./typesBotTrading";
 
 export type TradingJournalMeta = {
   limit: number;
@@ -6,6 +8,9 @@ export type TradingJournalMeta = {
   positions_total: number;
   positions_open: number;
   positions_closed: number;
+  /** Совпадает с `stats[period]` в `/trading/summary` для того же окна времени. */
+  period_stats?: BotTradingPeriodStats;
+  period_filter?: string | null;
   al_feed_configured: boolean;
   al_sync_includes_user: boolean;
   al_last_ok_at: string | null;
@@ -47,12 +52,21 @@ function parseMeta(raw: unknown): TradingJournalMeta | null {
   ) {
     return null;
   }
+  let period_stats: BotTradingPeriodStats | undefined;
+  const psRaw = m.period_stats;
+  if (psRaw && typeof psRaw === "object") {
+    period_stats = parseTradingPeriodStats(psRaw as Record<string, unknown>);
+  }
+
   return {
     limit: m.limit,
     returned: m.returned,
     positions_total: m.positions_total,
     positions_open: m.positions_open,
     positions_closed: m.positions_closed,
+    period_stats,
+    period_filter:
+      m.period_filter == null || m.period_filter === "" ? null : String(m.period_filter),
     al_feed_configured: m.al_feed_configured,
     al_sync_includes_user: m.al_sync_includes_user,
     al_last_ok_at: m.al_last_ok_at == null ? null : String(m.al_last_ok_at),
@@ -62,10 +76,10 @@ function parseMeta(raw: unknown): TradingJournalMeta | null {
 }
 
 /** Журнал сделок (`trade_positions` + SIB). GET `/trading/journal` с полем `meta` для отладки связки. */
-export async function fetchTradingJournal(limit = 30): Promise<TradingJournalResponse> {
+export async function fetchTradingJournal(limit = 30, period: string = "24h"): Promise<TradingJournalResponse> {
   const pathTemplate = import.meta.env.VITE_API_TRADING_JOURNAL_PATH ?? "/trading/journal";
   const sep = pathTemplate.includes("?") ? "&" : "?";
-  const url = `${pathTemplate}${sep}limit=${encodeURIComponent(String(limit))}`;
+  const url = `${pathTemplate}${sep}limit=${encodeURIComponent(String(limit))}&period=${encodeURIComponent(period)}`;
   const res = await apiFetch(url, { method: "GET" });
   if (!res.ok) return { items: [], meta: null };
   const json: unknown = await res.json();
