@@ -4,6 +4,7 @@ import { config } from "../config.js";
 import { getUserByTg } from "../repos/userRepo.js";
 import { emptyDealStatsPayload, tradingStatsForAllFigmaPeriods } from "./tradingPeriodStats.js";
 import { fetchAlLiveTradingPrice, hasAlStateHttpConfig } from "../services/alStatePrice.js";
+import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 
 const PERIODS = ["24h", "3d", "7d", "1m"] as const;
 
@@ -20,8 +21,11 @@ export async function buildTradingSummaryForUser(userId: string) {
 
   const db = getDb();
   const u = getUserByTg(db, userId);
+  const positiveBalanceStartedAtMs = u
+    ? getCurrentPositiveBalanceStartedAtMs(db, u.id)
+    : null;
   const stats = u
-    ? tradingStatsForAllFigmaPeriods(db, u.id)
+    ? tradingStatsForAllFigmaPeriods(db, u.id, Date.now(), positiveBalanceStartedAtMs)
     : Object.fromEntries(PERIODS.map((p) => [p, emptyDealStatsPayload()]));
   const livePrice = await fetchAlLiveTradingPrice(config);
   const liveMode = hasAlStateHttpConfig(config);

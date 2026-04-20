@@ -45,6 +45,7 @@ const botTabIcons: TabBarIconUrls = {
 };
 
 type BotPeriod = "24h" | "3d" | "7d" | "1m";
+type TradeResultFilter = "all" | "positive" | "negative";
 
 /** Интервал обновления журнала и статистики на экране (мс). Env: VITE_BOT_DETAIL_REFRESH_MS, мин. 2 с. */
 function botDetailRefreshMs(): number {
@@ -74,6 +75,7 @@ export default function BotDetailScreen() {
   /** ТЗ: при нулевом балансе данные из торгового журнала; иначе из алгоритма аккаунта. */
   const fromJournal = balance <= 0;
   const [period, setPeriod] = useState<BotPeriod>("24h");
+  const [tradeResultFilter, setTradeResultFilter] = useState<TradeResultFilter>("all");
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   /** Пока сессия не готова (идёт auth), не показываем ложное «пусто»; при error не блокируем ленту бесконечным спиннером. */
@@ -156,6 +158,15 @@ export default function BotDetailScreen() {
     );
   }, [journalMeta, period, trading, tradingFromApi]);
   const chartPoints = useMemo(() => buildCompoundedChartPoints(journalRows), [journalRows]);
+  const filteredJournalRows = useMemo(() => {
+    if (tradeResultFilter === "all") return journalRows;
+    return journalRows.filter((row) => {
+      if (row.status !== "closed") return false;
+      const rp = row.result_percent;
+      if (tradeResultFilter === "positive") return rp != null && rp > 0;
+      return rp == null || rp <= 0;
+    });
+  }, [journalRows, tradeResultFilter]);
 
   const isBotActive = balance > 0 && botRunning;
   const startDimmed = isBotActive;
@@ -316,6 +327,26 @@ export default function BotDetailScreen() {
         aria-label={fromJournal ? t("bot.feedAriaJournal") : t("bot.feedAriaAlgo")}
       >
         <h2 className="fm-bot-feed-title">{t("bot.feedTitleAlgo")}</h2>
+        <div className="fm-bot-feed-filters" role="tablist" aria-label={t("bot.feedFilterAria")}>
+          {(
+            [
+              ["all", t("bot.feedFilterAll")],
+              ["positive", t("bot.feedFilterPositive")],
+              ["negative", t("bot.feedFilterNegative")],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tradeResultFilter === key}
+              className={`fm-bot-feed-filter${tradeResultFilter === key ? " fm-bot-feed-filter--on" : ""}`}
+              onClick={() => setTradeResultFilter(key)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         <div className="fm-bot-feed-cards fm-bot-feed-cards--scroll">
           {!hasApiBase() ? (
@@ -326,9 +357,11 @@ export default function BotDetailScreen() {
             <p className="fm-bot-feed-placeholder">{t("bot.feedLoading")}</p>
           ) : journalRows.length === 0 ? (
             <p className="fm-bot-feed-placeholder">{t("bot.feedEmpty")}</p>
+          ) : filteredJournalRows.length === 0 ? (
+            <p className="fm-bot-feed-placeholder">{t("bot.feedFilterEmpty")}</p>
           ) : (
             <>
-              {journalRows.map((row) => (
+              {filteredJournalRows.map((row) => (
                 <BotJournalTradeCard key={row.id} row={row} t={t} />
               ))}
             </>

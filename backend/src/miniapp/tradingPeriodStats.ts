@@ -61,8 +61,13 @@ export function aggregateDealStatsForWindow(
   internalUserId: number,
   fromMs: number,
   toMs: number,
+  minStartedAtMs?: number | null,
 ): DealStatsPayload {
-  const fromIso = new Date(fromMs).toISOString();
+  const effectiveFromMs =
+    minStartedAtMs != null ? Math.max(fromMs, minStartedAtMs) : fromMs;
+  if (effectiveFromMs > toMs) return emptyDealStatsPayload();
+
+  const fromIso = new Date(effectiveFromMs).toISOString();
   const toIso = new Date(toMs).toISOString();
 
   const rows = db
@@ -130,12 +135,19 @@ export function tradingStatsForAllFigmaPeriods(
   db: Database,
   internalUserId: number,
   nowMs = Date.now(),
+  minStartedAtMs?: number | null,
 ): Record<string, DealStatsPayload> {
   const periods = ["24h", "3d", "7d", "1m"] as const;
   const out: Record<string, DealStatsPayload> = {};
   for (const p of periods) {
     const sec = FIGMA_TRADING_PERIOD_SEC[p] ?? FIGMA_TRADING_PERIOD_SEC["24h"];
-    out[p] = aggregateDealStatsForWindow(db, internalUserId, nowMs - sec * 1000, nowMs);
+    out[p] = aggregateDealStatsForWindow(
+      db,
+      internalUserId,
+      nowMs - sec * 1000,
+      nowMs,
+      minStartedAtMs,
+    );
   }
   return out;
 }

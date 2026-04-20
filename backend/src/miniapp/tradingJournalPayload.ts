@@ -7,6 +7,7 @@ import {
   FIGMA_TRADING_PERIOD_SEC,
   type DealStatsPayload,
 } from "./tradingPeriodStats.js";
+import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 
 /** Элементы `items` в ответе `/trading/journal`. */
 export type TradingJournalItemPayload = {
@@ -108,10 +109,21 @@ export function buildTradingJournalPayload(
   const sec = FIGMA_TRADING_PERIOD_SEC[period] ?? FIGMA_TRADING_PERIOD_SEC["24h"];
   const nowMs = Date.now();
   const fromMs = nowMs - sec * 1000;
-  const fromIso = new Date(fromMs).toISOString();
+  const positiveBalanceStartedAtMs = getCurrentPositiveBalanceStartedAtMs(db, internalUserId);
+  const effectiveFromMs =
+    positiveBalanceStartedAtMs != null
+      ? Math.max(fromMs, positiveBalanceStartedAtMs)
+      : fromMs;
+  const fromIso = new Date(effectiveFromMs).toISOString();
   const toIso = new Date(nowMs).toISOString();
 
-  const period_stats = aggregateDealStatsForWindow(db, internalUserId, fromMs, nowMs);
+  const period_stats = aggregateDealStatsForWindow(
+    db,
+    internalUserId,
+    fromMs,
+    nowMs,
+    positiveBalanceStartedAtMs,
+  );
 
   const rows = db
     .prepare(

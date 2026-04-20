@@ -11,6 +11,7 @@ import {
 import { getAvailableForWithdraw, lockedForWithdraws } from "./services/withdrawalService.js";
 import { getDb } from "./db/connection.js";
 import type { MoneyOperationRecord } from "./ledgerTypes.js";
+import { getCurrentPositiveBalanceStartedAtMs } from "./miniapp/positiveBalanceWindow.js";
 
 export type { MoneyOperationRecord } from "./ledgerTypes.js";
 
@@ -123,6 +124,7 @@ export function getTradingDetailsForPeriod(userId: string, period: TradingPeriod
   }
 
   const activityStartMs = getTradingActivityStartedAtMs(db, userId, seed);
+  const positiveBalanceStartedAtMs = getCurrentPositiveBalanceStartedAtMs(db, u.id);
   const requestedStartMs = nowMs - requestedSec * 1000;
 
   const allTimed = rowsToTimed(listTradePositionsByUserId(db, u.id));
@@ -133,15 +135,17 @@ export function getTradingDetailsForPeriod(userId: string, period: TradingPeriod
     if (!Number.isNaN(t)) earliestOpenMs = Math.min(earliestOpenMs, t);
   }
   const periodFloorMs =
-    Number.isFinite(earliestOpenMs) && allTimed.length > 0
-      ? Math.min(activityStartMs, earliestOpenMs)
-      : activityStartMs;
+    positiveBalanceStartedAtMs != null
+      ? positiveBalanceStartedAtMs
+      : Number.isFinite(earliestOpenMs) && allTimed.length > 0
+        ? Math.min(activityStartMs, earliestOpenMs)
+        : activityStartMs;
 
   const effectiveStartMs = Math.max(requestedStartMs, periodFloorMs);
   const effectiveEndMs = nowMs;
   const period_seconds_effective = Math.max(0, Math.floor((effectiveEndMs - effectiveStartMs) / 1000));
-  const trading_history_seconds = Math.max(0, Math.floor((nowMs - activityStartMs) / 1000));
-  const stats_capped_to_history = activityStartMs > requestedStartMs;
+  const trading_history_seconds = Math.max(0, Math.floor((nowMs - periodFloorMs) / 1000));
+  const stats_capped_to_history = periodFloorMs > requestedStartMs;
 
   const filtered = allTimed.filter((p) => {
     const t = new Date(p.opened_at).getTime();
