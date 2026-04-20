@@ -20,6 +20,13 @@ import { useWithdrawDraftGuard } from "./useWithdrawDraftGuard";
 import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
 import { withdrawAssets as w } from "./withdrawAssets";
 
+function nextWithdrawRequestKey(): string {
+  if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 const withdrawStatusAssets: StatusBarAssetUrls = {
   networkSignalLight: w.networkSignalLight,
   wifiSignalLight: w.wifiSignalLight,
@@ -62,7 +69,7 @@ export default function WithdrawAmountScreen() {
       setError(err);
       return;
     }
-    writeWithdrawDraft({ ...draft, amountUsdt: amt });
+    writeWithdrawDraft({ ...draft, amountUsdt: amt, requestKey: nextWithdrawRequestKey() });
     navigate(routes.withdrawConfirm);
   }
 

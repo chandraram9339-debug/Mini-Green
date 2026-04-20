@@ -3,6 +3,7 @@ import { apiFetch } from "./http";
 export type CreateWithdrawalInput = {
   address: string;
   amountUsdt: number;
+  requestKey?: string;
 };
 
 /**
@@ -19,6 +20,8 @@ export async function createWithdrawalRequest(input: CreateWithdrawalInput): Pro
       recipientAddress: input.address,
       amountUsdt: input.amountUsdt,
       amount_usdt: input.amountUsdt,
+      requestKey: input.requestKey,
+      request_key: input.requestKey,
     }),
   });
 

@@ -59,7 +59,7 @@ export default function WithdrawConfirmScreen() {
   const short = draft ? formatShortAddress(draft.address, 6, 4) : "";
 
   async function handleConfirm(): Promise<void> {
-    if (!draft) return;
+    if (!draft || submitting) return;
     setSubmitting(true);
     try {
       if (!hasApiBase()) {
@@ -72,6 +72,7 @@ export default function WithdrawConfirmScreen() {
       const result = await createWithdrawalRequest({
         address: draft.address,
         amountUsdt: draft.amountUsdt,
+        requestKey: draft.requestKey,
       });
 
       if (!result.ok) {

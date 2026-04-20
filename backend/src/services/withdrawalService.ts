@@ -50,11 +50,15 @@ export function createWithdrawal(
   c: AppConfig,
   tg: string,
   toAddress: string,
-  amountMinor: number
+  amountMinor: number,
+  requestKey?: string | null,
 ) {
   if (!isValidTronTrc20Address(toAddress)) {
     return { ok: false, error: "invalid_tron_address" as const };
   }
+  const normalizedAddress = toAddress.trim();
+  const normalizedRequestKey =
+    typeof requestKey === "string" && requestKey.trim() ? requestKey.trim().slice(0, 120) : "";
   const u = getUserByTg(db, tg);
   if (!u) return { ok: false, error: "no_user" as const };
   const fees = getFeeSnapshot(db, c);
@@ -67,59 +71,165 @@ export function createWithdrawal(
     fees.withdrawFeeBps
   );
   const need = amountMinor + feeMinor;
+  const id = `wd_${crypto.randomUUID()}`;
+  const now = new Date().toISOString();
+  const ikey = normalizedRequestKey
+    ? `wdr:req:${u.id}:${normalizedRequestKey}`
+    : `wdr:req:${id}`;
+  const existing = db
+    .prepare("SELECT id, status FROM withdrawals WHERE idempotency_key = ?")
+    .get(ikey) as { id: string; status: string } | undefined;
+  if (existing) {
+    return {
+      ok: true as const,
+      id: existing.id,
+      auto: existing.status === "sent",
+      dedup: true as const,
+    };
+  }
   const av = availableMinorDb(db, u);
   if (need > av) {
     return { ok: false, error: "insufficient" as const };
   }
-  const id = `wd_${crypto.randomUUID()}`;
-  const now = new Date().toISOString();
-  const ikey = `wdr:req:${id}`;
 
   if (getWithdrawAutoApprove(db, c)) {
     const tr = db.transaction(() => {
+      const dup = db
+        .prepare("SELECT id, status FROM withdrawals WHERE idempotency_key = ?")
+        .get(ikey) as { id: string; status: string } | undefined;
+      if (dup) {
+        return {
+          ok: true as const,
+          dedup: true as const,
+          id: dup.id,
+          auto: dup.status === "sent",
+        };
+      }
+      const fresh = getUserByTg(db, tg);
+      if (!fresh) return { ok: false as const, error: "no_user" as const };
+      const freshAvailable = availableMinorDb(db, fresh);
+      if (need > freshAvailable) {
+        return { ok: false as const, error: "insufficient" as const };
+      }
       db.prepare(
         "INSERT INTO withdrawals (id, user_id, to_address, amount_minor, fee_minor, status, idempotency_key, created_at) VALUES (?,?,?,?,?,?,?,?)"
-      ).run(id, u.id, toAddress, amountMinor, feeMinor, "sent", ikey, now);
-      addBalance(db, u.id, -need);
+      ).run(id, fresh.id, normalizedAddress, amountMinor, feeMinor, "sent", ikey, now);
+      addBalance(db, fresh.id, -need);
+      return { ok: true as const, userId: fresh.id, dedup: false as const, id, auto: true as const };
     });
-    tr();
+    let trResult:
+      | { ok: true; userId?: number; dedup: boolean; id: string; auto: boolean }
+      | { ok: false; error: "no_user" | "insufficient" };
+    try {
+      trResult = tr();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("withdrawals.idempotency_key")) {
+        const dup = db
+          .prepare("SELECT id, status FROM withdrawals WHERE idempotency_key = ?")
+          .get(ikey) as { id: string; status: string } | undefined;
+        if (dup) {
+          return {
+            ok: true as const,
+            id: dup.id,
+            auto: dup.status === "sent",
+            dedup: true as const,
+          };
+        }
+      }
+      throw error;
+    }
+    if (!trResult.ok) {
+      return { ok: false as const, error: trResult.error };
+    }
+    if (trResult.dedup) {
+      return { ok: true as const, id: trResult.id, auto: trResult.auto, dedup: true as const };
+    }
     insertUserNotification(db, {
-      user_id: u.id,
+      user_id: trResult.userId!,
       kind: "withdraw",
       variant: "success",
       message: `Withdrawal request for ${(amountMinor / 100).toFixed(2)} USDT created.`,
       source_id: id,
       created_at: now,
     });
-    sibAfterWithdrawSent(db, u.id);
+    sibAfterWithdrawSent(db, trResult.userId!);
     fireSibJournalSyncHook(c, tg, "admin-auto");
     const trace = "admin-auto";
-    logEvent(trace, "central.withdraw_sent", { id, to: toAddress, amount: amountMinor });
-    logChain(db, u.id, "withdraw", JSON.stringify({ id, amount: amountMinor, to: toAddress, auto: true }));
+    logEvent(trace, "central.withdraw_sent", { id, to: normalizedAddress, amount: amountMinor });
+    logChain(db, trResult.userId!, "withdraw", JSON.stringify({ id, amount: amountMinor, to: normalizedAddress, auto: true }));
     const ch = resolveChainLabels(c, db);
-    if (c.liveTronSend && c.withdrawWalletPrivateKey && isValidTronTrc20Address(toAddress) && tryClaimIdempotency(db, `live_withdraw:${id}`)) {
-      void sendUsdtTrc20(c, c.withdrawWalletPrivateKey, toAddress, amountMinor, trace);
-    } else if (c.liveTronSend && c.withdrawWalletPrivateKey && isValidTronTrc20Address(toAddress)) {
+    if (c.liveTronSend && c.withdrawWalletPrivateKey && isValidTronTrc20Address(normalizedAddress) && tryClaimIdempotency(db, `live_withdraw:${id}`)) {
+      void sendUsdtTrc20(c, c.withdrawWalletPrivateKey, normalizedAddress, amountMinor, trace);
+    } else if (c.liveTronSend && c.withdrawWalletPrivateKey && isValidTronTrc20Address(normalizedAddress)) {
       logEvent(trace, "chain.live.withdraw_idem_skip", { id });
     } else {
-      stubWithdrawSend(ch.withdrawWallet, toAddress, amountMinor, trace);
+      stubWithdrawSend(ch.withdrawWallet, normalizedAddress, amountMinor, trace);
     }
-    return { ok: true as const, id, auto: true as const };
+    return { ok: true as const, id, auto: true as const, dedup: false as const };
   }
 
-  db.prepare(
-    "INSERT INTO withdrawals (id, user_id, to_address, amount_minor, fee_minor, status, idempotency_key, created_at) VALUES (?,?,?,?,?,?,?,?)"
-  ).run(id, u.id, toAddress, amountMinor, feeMinor, "pending_approval", ikey, now);
+  const tr = db.transaction(() => {
+    const dup = db
+      .prepare("SELECT id, status FROM withdrawals WHERE idempotency_key = ?")
+      .get(ikey) as { id: string; status: string } | undefined;
+    if (dup) {
+      return {
+        ok: true as const,
+        dedup: true as const,
+        id: dup.id,
+        auto: dup.status === "sent",
+      };
+    }
+    const fresh = getUserByTg(db, tg);
+    if (!fresh) return { ok: false as const, error: "no_user" as const };
+    const freshAvailable = availableMinorDb(db, fresh);
+    if (need > freshAvailable) {
+      return { ok: false as const, error: "insufficient" as const };
+    }
+    db.prepare(
+      "INSERT INTO withdrawals (id, user_id, to_address, amount_minor, fee_minor, status, idempotency_key, created_at) VALUES (?,?,?,?,?,?,?,?)"
+    ).run(id, fresh.id, normalizedAddress, amountMinor, feeMinor, "pending_approval", ikey, now);
+    return { ok: true as const, userId: fresh.id, dedup: false as const, id, auto: false as const };
+  });
+  let trResult:
+    | { ok: true; userId?: number; dedup: boolean; id: string; auto: boolean }
+    | { ok: false; error: "no_user" | "insufficient" };
+  try {
+    trResult = tr();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("withdrawals.idempotency_key")) {
+      const dup = db
+        .prepare("SELECT id, status FROM withdrawals WHERE idempotency_key = ?")
+        .get(ikey) as { id: string; status: string } | undefined;
+      if (dup) {
+        return {
+          ok: true as const,
+          id: dup.id,
+          auto: dup.status === "sent",
+          dedup: true as const,
+        };
+      }
+    }
+    throw error;
+  }
+  if (!trResult.ok) {
+    return { ok: false as const, error: trResult.error };
+  }
+  if (trResult.dedup) {
+    return { ok: true as const, id: trResult.id, auto: trResult.auto, dedup: true as const };
+  }
   insertUserNotification(db, {
-    user_id: u.id,
+    user_id: trResult.userId!,
     kind: "withdraw",
     variant: "success",
     message: `Withdrawal request for ${(amountMinor / 100).toFixed(2)} USDT created.`,
     source_id: id,
     created_at: now,
   });
-  sibOnWithdrawRequest(db, u.id);
-  return { ok: true as const, id, auto: false as const };
+  sibOnWithdrawRequest(db, trResult.userId!);
+  return { ok: true as const, id, auto: false as const, dedup: false as const };
 }
 
 export function listWithdrawals(db: Database, st?: string) {

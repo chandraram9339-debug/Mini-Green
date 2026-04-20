@@ -44,10 +44,10 @@ export function applyDepositNet(
     return { ok: false as const, error: "below_min_deposit" };
   }
   const ex = db
-    .prepare("SELECT 1 as x FROM deposits WHERE idempotency_key = ?")
-    .get(idempotencyKey) as { x: number } | undefined;
+    .prepare("SELECT id as id FROM deposits WHERE idempotency_key = ?")
+    .get(idempotencyKey) as { id: string } | undefined;
   if (ex) {
-    return { ok: true as const, dedup: true, depositId: null as string | null };
+    return { ok: true as const, dedup: true, depositId: ex.id };
   }
   const feeMinor = applyFee2Part(grossMinor, fees.depositFeeFixedUsdt, fees.depositFeeBps);
   const netMinor = grossMinor - feeMinor;
@@ -103,7 +103,18 @@ export function applyDepositNet(
       }
     }
   });
-  tx();
+  try {
+    tx();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("deposits.idempotency_key")) {
+      const dup = db
+        .prepare("SELECT id as id FROM deposits WHERE idempotency_key = ?")
+        .get(idempotencyKey) as { id: string } | undefined;
+      return { ok: true as const, dedup: true, depositId: dup?.id ?? null };
+    }
+    throw error;
+  }
   const us = (netMinor / 100).toFixed(2);
   insertUserNotification(db, {
     user_id: userId,

@@ -66,6 +66,7 @@ export default function TopUpScreen() {
   }
 
   async function handlePaid(): Promise<void> {
+    if (paidBusy) return;
     setPaidBusy(true);
     try {
       const ok = await confirmDepositPaid();

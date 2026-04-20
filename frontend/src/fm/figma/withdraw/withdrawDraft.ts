@@ -8,6 +8,7 @@ const STORAGE_KEY = "fm_withdraw_draft_v1";
 export type WithdrawDraft = {
   address: string;
   amountUsdt: number;
+  requestKey?: string;
 };
 
 export function readWithdrawDraft(): WithdrawDraft | null {
@@ -16,7 +17,11 @@ export function readWithdrawDraft(): WithdrawDraft | null {
     if (!raw) return null;
     const v = JSON.parse(raw) as Partial<WithdrawDraft>;
     if (typeof v.address !== "string" || typeof v.amountUsdt !== "number") return null;
-    return { address: v.address, amountUsdt: v.amountUsdt };
+    return {
+      address: v.address,
+      amountUsdt: v.amountUsdt,
+      requestKey: typeof v.requestKey === "string" ? v.requestKey : undefined,
+    };
   } catch {
     return null;
   }

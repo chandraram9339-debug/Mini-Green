@@ -119,6 +119,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration016AlTradeFeedSnapshots(db);
   runMigration017UserNotifications(db);
   runMigration018SibSkippedCloses(db);
+  runMigration019WithdrawalIdempotency(db);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -436,4 +437,14 @@ CREATE INDEX IF NOT EXISTS idx_sib_skipped_user_created
   ON sib_skipped_closes (user_id, created_at DESC);
 `);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (18, '018_sib_skipped_closes')").run();
+}
+
+function runMigration019WithdrawalIdempotency(db: Database) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=19").get() as { ok: number } | undefined;
+  if (m) return;
+  db.exec(`
+CREATE UNIQUE INDEX IF NOT EXISTS idx_withdrawals_idempotency_key
+  ON withdrawals (idempotency_key);
+`);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (19, '019_withdrawal_idempotency')").run();
 }

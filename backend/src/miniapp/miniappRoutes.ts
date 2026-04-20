@@ -182,11 +182,17 @@ export function registerMiniappContract(app: express.Express) {
       return;
     }
     const amountMinor = Math.max(0, Math.round(amountUsdt * 100));
+    const requestKey =
+      typeof req.body?.requestKey === "string"
+        ? req.body.requestKey.trim()
+        : typeof req.body?.request_key === "string"
+          ? req.body.request_key.trim()
+          : "";
     if (amountMinor <= 0) {
       res.status(400).json({ message: "amount too small" });
       return;
     }
-    const r = createWithdrawal(getDb(), config, req.userId!, address, amountMinor);
+    const r = createWithdrawal(getDb(), config, req.userId!, address, amountMinor, requestKey);
     if (!r.ok) {
       const m =
         r.error === "invalid_tron_address"
@@ -203,6 +209,6 @@ export function registerMiniappContract(app: express.Express) {
       user_id: req.userId,
       request_id: r.id
     });
-    res.status(201).json({ ok: true, id: r.id });
+    res.status(r.dedup ? 200 : 201).json({ ok: true, id: r.id, dedup: r.dedup === true });
   });
 }
