@@ -16,6 +16,7 @@ import { buildWalletForUser } from "./walletResponse.js";
 import { markAllUserNotificationsRead } from "../repos/notificationRepo.js";
 import { getBotTradingEnabled, setBotTradingEnabled } from "../repos/userRepo.js";
 import { sibOnUserStart, sibOnUserStop } from "../services/sibBalance.js";
+import { fireTradingEngineNotify } from "../services/tradingEngineNotify.js";
 
 /**
  * Мини-апп (Figma): JWT + per-user TRC20 (HD / deterministic) + ввод/вывод по ТЗ.
@@ -126,6 +127,7 @@ export function registerMiniappContract(app: express.Express) {
     setBotTradingEnabled(db, req.userId!, enabled);
     if (enabled) sibOnUserStart(db, u.id);
     else sibOnUserStop(db, u.id);
+    fireTradingEngineNotify(req.userId!, enabled ? "start" : "stop", String(res.locals.traceId ?? "no-trace"));
     res.json({ ok: true, botTradingEnabled: enabled });
   });
 

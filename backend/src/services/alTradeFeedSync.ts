@@ -43,6 +43,23 @@ let pollStatus: AlPollStatus = {
 };
 let pollInFlight = false;
 
+export function listMirrorTargetTgIds(db: Database, c: AppConfig): string[] {
+  const explicit = c.alTradeFeedSyncTgIds.map((x) => String(x).trim()).filter(Boolean);
+  const dynamic = (
+    db
+      .prepare(
+        `SELECT tg_user_id
+         FROM users
+         WHERE bot_trading_enabled = 1
+           AND balance_usdt_minor > 0`,
+      )
+      .all() as Array<{ tg_user_id: string }>
+  )
+    .map((row) => String(row.tg_user_id).trim())
+    .filter(Boolean);
+  return [...new Set([...explicit, ...dynamic])];
+}
+
 export function getAlTradeFeedPollerStatus(): AlPollStatus {
   return { ...pollStatus };
 }
@@ -84,8 +101,7 @@ export function isAlTradeFeedConfigured(c: AppConfig): boolean {
     c.alTradeFeedEnabled &&
     Boolean(c.alTradeFeedBaseUrl.trim()) &&
     Boolean(c.alTradeFeedHttpUser) &&
-    Boolean(c.alTradeFeedHttpPassword) &&
-    c.alTradeFeedSyncTgIds.length > 0
+    Boolean(c.alTradeFeedHttpPassword)
   );
 }
 
@@ -184,7 +200,8 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
 
   const notion = c.alPositionNotionalMinor;
 
-  for (const tg of c.alTradeFeedSyncTgIds) {
+  const targetTgIds = listMirrorTargetTgIds(db, c);
+  for (const tg of targetTgIds) {
     const u = getUserByTg(db, tg);
     if (!u) {
       logEvent(trace, "al_trade_feed.skip_user", { tg_user_id: tg, reason: "not_found" });
@@ -274,7 +291,7 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
   logEvent(trace, "al_trade_feed.sync_ok", {
     opens: opens.length,
     closes: closes.length,
-    targets: c.alTradeFeedSyncTgIds.length
+    targets: targetTgIds.length
   });
 }
 

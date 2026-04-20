@@ -1,6 +1,10 @@
 import type { Database } from "better-sqlite3";
 import type { AppConfig } from "../config.js";
-import { getAlTradeFeedPollerStatus, isAlTradeFeedConfigured } from "../services/alTradeFeedSync.js";
+import {
+  getAlTradeFeedPollerStatus,
+  isAlTradeFeedConfigured,
+  listMirrorTargetTgIds,
+} from "../services/alTradeFeedSync.js";
 import {
   aggregateDealStatsForWindow,
   emptyDealStatsPayload,
@@ -45,8 +49,12 @@ export type TradingJournalMeta = {
   al_poller_runs: number;
 };
 
-function alSyncIncludesUser(cfg: AppConfig, tgUserId: string): boolean {
-  return cfg.alTradeFeedSyncTgIds.some((x) => String(x).trim() === String(tgUserId).trim());
+function alSyncIncludesUser(db: Database | null, cfg: AppConfig, tgUserId: string): boolean {
+  const target = String(tgUserId).trim();
+  if (!db) {
+    return cfg.alTradeFeedSyncTgIds.some((x) => String(x).trim() === target);
+  }
+  return listMirrorTargetTgIds(db, cfg).some((x) => x === target);
 }
 
 function positionCounts(db: Database, internalUserId: number): {
@@ -86,7 +94,7 @@ export function buildTradingJournalEmptyPayload(
       period_stats: emptyDealStatsPayload(),
       period_filter: period,
       al_feed_configured: isAlTradeFeedConfigured(cfg),
-      al_sync_includes_user: alSyncIncludesUser(cfg, tgUserId),
+      al_sync_includes_user: alSyncIncludesUser(null, cfg, tgUserId),
       al_last_ok_at: poll.last_ok_at,
       al_last_error: poll.last_error ? String(poll.last_error).slice(0, 300) : null,
       al_poller_runs: poll.runs,
@@ -171,7 +179,7 @@ export function buildTradingJournalPayload(
       period_stats,
       period_filter: period,
       al_feed_configured: isAlTradeFeedConfigured(cfg),
-      al_sync_includes_user: alSyncIncludesUser(cfg, tgUserId),
+      al_sync_includes_user: alSyncIncludesUser(db, cfg, tgUserId),
       al_last_ok_at: poll.last_ok_at,
       al_last_error: poll.last_error ? String(poll.last_error).slice(0, 300) : null,
       al_poller_runs: poll.runs,
