@@ -14,6 +14,8 @@ import { buildTradingSummaryForUser, isAllowedTradingPeriod } from "./tradingRes
 import { buildWalletSeedPayload } from "./walletSeedPayload.js";
 import { buildWalletForUser } from "./walletResponse.js";
 import { markAllUserNotificationsRead } from "../repos/notificationRepo.js";
+import { getBotTradingEnabled, setBotTradingEnabled } from "../repos/userRepo.js";
+import { sibOnUserStart, sibOnUserStop } from "../services/sibBalance.js";
 
 /**
  * Мини-апп (Figma): JWT + per-user TRC20 (HD / deterministic) + ввод/вывод по ТЗ.
@@ -102,6 +104,29 @@ export function registerMiniappContract(app: express.Express) {
     }
     markAllUserNotificationsRead(db, u.id);
     res.json({ ok: true, unreadCount: 0 });
+  });
+
+  app.get("/trading/state", requireMiniappAuth, (req, res) => {
+    const db = getDb();
+    res.json({ botTradingEnabled: getBotTradingEnabled(db, req.userId!) });
+  });
+
+  app.post("/trading/state", requireMiniappAuth, (req, res) => {
+    const enabled = req.body?.enabled === true;
+    const db = getDb();
+    const u = getUserByTg(db, req.userId!);
+    if (!u) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    if (enabled && u.balance_usdt_minor <= 0) {
+      res.status(409).json({ message: "Positive balance required to start accrual" });
+      return;
+    }
+    setBotTradingEnabled(db, req.userId!, enabled);
+    if (enabled) sibOnUserStart(db, u.id);
+    else sibOnUserStop(db, u.id);
+    res.json({ ok: true, botTradingEnabled: enabled });
   });
 
   app.get("/trading/summary", requireMiniappAuth, async (req, res) => {

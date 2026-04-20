@@ -60,6 +60,8 @@
   height: 10px;
   display: block;
   flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--color-green);
 }
 
 .fm-bot-active-label {
@@ -70,6 +72,14 @@
   letter-spacing: 0;
   color: var(--color-green);
   white-space: nowrap;
+}
+
+.fm-bot-status-live--inactive .fm-bot-dot {
+  background-color: var(--color-blue-dark);
+}
+
+.fm-bot-status-live--inactive .fm-bot-active-label {
+  color: var(--color-blue-light);
 }
 
 .fm-bot-price-row {

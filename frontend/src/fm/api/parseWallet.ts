@@ -47,11 +47,20 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
 
   const availableWithdrawUsdt =
     num(o.availableWithdrawUsdt) ?? num(o.available_withdraw_usdt) ?? num(o.available_to_withdraw);
+  const botTradingEnabled =
+    typeof o.botTradingEnabled === "boolean"
+      ? o.botTradingEnabled
+      : typeof o.bot_trading_enabled === "boolean"
+        ? o.bot_trading_enabled
+        : typeof (o.wallet as Record<string, unknown>)?.botTradingEnabled === "boolean"
+          ? ((o.wallet as Record<string, unknown>).botTradingEnabled as boolean)
+          : undefined;
 
   return {
     balanceUsdt: Math.max(0, balanceUsdt ?? 0),
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
     depositAddress,
     availableWithdrawUsdt: availableWithdrawUsdt !== undefined ? Math.max(0, availableWithdrawUsdt) : undefined,
+    botTradingEnabled,
   };
 }

@@ -50,7 +50,7 @@ const homeTabIcons: TabBarIconUrls = {
 export default function HomeScreen() {
   const { t } = useFmLocale();
   const navigate = useNavigate();
-  const { phase } = useAppSession();
+  const { phase, botRunning } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
   const chartMode = getHomeChartMode(balanceUsdt);
   const balanceDisplay = balanceUsdt;
@@ -96,6 +96,7 @@ export default function HomeScreen() {
   const chartPoints = useMemo(() => buildCompoundedChartPoints(chartRows), [chartRows]);
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
+  const isBotActive = balanceUsdt > 0 && botRunning;
 
   return (
     <main className="fm-home" data-node-id="1:3644" aria-label={t("home.title")}>
@@ -172,9 +173,9 @@ export default function HomeScreen() {
 
         <div className="fm-graphic-status">
           <p>{t("home.botStatus")}</p>
-          <div className="fm-status-bot">
-            <img alt="" className="fm-dot" src={homeAssets.dot} />
-            <span>{t("home.active")}</span>
+          <div className={`fm-status-bot${isBotActive ? "" : " fm-status-bot--inactive"}`}>
+            <span className="fm-dot" aria-hidden="true" />
+            <span>{isBotActive ? t("home.active") : t("home.inactive")}</span>
           </div>
         </div>
 

@@ -23,9 +23,30 @@ function setSibFlags(db: Database, userId: number, active: boolean, needActivati
   );
 }
 
+function markCloseSkipped(db: Database, userId: number, positionId: string, reason: string) {
+  const now = new Date().toISOString();
+  db.prepare(
+    `INSERT INTO sib_skipped_closes (user_id, position_id, reason, created_at)
+     VALUES (?,?,?,?)
+     ON CONFLICT(user_id, position_id) DO UPDATE SET
+       reason = excluded.reason,
+       created_at = excluded.created_at`,
+  ).run(userId, positionId, reason, now);
+}
+
 /** Call when balance hits zero (withdraw / admin). */
 export function sibOnBalanceZero(db: Database, userId: number) {
   setSibFlags(db, userId, false, false);
+}
+
+/** User pressed Stop: keep journal sync, but disable all future balance accruals until Start. */
+export function sibOnUserStop(db: Database, userId: number) {
+  setSibFlags(db, userId, false, false);
+}
+
+/** User pressed Start: if balance positive, resume accrual from the next eligible close only. */
+export function sibOnUserStart(db: Database, userId: number) {
+  sibReevaluateAfterDeposit(db, userId);
 }
 
 /**
@@ -98,6 +119,9 @@ export function sibApplyClosesFromIngest(
   const existsStmt = db.prepare(
     "SELECT 1 as x FROM sib_adjustments WHERE user_id = ? AND position_id = ? LIMIT 1"
   );
+  const skippedStmt = db.prepare(
+    "SELECT 1 as x FROM sib_skipped_closes WHERE user_id = ? AND position_id = ? LIMIT 1"
+  );
 
   for (const row of closes) {
     const positionId = String(row.id ?? "").trim();
@@ -113,6 +137,27 @@ export function sibApplyClosesFromIngest(
 
     const already = existsStmt.get(userId, positionId) as { x: number } | undefined;
     if (already) {
+      skipped += 1;
+      continue;
+    }
+    const skippedBefore = skippedStmt.get(userId, positionId) as { x: number } | undefined;
+    if (skippedBefore) {
+      skipped += 1;
+      continue;
+    }
+
+    const user = getUserById(db, userId);
+    if (!user) {
+      skipped += 1;
+      continue;
+    }
+    if (Number(user.bot_trading_enabled ?? 0) !== 1) {
+      markCloseSkipped(db, userId, positionId, "bot_stopped");
+      skipped += 1;
+      continue;
+    }
+    if (user.balance_usdt_minor <= 0) {
+      markCloseSkipped(db, userId, positionId, "no_balance");
       skipped += 1;
       continue;
     }
@@ -174,6 +219,7 @@ export function sibApplyClosesFromIngest(
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (msg === "inactive_gate" || msg === "no_balance") {
+        markCloseSkipped(db, userId, positionId, msg);
         skipped += 1;
       } else {
         throw e;

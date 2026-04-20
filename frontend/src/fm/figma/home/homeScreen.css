@@ -679,10 +679,13 @@ a.fm-btn-details-chart {
   align-items: flex-end;
 }
 
-.fm-status-bot img.fm-dot {
+.fm-status-bot .fm-dot {
   width: 10px;
   height: 10px;
+  display: block;
   flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--color-green);
 }
 
 .fm-status-bot span {
@@ -691,6 +694,14 @@ a.fm-btn-details-chart {
   font-size: 20px;
   color: var(--color-green);
   white-space: nowrap;
+}
+
+.fm-status-bot--inactive .fm-dot {
+  background-color: var(--color-blue-dark);
+}
+
+.fm-status-bot--inactive span {
+  color: var(--color-blue-light);
 }
 
 .fm-graphic-price {

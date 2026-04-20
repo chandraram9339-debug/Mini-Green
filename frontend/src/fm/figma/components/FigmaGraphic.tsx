@@ -135,7 +135,7 @@ export function FigmaGraphic({ chart, points }: { chart?: GraphicChartAssets; po
               vectorEffect="non-scaling-stroke"
             />
             {geom.dots.map(([cx, cy], i) => (
-              <circle key={`${cx}-${cy}-${i}`} cx={cx} cy={cy} r="2.5" fill="#2d6e93" />
+              <circle key={`${cx}-${cy}-${i}`} cx={cx} cy={cy} r="1.25" fill="#2d6e93" />
             ))}
           </svg>
         ) : (

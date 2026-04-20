@@ -12,12 +12,14 @@ export type AppSessionState = {
   wallet?: WalletSnapshot;
   errorMessage?: string;
   notificationUnreadCount: number;
+  botRunning: boolean;
 };
 
 export type AppSessionContextValue = AppSessionState & {
   refreshWallet: () => Promise<void>;
   confirmDepositPaid: () => Promise<boolean>;
   refreshNotifications: () => Promise<void>;
+  setBotRunning: (next: boolean) => void;
 };
 
 export const AppSessionContext = createContext<AppSessionContextValue | null>(null);

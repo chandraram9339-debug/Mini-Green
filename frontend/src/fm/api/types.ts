@@ -7,4 +7,6 @@ export type WalletSnapshot = {
   depositAddress?: string;
   /** Доступно к выводу; если нет — считаем от баланса как раньше. */
   availableWithdrawUsdt?: number;
+  /** Участвует ли пользователь в начислении результата сделок. */
+  botTradingEnabled?: boolean;
 };

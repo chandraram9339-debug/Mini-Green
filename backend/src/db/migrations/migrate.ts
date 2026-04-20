@@ -118,6 +118,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration015TradePositionsCloseResultRepair(db);
   runMigration016AlTradeFeedSnapshots(db);
   runMigration017UserNotifications(db);
+  runMigration018SibSkippedCloses(db);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -417,4 +418,22 @@ CREATE INDEX IF NOT EXISTS idx_user_notifications_user_unread
   ON user_notifications (user_id, unread, created_at DESC);
 `);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (17, '017_user_notifications')").run();
+}
+
+function runMigration018SibSkippedCloses(db: Database) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=18").get() as { ok: number } | undefined;
+  if (m) return;
+  db.exec(`
+CREATE TABLE IF NOT EXISTS sib_skipped_closes (
+  user_id INTEGER NOT NULL,
+  position_id TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, position_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_sib_skipped_user_created
+  ON sib_skipped_closes (user_id, created_at DESC);
+`);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (18, '018_sib_skipped_closes')").run();
 }

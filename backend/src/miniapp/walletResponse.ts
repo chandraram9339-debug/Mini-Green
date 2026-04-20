@@ -2,7 +2,7 @@ import { getAccountSnapshot, getReferralReceivedMinor } from "../ledger.js";
 import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
 import { resolveDeriveConfig } from "../domain/effectiveConfig.js";
-import { getUserByTg } from "../repos/userRepo.js";
+import { getBotTradingEnabled, getUserByTg } from "../repos/userRepo.js";
 
 const MINOR_PER_USDT = 100;
 
@@ -23,6 +23,7 @@ export function buildWalletForUser(userId: string) {
     balanceUsdt: minorToUsdt(s.wallet_minor),
     referralReceivedUsdt: minorToUsdt(refMinor),
     depositAddress: addr,
-    availableWithdrawUsdt: minorToUsdt(s.available_minor)
+    availableWithdrawUsdt: minorToUsdt(s.available_minor),
+    botTradingEnabled: getBotTradingEnabled(db, userId),
   };
 }

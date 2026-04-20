@@ -12,6 +12,7 @@ import {
 } from "../../api/fetchTradingJournal";
 import { botTradingStaticFallback, fetchBotTrading } from "../../api/fetchBotTrading";
 import { getStatsForPeriod } from "../../api/parseBotTrading";
+import { setBotTradingState } from "../../api/setBotTradingState";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaGraphic } from "../components/FigmaGraphic";
@@ -57,12 +58,13 @@ function botDetailRefreshMs(): number {
 export default function BotDetailScreen() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
-  const { phase } = useAppSession();
+  const { phase, botRunning, refreshWallet, setBotRunning } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
   const [journalMeta, setJournalMeta] = useState<TradingJournalMeta | null>(null);
   const [journalLoading, setJournalLoading] = useState(false);
+  const [botSwitchLoading, setBotSwitchLoading] = useState(false);
 
   const trading = useMemo(() => {
     if (!tradingFromApi) return botTradingStaticFallback;
@@ -72,7 +74,6 @@ export default function BotDetailScreen() {
   /** ТЗ: при нулевом балансе данные из торгового журнала; иначе из алгоритма аккаунта. */
   const fromJournal = balance <= 0;
   const [period, setPeriod] = useState<BotPeriod>("24h");
-  const [botRunning, setBotRunning] = useState(true);
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   /** Пока сессия не готова (идёт auth), не показываем ложное «пусто»; при error не блокируем ленту бесконечным спиннером. */
@@ -156,10 +157,33 @@ export default function BotDetailScreen() {
   }, [journalMeta, period, trading, tradingFromApi]);
   const chartPoints = useMemo(() => buildCompoundedChartPoints(journalRows), [journalRows]);
 
-  const startDimmed = balance > 0 && botRunning;
-  const stopDimmed = balance <= 0 || !botRunning;
+  const isBotActive = balance > 0 && botRunning;
+  const startDimmed = isBotActive;
+  const stopDimmed = !isBotActive;
 
   const fmtPct = (n: number) => `${n.toFixed(2)} %`;
+
+  async function applyBotState(enabled: boolean): Promise<void> {
+    if (balance <= 0 && enabled) {
+      navigate(routes.depositTopUp);
+      return;
+    }
+
+    if (!hasApiBase()) {
+      setBotRunning(enabled);
+      return;
+    }
+
+    setBotSwitchLoading(true);
+    try {
+      const result = await setBotTradingState(enabled);
+      if (!result.ok) return;
+      setBotRunning(result.botTradingEnabled ?? enabled);
+      await refreshWallet();
+    } finally {
+      setBotSwitchLoading(false);
+    }
+  }
 
   return (
     <main className="fm-bot" data-node-id="1:3701" aria-label={t("bot.ariaScreen")}>
@@ -170,9 +194,9 @@ export default function BotDetailScreen() {
       <section className="fm-abs fm-bot-status-panel" aria-label={t("bot.statusAria")}>
         <div className="fm-bot-status-row">
           <p className="fm-bot-caption">{t("bot.statusCaption")}</p>
-          <div className="fm-bot-status-live">
-            <img alt="" className="fm-bot-dot" src={botDetailAssets.dot} />
-            <span className="fm-bot-active-label">{t("bot.active")}</span>
+          <div className={`fm-bot-status-live${isBotActive ? "" : " fm-bot-status-live--inactive"}`}>
+            <span className="fm-bot-dot" aria-hidden="true" />
+            <span className="fm-bot-active-label">{isBotActive ? t("bot.active") : t("bot.inactive")}</span>
           </div>
         </div>
 
@@ -188,12 +212,10 @@ export default function BotDetailScreen() {
 
         <button
           type="button"
-          className={`fm-bot-pill fm-bot-pill--start${startDimmed ? " fm-bot-pill--dim" : ""}`}
-          onClick={() => {
-            if (balance <= 0) navigate(routes.depositTopUp);
-            else setBotRunning(true);
-          }}
-          aria-pressed={balance > 0 && botRunning}
+          className={`fm-bot-pill fm-bot-pill--start${startDimmed || botSwitchLoading ? " fm-bot-pill--dim" : ""}`}
+          onClick={() => void applyBotState(true)}
+          aria-pressed={isBotActive}
+          disabled={botSwitchLoading}
         >
           <span className="fm-bot-pill-icon">
             <img alt="" src={botDetailAssets.iconStart} />
@@ -203,13 +225,10 @@ export default function BotDetailScreen() {
 
         <button
           type="button"
-          className={`fm-bot-pill fm-bot-pill--stop${stopDimmed ? " fm-bot-pill--dim" : ""}`}
-          disabled={balance <= 0}
-          onClick={() => {
-            if (balance <= 0) return;
-            setBotRunning(false);
-          }}
-          aria-pressed={balance > 0 && !botRunning}
+          className={`fm-bot-pill fm-bot-pill--stop${stopDimmed || botSwitchLoading ? " fm-bot-pill--dim" : ""}`}
+          disabled={!isBotActive || botSwitchLoading}
+          onClick={() => void applyBotState(false)}
+          aria-pressed={balance > 0 && !isBotActive}
         >
           <span className="fm-bot-pill-icon fm-bot-pill-icon--stop">
             <img alt="" src={botDetailAssets.iconStop} />
