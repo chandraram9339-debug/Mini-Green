@@ -320,10 +320,20 @@ a.fm-deposit-tab-chevron {
   transform: rotate(-90deg);
 }
 
-/* Скролл только у окна Telegram / страницы, без вложенной области */
 .fm-deposit-list-scroll {
   width: 100%;
-  overflow: visible;
+  max-height: min(430px, calc(100dvh - 470px - env(safe-area-inset-bottom, 0px)));
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fm-deposit-list-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .fm-deposit-list {

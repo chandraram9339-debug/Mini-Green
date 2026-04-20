@@ -50,35 +50,35 @@ const HISTORY_DEPOSIT: DepositHistoryRow[] = [
   {
     main: "+1200.00",
     fee: "-163.00",
-    id: "TQBw8....SGTF",
+    id: "TR5m2....SGTF",
     date: "20.06.2025 13:05",
     titleKey: "deposit.historyReplenishment",
   },
   {
     main: "+2340.00",
     fee: "-311.20",
-    id: "TfcD....jbTa",
+    id: "TC8p4....jbTa",
     date: "05.06.2025 15:10",
     titleKey: "deposit.historyReplenishment",
   },
   {
     main: "+1037.00",
     fee: "-141.81",
-    id: "TNem....ZncP",
+    id: "TA1x7....ZncP",
     date: "15.05.2025 14:52",
     titleKey: "deposit.historyReplenishment",
   },
   {
     main: "+560.00",
     fee: "-79.80",
-    id: "TSd5f....x9bc",
+    id: "TY6d3....x9bc",
     date: "14.05.2025 09:20",
     titleKey: "deposit.historyReplenishment",
   },
   {
     main: "+100.00",
     fee: "-20.00",
-    id: "T7pZ....YicH",
+    id: "TH2q9....YicH",
     date: "10.05.2025 13:21",
     titleKey: "deposit.historyReplenishment",
   },
@@ -88,28 +88,28 @@ const HISTORY_WITHDRAW: DepositHistoryRow[] = [
   {
     main: "-500.00",
     fee: "-5.00",
-    id: "TWdr....a9xK",
+    id: "TR7a8....9xK2",
     date: "18.06.2025 11:00",
     titleKey: "deposit.historyWithdrawal",
   },
   {
     main: "-1200.00",
     fee: "-12.00",
-    id: "TWdr....b2Lm",
+    id: "TA9m4....2Lm8",
     date: "12.06.2025 09:30",
     titleKey: "deposit.historyWithdrawal",
   },
   {
     main: "-750.50",
     fee: "-7.50",
-    id: "TWdr....c3Np",
+    id: "TX4p1....3Np6",
     date: "02.06.2025 16:45",
     titleKey: "deposit.historyWithdrawal",
   },
   {
     main: "-1800.98",
     fee: "-18.00",
-    id: "TWdr....d4Qr",
+    id: "TD2k6....4Qr1",
     date: "28.05.2025 08:15",
     titleKey: "deposit.historyWithdrawal",
   },
@@ -119,21 +119,21 @@ const HISTORY_REFERRAL: DepositHistoryRow[] = [
   {
     main: "+45.00",
     fee: "—",
-    id: "Ref....01",
+    id: "User ID 1234...789",
     date: "19.06.2025 10:00",
     titleKey: "deposit.historyReferralBonus",
   },
   {
     main: "+120.50",
     fee: "—",
-    id: "Ref....02",
+    id: "User ID 4567...123",
     date: "10.06.2025 14:20",
     titleKey: "deposit.historyReferralBonus",
   },
   {
     main: "+33.12",
     fee: "—",
-    id: "Ref....03",
+    id: "User ID 9087...654",
     date: "01.06.2025 18:00",
     titleKey: "deposit.historyReferralBonus",
   },
@@ -194,7 +194,9 @@ export default function BalanceDepositScreen() {
   const rows = tabBundle.rows;
 
   const metaLabel =
-    tab === "deposit" || tab === "withdraw" ? t("deposit.metaCommission") : t("deposit.metaBonus");
+    tab === "deposit" || tab === "withdraw"
+      ? t("deposit.metaCommission")
+      : t("deposit.metaReferralUser");
 
   const historyRowIcon =
     tab === "withdraw"
