@@ -2,13 +2,16 @@ import "../home/homeScreen.css";
 import "./withdrawScreen.css";
 import "./withdraw-flow.css";
 
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { routes } from "../routes";
+import { formatShortAddress, readWithdrawDonePayload } from "./withdrawDraft";
 import { withdrawAssets as w } from "./withdrawAssets";
 
 const withdrawStatusAssets: StatusBarAssetUrls = {
@@ -28,6 +31,17 @@ const withdrawTabIcons: TabBarIconUrls = {
 
 /** «1 | Done» — node 1:3893, `withdraw-done__full-screen__1-3893.tsx`. */
 export default function WithdrawDoneScreen() {
+  const navigate = useNavigate();
+  const done = readWithdrawDonePayload();
+
+  useEffect(() => {
+    if (!done) navigate(routes.withdraw, { replace: true });
+  }, [done, navigate]);
+
+  const short = done ? formatShortAddress(done.address, 6, 4) : "";
+  const amount = done?.amountUsdt ?? 0;
+  const fee = done?.feeUsdt ?? 0;
+
   return (
     <main className="fm-withdraw" data-node-id="1:3893" aria-label="Withdrawal done">
       <FigmaStatusBar assets={withdrawStatusAssets} />
@@ -52,18 +66,18 @@ export default function WithdrawDoneScreen() {
       <div className="fm-transfer-cheque">
         <div className="fm-transfer-row">
           <p className="fm-transfer-label">Recipient</p>
-          <p className="fm-transfer-value">UQC4...754C</p>
+          <p className="fm-transfer-value">{short}</p>
         </div>
         <div className="fm-transfer-row">
           <p className="fm-transfer-label">Amount</p>
           <p className="fm-transfer-value">
-            150 <span className="fm-transfer-value-unit">USDT</span>
+            {amount.toFixed(2)} <span className="fm-transfer-value-unit">USDT</span>
           </p>
         </div>
         <div className="fm-transfer-row">
           <p className="fm-transfer-label">Commission</p>
           <p className="fm-transfer-value">
-            15 <span className="fm-transfer-value-unit">USDT</span>
+            {fee.toFixed(2)} <span className="fm-transfer-value-unit">USDT</span>
           </p>
         </div>
       </div>

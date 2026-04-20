@@ -4,6 +4,41 @@ import type { Database } from "better-sqlite3";
 import type { UserRow } from "../repos/userRepo.js";
 import { setLastChainBalance } from "../repos/userRepo.js";
 
+type TronTokenBalanceRow = {
+  tokenId?: string;
+  token_id?: string;
+  token_address?: string;
+  balance?: string | number;
+};
+
+function readUsdtBalanceFromRows(
+  rows: TronTokenBalanceRow[] | undefined,
+  usdtContract: string
+): number | null {
+  for (const row of rows ?? []) {
+    const id = row.tokenId ?? row.token_id ?? row.token_address;
+    if (id && id.toLowerCase() === usdtContract.toLowerCase()) {
+      return usdt6ToMinor(BigInt(String(row.balance ?? 0)));
+    }
+  }
+  return null;
+}
+
+async function getTronScanUsdtBalanceReadonly(c: AppConfig, tronBase58: string): Promise<number | null> {
+  const url = `https://apilist.tronscanapi.com/api/account?address=${encodeURIComponent(tronBase58)}`;
+  const r = await fetch(url, { headers: { accept: "application/json" } });
+  if (!r.ok) return null;
+  const j = (await r.json()) as {
+    trc20token_balances?: TronTokenBalanceRow[];
+    tokens?: TronTokenBalanceRow[];
+  };
+  return (
+    readUsdtBalanceFromRows(j.trc20token_balances, c.usdtTrc20) ??
+    readUsdtBalanceFromRows(j.tokens, c.usdtTrc20) ??
+    0
+  );
+}
+
 /**
  * TRC20 USDT balance (6 dec on-chain) → app minor(2 dec).
  */
@@ -14,17 +49,17 @@ export async function getTrc20UsdtBalanceReadonly(
   const url = `${c.tronFullHost.replace(/\/$/, "")}/v1/accounts/${tronBase58}/tokens?only_trc20=true&limit=200`;
   const h: Record<string, string> = { accept: "application/json" };
   if (c.tronApiKey) h["TRON-PRO-API-KEY"] = c.tronApiKey;
-  const r = await fetch(url, { headers: h });
-  if (!r.ok) return 0;
-  const j = (await r.json()) as { data?: { tokenId?: string; token_id?: string; balance?: string; token_address?: string }[] };
-  const usdt = c.usdtTrc20;
-  for (const row of j.data ?? []) {
-    const id = row.tokenId ?? row.token_id ?? row.token_address;
-    if (id && id.toLowerCase() === usdt.toLowerCase()) {
-      return usdt6ToMinor(BigInt(String(row.balance ?? 0)));
+  try {
+    const r = await fetch(url, { headers: h });
+    if (r.ok) {
+      const j = (await r.json()) as { data?: TronTokenBalanceRow[] };
+      const tronGridBalance = readUsdtBalanceFromRows(j.data, c.usdtTrc20) ?? 0;
+      if (tronGridBalance > 0) return tronGridBalance;
     }
+  } catch {
+    /* fall through to TronScan fallback */
   }
-  return 0;
+  return (await getTronScanUsdtBalanceReadonly(c, tronBase58)) ?? 0;
 }
 
 /**

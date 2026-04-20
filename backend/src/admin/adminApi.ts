@@ -39,6 +39,11 @@ import {
 } from "../services/alTradeFeedSync.js";
 import { sendTelegramText } from "../integrations/telegramBot.js";
 import { insertUserNotification } from "../repos/notificationRepo.js";
+import {
+  getMetaStatusReport,
+  triggerTestPurchaseCapi,
+  triggerTestSubscribeCapi
+} from "../integrations/metaCapi.js";
 
 function timingSafeAdminKey(headerVal: unknown, secret: string): boolean {
   if (typeof headerVal !== "string" || !secret) return false;
@@ -287,6 +292,12 @@ export function registerAdminApi(app: express.Express) {
     res.json({ items });
   });
 
+  app.get("/admin/meta/status", requireAdmin, (_req, res) => {
+    const db = getDb();
+    const fees = getFeeSnapshot(db, config);
+    res.json(getMetaStatusReport(db, config, fees));
+  });
+
   app.post("/admin/meta-accounts", requireAdmin, (req, res) => {
     const b = req.body as { label?: string; pixel_id?: string; access_token?: string; is_enabled?: number };
     const pixel_id = String(b.pixel_id ?? "").trim();
@@ -311,6 +322,35 @@ export function registerAdminApi(app: express.Express) {
     const id = String(req.params.id);
     getDb().prepare("DELETE FROM meta_ad_accounts WHERE id = ?").run(id);
     res.json({ ok: true });
+  });
+
+  app.post("/admin/meta/test/subscribe", requireAdmin, (req, res) => {
+    const db = getDb();
+    const tr = String(res.locals.traceId ?? "admin");
+    const tg = String((req.body as { tg_user_id?: string })?.tg_user_id ?? "").trim();
+    if (!tg) {
+      res.status(400).json({ error: "tg_user_id required" });
+      return;
+    }
+    void triggerTestSubscribeCapi(db, config, tg, tr)
+      .then((summary) => res.json({ ok: true, summary }))
+      .catch((e) => res.status(500).json({ error: String(e) }));
+  });
+
+  app.post("/admin/meta/test/purchase", requireAdmin, (req, res) => {
+    const db = getDb();
+    const tr = String(res.locals.traceId ?? "admin");
+    const b = req.body as { tg_user_id?: string; net_usdt?: unknown };
+    const tg = String(b.tg_user_id ?? "").trim();
+    const netUsdt = Number(b.net_usdt);
+    if (!tg || !Number.isFinite(netUsdt) || netUsdt <= 0) {
+      res.status(400).json({ error: "tg_user_id and positive net_usdt required" });
+      return;
+    }
+    const fees = getFeeSnapshot(db, config);
+    void triggerTestPurchaseCapi(db, config, tg, netUsdt, fees, tr)
+      .then((summary) => res.json({ ok: true, summary }))
+      .catch((e) => res.status(500).json({ error: String(e) }));
   });
 
   app.post("/admin/users/:tgId/bot-blocked", requireAdmin, (req, res) => {

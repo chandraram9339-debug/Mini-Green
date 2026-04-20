@@ -10,7 +10,7 @@ export async function confirmDepositPaidRequest(): Promise<{ ok: boolean; wallet
   const res = await apiFetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
   if (!res.ok) return { ok: false };
 
-  if (res.status === 204) return { ok: true };
+  if (res.status === 204) return { ok: false };
 
   let json: unknown;
   try {

@@ -15,6 +15,7 @@ import {
   validateWithdrawAmount,
   writeWithdrawDraft,
   WITHDRAW_MIN_USDT,
+  formatWithdrawFeeFootnote,
 } from "./withdrawDraft";
 import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
 import { isValidTronAddress, normalizeTronAddressInput } from "./tronAddress";
@@ -161,7 +162,7 @@ export default function WithdrawScreen() {
           <span className="fm-withdraw-info-strong">{snap.availableWithdrawUsdt.toFixed(2)} </span>
           <span className="fm-withdraw-info-unit">USDT</span>
         </p>
-        <p className="fm-withdraw-info-footnote">{t("withdraw.footnoteCommission")}</p>
+        <p className="fm-withdraw-info-footnote">{formatWithdrawFeeFootnote(snap)}</p>
       </div>
 
       {error ? (

@@ -31,7 +31,8 @@
 
 body {
   margin: 0;
-  background: var(--color-app-chrome);
+  /* Для Telegram parity фон страницы не должен отличаться под нижним краем экрана. */
+  background: var(--fm-page-bg);
 }
 
 #root {
@@ -43,7 +44,6 @@ body {
 .app-shell {
   width: 390px;
   max-width: 100%;
-  min-height: 100vh;
   margin: 0 auto;
   /* Один фон с колонкой 390px; шапка/статус — прозрачные, не дублируют --fm-page-bg */
   background-color: var(--fm-page-bg);

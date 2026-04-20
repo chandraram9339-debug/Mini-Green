@@ -9,5 +9,12 @@ export function useWalletDisplay() {
   const referralReceivedUsdt = pickDisplayReferralUsdt(wallet?.referralReceivedUsdt);
   const availableWithdrawUsdt = pickDisplayAvailableWithdrawUsdt(balanceUsdt, wallet?.availableWithdrawUsdt);
   const depositAddress = (wallet?.depositAddress?.trim() && wallet.depositAddress) || DEPOSIT_WALLET_ADDRESS;
-  return { balanceUsdt, referralReceivedUsdt, availableWithdrawUsdt, depositAddress };
+  return {
+    balanceUsdt,
+    referralReceivedUsdt,
+    availableWithdrawUsdt,
+    depositAddress,
+    withdrawFeeBps: wallet?.withdrawFeeBps,
+    withdrawFeeFixedUsdt: wallet?.withdrawFeeFixedUsdt,
+  };
 }

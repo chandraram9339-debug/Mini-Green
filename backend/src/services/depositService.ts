@@ -165,7 +165,7 @@ export function applyDepositNet(
       }
     }
     notifyUserDeposit(c, tgUserId, us, trace);
-    sendPurchaseCapi(db, c, tgUserId, netUsdt, fees, trace);
+    sendPurchaseCapi(db, c, tgUserId, netUsdt, fees, trace, `meta:purchase:${id}`);
   }
   return { ok: true as const, dedup: false, depositId: id, net_minor: netMinor, fee_minor: feeMinor };
 }

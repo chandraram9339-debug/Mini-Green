@@ -1,8 +1,9 @@
 import { getAccountSnapshot, getReferralReceivedMinor } from "../ledger.js";
 import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
-import { resolveDeriveConfig } from "../domain/effectiveConfig.js";
+import { getFeeSnapshot, resolveDeriveConfig } from "../domain/effectiveConfig.js";
 import { getBotTradingEnabled, getUserByTg } from "../repos/userRepo.js";
+import { maxWithdrawAmountMinor } from "../services/withdrawalService.js";
 
 const MINOR_PER_USDT = 100;
 
@@ -17,13 +18,17 @@ export function buildWalletForUser(userId: string) {
   const db = getDb();
   const u = getUserByTg(db, userId);
   const c2 = resolveDeriveConfig(config, db);
+  const fees = getFeeSnapshot(db, config);
   const addr = u?.deposit_tron_address?.trim() || c2.depositAddress || undefined;
+  const availableAfterFeeMinor = maxWithdrawAmountMinor(s.available_minor, fees);
 
   return {
     balanceUsdt: minorToUsdt(s.wallet_minor),
     referralReceivedUsdt: minorToUsdt(refMinor),
     depositAddress: addr,
-    availableWithdrawUsdt: minorToUsdt(s.available_minor),
+    availableWithdrawUsdt: minorToUsdt(availableAfterFeeMinor),
+    withdrawFeeBps: fees.withdrawFeeBps,
+    withdrawFeeFixedUsdt: fees.withdrawFeeFixedUsdt,
     botTradingEnabled: getBotTradingEnabled(db, userId),
   };
 }

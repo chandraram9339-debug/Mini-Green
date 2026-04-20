@@ -22,7 +22,7 @@
 
 /* ---------- Status Bot block y 100–255 ---------- */
 .fm-bot-status-panel {
-  top: 100px;
+  top: 56px;
   width: 390px;
   height: 155px;
   overflow: hidden;
@@ -181,7 +181,7 @@
 
 /* ---------- Graphic y 285–452 — тот же блок, что fm-chart на Home ---------- */
 .fm-bot-chart-shell {
-  top: 285px;
+  top: 241px;
   width: 390px;
   height: 167px;
   overflow: hidden;
@@ -198,7 +198,7 @@
 
 /* ---------- Stats «Trading bot statistics» y 482–747 ---------- */
 .fm-bot-period-stats {
-  top: 482px;
+  top: 438px;
   width: 390px;
   height: 265px;
   overflow: hidden;
@@ -318,7 +318,7 @@
 
 /* ---------- Trading feed y 777–1186 ---------- */
 .fm-bot-trading-feed {
-  top: 777px;
+  top: 733px;
   width: 390px;
   height: 409px;
   overflow: hidden;

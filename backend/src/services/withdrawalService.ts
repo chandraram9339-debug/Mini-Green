@@ -36,6 +36,35 @@ function availableMinorDb(db: Database, user: { id: number; balance_usdt_minor: 
   return user.balance_usdt_minor - lockedForWithdraws(db, user.id);
 }
 
+export function calculateWithdrawFeeMinor(amountMinor: number, fees: Pick<FeeSnapshot, "withdrawFeeFixedUsdt" | "withdrawFeeBps">) {
+  return applyFee2Part(amountMinor, fees.withdrawFeeFixedUsdt, fees.withdrawFeeBps);
+}
+
+/**
+ * Максимальная сумма, которую пользователь может ввести на вывод так, чтобы
+ * `amount + fee(amount) <= availableMinor`.
+ */
+export function maxWithdrawAmountMinor(
+  availableMinor: number,
+  fees: Pick<FeeSnapshot, "withdrawFeeFixedUsdt" | "withdrawFeeBps">
+) {
+  const limit = Math.max(0, Math.floor(availableMinor));
+  let lo = 0;
+  let hi = limit;
+  let best = 0;
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const fee = calculateWithdrawFeeMinor(mid, fees);
+    if (mid + fee <= limit) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return best;
+}
+
 export function getAvailableForWithdraw(
   db: Database,
   tg: string
@@ -65,11 +94,7 @@ export function createWithdrawal(
   if (amountMinor < c.minWithdrawMinor) {
     return { ok: false, error: "below_min" as const };
   }
-  const feeMinor = applyFee2Part(
-    amountMinor,
-    fees.withdrawFeeFixedUsdt,
-    fees.withdrawFeeBps
-  );
+  const feeMinor = calculateWithdrawFeeMinor(amountMinor, fees);
   const need = amountMinor + feeMinor;
   const id = `wd_${crypto.randomUUID()}`;
   const now = new Date().toISOString();

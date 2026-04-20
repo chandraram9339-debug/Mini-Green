@@ -1,5 +1,7 @@
 import { config, type AppConfig } from "../config.js";
 import { getDb } from "../db/connection.js";
+import { getFeeSnapshot } from "../domain/effectiveConfig.js";
+import { getMetaStatusReport } from "../integrations/metaCapi.js";
 
 export type IntegrationsReport = {
   telegram: {
@@ -40,6 +42,21 @@ export type IntegrationsReport = {
     engine_notify_url_configured: boolean;
     ingest_secret_configured: boolean;
   };
+  meta: {
+    enabled_meta_accounts_count: number;
+    env_fallback_configured: boolean;
+    test_event_code_configured: boolean;
+    webhook_secret_configured: boolean;
+    purchase_threshold_usdt: number;
+    subscribe_ready: boolean;
+    purchase_ready: boolean;
+    pixels: Array<{
+      pixel_id: string;
+      source: "db" | "env" | "db+env";
+      label: string | null;
+    }>;
+    notes: string[];
+  };
   hints: string[];
 };
 
@@ -64,6 +81,17 @@ export async function runIntegrationsVerify(c: AppConfig = config): Promise<Inte
   }
   if (!c.recoveryCodePepper) {
     hints.push("Set RECOVERY_CODE_PEPPER to enable app account recovery (Seed screen + /api/v1/ui/recovery-claim).");
+  }
+  const db = getDb();
+  const meta = getMetaStatusReport(db, c, getFeeSnapshot(db, c));
+  if (!meta.purchase_ready) {
+    hints.push("Meta CAPI Purchase disabled: configure at least one enabled pixel in Admin → Meta Pixel or META_* env.");
+  }
+  if (!meta.webhook_secret_configured) {
+    hints.push("Meta CAPI Subscribe via Telegram webhook is disabled until TELEGRAM_WEBHOOK_SECRET is set.");
+  }
+  if (!meta.test_event_code_configured) {
+    hints.push("META_TEST_EVENT_CODE is empty: Meta test runs will not appear in Test Events.");
   }
   if (!c.tradingEngineNotifyUrl.trim()) {
     hints.push(
@@ -103,7 +131,6 @@ export async function runIntegrationsVerify(c: AppConfig = config): Promise<Inte
   }
 
   try {
-    const db = getDb();
     const row = db
       .prepare("SELECT value FROM app_config WHERE key = ?")
       .get("content_miniapp_webapp_url") as { value: string } | undefined;
@@ -193,6 +220,7 @@ export async function runIntegrationsVerify(c: AppConfig = config): Promise<Inte
     tron,
     wallets,
     trading,
+    meta,
     mode: {
       auth_provider: c.authProviderMode,
       live_tron: c.liveTron,

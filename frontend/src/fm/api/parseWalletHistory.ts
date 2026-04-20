@@ -165,11 +165,11 @@ export function parseWalletHistoryPayload(root: unknown): WalletHistoryBundle | 
   const w = pick(o, "withdraw", "withdraws", "withdrawals", "withdrawsHistory");
   const re = pick(o, "referral", "referrals", "referralHistory");
 
+  if (d === undefined && w === undefined && re === undefined) return null;
+
   const dep = buildTab(d, "deposit", "Replenishment");
   const wit = buildTab(w, "withdraw", "Withdrawal");
   const ref = buildTab(re, "referral", "Referral bonus");
-
-  if (dep.rows.length === 0 && wit.rows.length === 0 && ref.rows.length === 0) return null;
 
   return { deposit: dep, withdraw: wit, referral: ref };
 }

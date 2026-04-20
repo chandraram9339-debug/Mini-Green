@@ -112,7 +112,7 @@
 
 /* ---------- App Bar (node 1:3673, y 44–100) ---------- */
 .fm-appbar {
-  top: 44px;
+  top: 0;
   height: 56px;
   width: 390px;
   overflow: hidden;
@@ -276,7 +276,7 @@ a.fm-back-btn {
 /* Узел 1:3659 в Figma без отдельной плашки; фон = страница. Явно задаём тот же цвет, что и у .fm-home,
  * иначе в WebView иногда появляется «полоса» (другой слой композитинга) слева, где нет плашек Top up / Withdraw. */
 .fm-balance {
-  top: 130px;
+  top: 86px;
   height: 224px;
   width: 390px;
   overflow: hidden;

@@ -16,9 +16,13 @@ import { routes } from "../routes";
 import {
   clearWithdrawDraft,
   commissionUsdt,
+  clearWithdrawDonePayload,
+  formatWithdrawFeeFootnote,
   formatShortAddress,
   readWithdrawDraft,
+  writeWithdrawDonePayload,
 } from "./withdrawDraft";
+import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
 import { useWithdrawDraftGuard } from "./useWithdrawDraftGuard";
 import { withdrawAssets as w } from "./withdrawAssets";
 
@@ -53,9 +57,10 @@ export default function WithdrawConfirmScreen() {
   const { refreshNotifications, refreshWallet } = useAppSession();
   const [submitting, setSubmitting] = useState(false);
   const draft = readWithdrawDraft();
+  const snap = useWithdrawBalanceSnapshot();
 
   const amount = draft?.amountUsdt ?? 0;
-  const fee = commissionUsdt(amount);
+  const fee = commissionUsdt(amount, snap);
   const short = draft ? formatShortAddress(draft.address, 6, 4) : "";
 
   async function handleConfirm(): Promise<void> {
@@ -63,9 +68,11 @@ export default function WithdrawConfirmScreen() {
     setSubmitting(true);
     try {
       if (!hasApiBase()) {
+        clearWithdrawDonePayload();
+        writeWithdrawDonePayload({ address: draft.address, amountUsdt: draft.amountUsdt, feeUsdt: fee });
         clearWithdrawDraft();
         window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
-        withdrawNotify("Withdrawal request created.", () => navigate(routes.home));
+        navigate(routes.withdrawDone);
         return;
       }
 
@@ -81,11 +88,13 @@ export default function WithdrawConfirmScreen() {
         return;
       }
 
+      clearWithdrawDonePayload();
+      writeWithdrawDonePayload({ address: draft.address, amountUsdt: draft.amountUsdt, feeUsdt: fee });
       clearWithdrawDraft();
       await refreshWallet();
       await refreshNotifications();
       window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
-      withdrawNotify("Withdrawal request created.", () => navigate(routes.home));
+      navigate(routes.withdrawDone);
     } finally {
       setSubmitting(false);
     }
@@ -131,9 +140,7 @@ export default function WithdrawConfirmScreen() {
         </div>
       </div>
 
-      <p className="fm-transfer-footnote">
-        *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
-      </p>
+      <p className="fm-transfer-footnote">{formatWithdrawFeeFootnote(snap)}</p>
 
       <button
         type="button"

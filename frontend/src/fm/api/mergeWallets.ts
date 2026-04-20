@@ -7,5 +7,8 @@ export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): Wa
     referralReceivedUsdt: Math.max(0, b?.referralReceivedUsdt ?? a?.referralReceivedUsdt ?? 0),
     depositAddress: b?.depositAddress ?? a?.depositAddress,
     availableWithdrawUsdt: b?.availableWithdrawUsdt ?? a?.availableWithdrawUsdt,
+    withdrawFeeBps: b?.withdrawFeeBps ?? a?.withdrawFeeBps,
+    withdrawFeeFixedUsdt: b?.withdrawFeeFixedUsdt ?? a?.withdrawFeeFixedUsdt,
+    botTradingEnabled: b?.botTradingEnabled ?? a?.botTradingEnabled,
   };
 }

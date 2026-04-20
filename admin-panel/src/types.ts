@@ -59,6 +59,44 @@ export type MetaAccountRow = {
   created_at: string;
 };
 
+export type MetaStatusResponse = {
+  enabled_meta_accounts_count: number;
+  env_fallback_configured: boolean;
+  test_event_code_configured: boolean;
+  webhook_secret_configured: boolean;
+  purchase_threshold_usdt: number;
+  subscribe_ready: boolean;
+  purchase_ready: boolean;
+  pixels: Array<{
+    pixel_id: string;
+    source: "db" | "env" | "db+env";
+    label: string | null;
+  }>;
+  notes: string[];
+};
+
+export type MetaDispatchSummary = {
+  event_name: "Subscribe" | "Purchase";
+  event_id: string;
+  external_id: string;
+  configured: boolean;
+  eligible: boolean;
+  skipped_reason: "no_pixels" | "below_threshold" | null;
+  attempted_pixels: number;
+  sent_pixels: number;
+  failed_pixels: number;
+  test_event_code_configured: boolean;
+  threshold_usdt: number | null;
+  value_usdt: number | null;
+  results: Array<{
+    pixel_id: string;
+    source: "db" | "env" | "db+env";
+    status: "sent" | "failed";
+    http_status?: number;
+    response_preview?: string;
+  }>;
+};
+
 export type BroadcastRow = {
   id: number;
   segment: string;
@@ -117,5 +155,6 @@ export type IntegrationsReport = {
     engine_notify_url_configured: boolean;
     ingest_secret_configured: boolean;
   };
+  meta: MetaStatusResponse;
   hints: string[];
 };

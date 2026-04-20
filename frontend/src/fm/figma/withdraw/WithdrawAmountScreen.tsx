@@ -15,6 +15,7 @@ import {
   validateWithdrawAmount,
   writeWithdrawDraft,
   formatShortAddress,
+  formatWithdrawFeeFootnote,
 } from "./withdrawDraft";
 import { useWithdrawDraftGuard } from "./useWithdrawDraftGuard";
 import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
@@ -123,9 +124,7 @@ export default function WithdrawAmountScreen() {
           <span className="fm-withdraw-info-strong">{snap.availableWithdrawUsdt.toFixed(2)} </span>
           <span className="fm-withdraw-info-unit">USDT</span>
         </p>
-        <p className="fm-withdraw-info-footnote">
-          *The commission is charged from the remaining balance. We charge a 10% fee on withdrawals.
-        </p>
+        <p className="fm-withdraw-info-footnote">{formatWithdrawFeeFootnote(snap)}</p>
       </div>
 
       {error ? (

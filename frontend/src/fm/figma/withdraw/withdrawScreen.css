@@ -18,7 +18,7 @@
 }
 
 .fm-withdraw-appbar {
-  top: 44px;
+  top: 0;
   height: 56px;
   width: 390px;
   overflow: hidden;
@@ -90,6 +90,11 @@ button.fm-withdraw-close {
   padding: 4px;
   border-radius: var(--figma-radius-icon-hit);
   text-decoration: none;
+}
+
+.fm-withdraw-close .fm-withdraw-icon-btn img {
+  transform: rotate(45deg);
+  transform-origin: center;
 }
 
 .fm-withdraw-icon-btn {

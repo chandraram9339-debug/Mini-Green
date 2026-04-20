@@ -3,7 +3,7 @@
 
 /* --- Recipient (node 1:3860): List item 350×53 @ y130; пояснение 350×72 @ y226; Btn @ y670 --- */
 .fm-withdraw-field--recipient-step {
-  top: 130px;
+  top: 86px;
   height: 53px;
   padding: 0 20px;
   justify-content: flex-start;
@@ -20,7 +20,7 @@
 }
 
 .fm-withdraw-note--recipient {
-  top: 226px;
+  top: 182px;
   min-height: 72px;
 }
 
@@ -28,7 +28,7 @@
 .fm-withdraw-amount-to {
   position: absolute;
   left: 20px;
-  top: 130px;
+  top: 86px;
   width: 350px;
   min-height: 19px;
   margin: 0;
@@ -40,14 +40,14 @@
 }
 
 .fm-withdraw-field--amount-step {
-  top: 169px;
+  top: 125px;
   height: 53px;
   padding: 0 20px;
   box-sizing: border-box;
 }
 
 .fm-withdraw-info--amount-step {
-  top: 242px;
+  top: 198px;
   min-height: 92px;
 }
 
@@ -55,7 +55,7 @@
 .fm-transfer-cheque {
   position: absolute;
   left: 20px;
-  top: 130px;
+  top: 86px;
   width: 350px;
   display: flex;
   flex-direction: column;

@@ -47,6 +47,9 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
 
   const availableWithdrawUsdt =
     num(o.availableWithdrawUsdt) ?? num(o.available_withdraw_usdt) ?? num(o.available_to_withdraw);
+  const withdrawFeeBps = num(o.withdrawFeeBps) ?? num(o.withdraw_fee_bps);
+  const withdrawFeeFixedUsdt =
+    num(o.withdrawFeeFixedUsdt) ?? num(o.withdraw_fee_fixed_usdt) ?? num(o.withdraw_fee_fixed);
   const botTradingEnabled =
     typeof o.botTradingEnabled === "boolean"
       ? o.botTradingEnabled
@@ -61,6 +64,9 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
     depositAddress,
     availableWithdrawUsdt: availableWithdrawUsdt !== undefined ? Math.max(0, availableWithdrawUsdt) : undefined,
+    withdrawFeeBps: withdrawFeeBps !== undefined ? Math.max(0, withdrawFeeBps) : undefined,
+    withdrawFeeFixedUsdt:
+      withdrawFeeFixedUsdt !== undefined ? Math.max(0, withdrawFeeFixedUsdt) : undefined,
     botTradingEnabled,
   };
 }

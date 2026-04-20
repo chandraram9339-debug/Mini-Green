@@ -81,6 +81,15 @@ export default function Integrations() {
                 LIVE_TRON {yn(r.mode.live_tron)} · SEND {yn(r.mode.live_tron_send)}
               </div>
             </div>
+            <div className="stat-box">
+              <div className="label">Meta CAPI</div>
+              <div className={`value ${statusClass(r.meta.purchase_ready)}`}>
+                {r.meta.purchase_ready ? "Готов" : "Не настроен"}
+              </div>
+              <div className="muted" style={{ marginTop: "0.35rem", fontSize: 12 }}>
+                пикселей: {r.meta.pixels.length} · test code {yn(r.meta.test_event_code_configured)}
+              </div>
+            </div>
           </div>
 
           {r.telegram.error ? (
@@ -172,6 +181,49 @@ export default function Integrations() {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div className="card">
+            <h3 style={{ margin: "0 0 0.75rem", fontSize: "1rem" }}>Meta CAPI</h3>
+            <table className="data">
+              <tbody>
+                <tr>
+                  <td>Пиксели включены</td>
+                  <td>{r.meta.pixels.length}</td>
+                </tr>
+                <tr>
+                  <td>Env fallback META_* задан</td>
+                  <td>{yn(r.meta.env_fallback_configured)}</td>
+                </tr>
+                <tr>
+                  <td>META_TEST_EVENT_CODE</td>
+                  <td>{yn(r.meta.test_event_code_configured)}</td>
+                </tr>
+                <tr>
+                  <td>TELEGRAM_WEBHOOK_SECRET</td>
+                  <td>{yn(r.meta.webhook_secret_configured)}</td>
+                </tr>
+                <tr>
+                  <td>Subscribe / Purchase ready</td>
+                  <td>
+                    {yn(r.meta.subscribe_ready)} / {yn(r.meta.purchase_ready)}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Purchase threshold</td>
+                  <td>{r.meta.purchase_threshold_usdt} USDT</td>
+                </tr>
+              </tbody>
+            </table>
+            {r.meta.notes.length > 0 ? (
+              <ul style={{ margin: "0.75rem 0 0", paddingLeft: "1.25rem" }}>
+                {r.meta.notes.map((note, i) => (
+                  <li key={i} style={{ marginBottom: "0.35rem" }}>
+                    {note}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
 
           <div className="card">

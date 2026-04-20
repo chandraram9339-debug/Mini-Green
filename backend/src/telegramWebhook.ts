@@ -36,8 +36,9 @@ export function registerTelegramWebhook(app: express.Express) {
       touchUserLastActiveByTg(db, uid);
       const t = (j.message.text ?? "").trim();
       if (t === "/start" || t.startsWith("/start ")) {
-        if (tryClaimIdempotency(db, `capi_subscribe:${uid}`)) {
-          sendSubscribeCapi(db, config, uid, tr);
+        const subscribeKey = `capi_subscribe:${uid}`;
+        if (tryClaimIdempotency(db, subscribeKey)) {
+          sendSubscribeCapi(db, config, uid, tr, subscribeKey);
         }
         const webAppRow = db
           .prepare("SELECT value FROM app_config WHERE key = ?")
@@ -57,8 +58,9 @@ export function registerTelegramWebhook(app: express.Express) {
         if (oldS === "left" || oldS === "kicked") {
           logEvent(tr, "telegram.chat_reopened", { tg });
         }
-        if (oldS === "" && tryClaimIdempotency(db, `capi_subscribe:${tg}`)) {
-          sendSubscribeCapi(db, config, tg, tr);
+        const subscribeKey = `capi_subscribe:${tg}`;
+        if (oldS === "" && tryClaimIdempotency(db, subscribeKey)) {
+          sendSubscribeCapi(db, config, tg, tr, subscribeKey);
         }
       } else if (oldS === "member" && (newS === "left" || newS === "kicked")) {
         setUserBotBlockedByTg(db, tg, true);
