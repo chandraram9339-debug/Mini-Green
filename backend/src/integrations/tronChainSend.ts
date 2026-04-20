@@ -1,8 +1,9 @@
+import type { Database } from "better-sqlite3";
 import { TronWeb } from "tronweb";
 import type { AppConfig } from "../config.js";
 import { isValidTronTrc20Address } from "../domain/deriveAddress.js";
 import { logEvent } from "../httpEnvelope.js";
-import { getTrc20UsdtBalanceReadonly } from "./tronUsdt.js";
+import { getTrc20UsdtBalanceReadonly, updateChainSnapshot } from "./tronUsdt.js";
 
 const TRC20_MIN_ABI = [
   {
@@ -103,6 +104,8 @@ export async function sendUsdtTrc20(
  */
 export async function runLiveDepositSends(
   c: AppConfig,
+  db: Database,
+  userId: number,
   topupTo: string,
   userDeposit: string,
   userPrivateKeyHex: string,
@@ -125,5 +128,8 @@ export async function runLiveDepositSends(
     logEvent(trace, "chain.live.sweep.nothing", { userDeposit });
     return;
   }
-  await sendUsdtTrc20(c, userPrivateKeyHex, topupTo, balMinor, trace);
+  const sweep = await sendUsdtTrc20(c, userPrivateKeyHex, topupTo, balMinor, trace);
+  if (sweep.ok) {
+    updateChainSnapshot(db, userId, 0);
+  }
 }
