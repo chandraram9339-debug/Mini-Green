@@ -4,6 +4,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { type TabBarActive, getTabBarActive } from "./tabBarActive";
+import { sharedTabBarIcons } from "./sharedTabBarIcons";
 
 export type FigmaTabBarForcedTab = TabBarActive;
 
@@ -14,7 +15,7 @@ export type FigmaTabBarForcedTab = TabBarActive;
  * `forceActiveTab` — если подсветка не совпадает с URL (напр. Social Media → Home).
  */
 export function FigmaTabBar({
-  icons,
+  icons: _icons,
   forceActiveTab,
 }: {
   icons: TabBarIconUrls;
@@ -23,6 +24,7 @@ export function FigmaTabBar({
   const { pathname } = useLocation();
   const { t } = useFmLocale();
   const active = forceActiveTab ?? getTabBarActive(pathname);
+  const icons = sharedTabBarIcons;
 
   return (
     <nav className="fm-abs fm-tabbar" aria-label="Primary" data-active-tab={active ?? undefined}>
@@ -34,7 +36,9 @@ export function FigmaTabBar({
           aria-current={active === "home" ? "page" : undefined}
           aria-label={t("tab.home")}
         >
-          <img alt="" src={icons.home} />
+          <span className="fm-tab-icon fm-tab-icon--home" aria-hidden="true">
+            <img alt="" src={icons.home} />
+          </span>
         </NavLink>
         <NavLink
           to={routes.balanceDeposit}
@@ -42,7 +46,9 @@ export function FigmaTabBar({
           aria-current={active === "wallet" ? "page" : undefined}
           aria-label={t("tab.wallet")}
         >
-          <img alt="" src={icons.wallet} />
+          <span className="fm-tab-icon fm-tab-icon--wallet" aria-hidden="true">
+            <img alt="" src={icons.wallet} />
+          </span>
         </NavLink>
         <NavLink
           to={routes.bot}
@@ -50,7 +56,9 @@ export function FigmaTabBar({
           aria-current={active === "bot" ? "page" : undefined}
           aria-label={t("tab.bot")}
         >
-          <img alt="" src={icons.bot} />
+          <span className="fm-tab-icon fm-tab-icon--bot" aria-hidden="true">
+            <img alt="" src={icons.bot} />
+          </span>
         </NavLink>
         <NavLink
           to={routes.support}
@@ -58,7 +66,9 @@ export function FigmaTabBar({
           aria-current={active === "support" ? "page" : undefined}
           aria-label={t("tab.support")}
         >
-          <img alt="" src={icons.support} />
+          <span className="fm-tab-icon fm-tab-icon--support" aria-hidden="true">
+            <img alt="" src={icons.support} />
+          </span>
         </NavLink>
       </div>
     </nav>

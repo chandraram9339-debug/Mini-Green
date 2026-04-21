@@ -46,14 +46,54 @@ a.fm-tab {
 }
 
 .fm-tab img {
-  width: 24px;
-  height: 24px;
   display: block;
+  max-width: none;
 }
 
 /* Активная вкладка: глиф белый на pill #2D6E93 (иконки в макете — отдельные белые экспорты; для <img> — фильтр) */
 .fm-tab--active img {
   filter: brightness(0) invert(1);
+}
+
+.fm-tab-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.fm-tab-icon img {
+  position: absolute;
+}
+
+.fm-tab-icon--home img {
+  left: 3.2px;
+  top: 3.2px;
+  width: 17.6px;
+  height: 17.6px;
+}
+
+.fm-tab-icon--wallet img {
+  left: 2.2px;
+  top: 3.2px;
+  width: 19.6px;
+  height: 17.6px;
+}
+
+.fm-tab-icon--bot img {
+  left: 3.2px;
+  top: 3.2px;
+  width: 17.9314px;
+  height: 17.6px;
+}
+
+.fm-tab-icon--support img {
+  left: 2.2px;
+  top: 3.2px;
+  width: 19.6px;
+  height: 18.6px;
 }
 
 .fm-tab--active {

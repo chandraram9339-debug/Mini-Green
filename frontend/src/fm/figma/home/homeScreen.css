@@ -995,6 +995,10 @@ a.fm-btn-details-chart {
   left: 50%;
   top: 250px;
   width: 350px;
+  max-width: 350px;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -1014,8 +1018,11 @@ a.fm-btn-details-chart {
 
 .fm-btn-details-chart span {
   font-family: var(--font-h3-family), sans-serif;
+  font-weight: 400;
   font-size: var(--font-h3-size);
+  line-height: normal;
   color: var(--color-white);
+  white-space: nowrap;
 }
 
 /* ---------- Social / Support (node 1:3646) ---------- */
