@@ -6,18 +6,17 @@ type SplashScreenProps = {
   durationMs: number;
 };
 
-function resolveTelegramScheme(): "light" | "dark" {
-  const tgScheme = window.Telegram?.WebApp?.colorScheme;
-  if (tgScheme === "dark" || tgScheme === "light") return tgScheme;
+function resolveSplashScheme(): "light" | "dark" {
+  if (window.Telegram?.WebApp) return "light";
   return document.documentElement.dataset.fmTheme === "dark" ? "dark" : "light";
 }
 
 export function SplashScreen({ durationMs }: SplashScreenProps) {
-  const [scheme, setScheme] = useState<"light" | "dark">(() => resolveTelegramScheme());
+  const [scheme, setScheme] = useState<"light" | "dark">(() => resolveSplashScheme());
   const [spinProgress, setSpinProgress] = useState(0);
 
   useEffect(() => {
-    const syncScheme = () => setScheme(resolveTelegramScheme());
+    const syncScheme = () => setScheme(resolveSplashScheme());
     const tg = window.Telegram?.WebApp;
     syncScheme();
     tg?.onEvent?.("themeChanged", syncScheme);

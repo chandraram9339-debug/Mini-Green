@@ -9,7 +9,7 @@
   height: 100%;
   min-height: 870px;
   margin: 0 auto;
-  /* В мини-приложении Telegram подставляет --tg-theme-bg-color; иначе токен Figma Bg */
+  /* Фон страницы — --fm-page-bg / токены Figma (в Mini App без палитры Telegram). */
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
   /* Макет LTR; в Telegram при RTL абсолютные left/right «зеркалятся» и ломают строку рефералов */

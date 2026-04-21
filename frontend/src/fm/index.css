@@ -15,16 +15,13 @@
   --color-app-chrome: #d8dde2;
   /* Неактивные вкладки / мягкие панели — как muted-слои в макетах */
   --color-surface-muted: #f4f7f8;
-  /*
-   * Единый фон экрана 390px: тема Telegram или токен Bg из Figma.
-   * Дублирование Ready+Ui убрано — палитра и шрифты только в figma-tokens--node-1-3643-Ready.css (+ доп. цвета из Ui).
-   */
-  --fm-page-bg: var(--tg-theme-bg-color, var(--color-bg));
+  /* Фон — токены Figma; палитру Telegram WebApp в миниапп не подмешиваем. */
+  --fm-page-bg: var(--color-bg);
 }
 
 :root[data-fm-theme="dark"] {
   color-scheme: dark;
-  --fm-page-bg: var(--tg-theme-bg-color, #141920);
+  --fm-page-bg: #141920;
   --color-bg: #141920;
   --color-black: #e7edf5;
   --color-white: #1e252e;

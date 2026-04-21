@@ -12,14 +12,14 @@
 }
 
 .fm-splash--light {
-  --fm-splash-bg: var(--tg-theme-bg-color, #ecf1f4);
+  --fm-splash-bg: var(--color-bg);
   --fm-splash-glow: rgba(117, 154, 198, 0.14);
   --fm-splash-pulse-shadow: rgba(45, 110, 147, 0.3);
   --fm-splash-pulse-core: rgba(45, 110, 147, 0.92);
 }
 
 .fm-splash--dark {
-  --fm-splash-bg: var(--tg-theme-bg-color, #141920);
+  --fm-splash-bg: #141920;
   --fm-splash-glow: rgba(117, 154, 198, 0.18);
   --fm-splash-pulse-shadow: rgba(181, 221, 213, 0.35);
   --fm-splash-pulse-core: rgba(181, 221, 213, 0.95);
