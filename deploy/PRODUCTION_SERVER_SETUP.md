@@ -173,6 +173,8 @@ chmod +x ~/miniapp/deploy/update-server.sh
 
 ## 6. «Задеплоил, а в Mini App ничего не поменялось»
 
+Команды в терминале вводи **по одной строке** (или с `&&` между короткими командами). Если склеить `systemctl reload nginx` и `cd ~/miniapp` в одну строку без пробела, получится бессмысленное имя сервиса и **nginx не перезагрузится**.
+
 1. Убедись, что на сервере реально новый коммит: `cd ~/miniapp && git rev-parse HEAD` и сравни с GitHub.
 2. Пересобери фронт и перезагрузи nginx: `bash deploy/update-server.sh` (или вручную `pnpm --filter miniapp-frontend build` и `systemctl reload nginx`).
 3. Проверь, что `root` в nginx указывает на тот же каталог, куда пишет сборка: `grep root /etc/nginx/sites-enabled/*` → должно быть что-то вроде `/root/miniapp/frontend/dist`.

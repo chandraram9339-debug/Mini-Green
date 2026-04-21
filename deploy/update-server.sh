@@ -44,9 +44,24 @@ echo
 echo "== Reload nginx =="
 nginx -t
 systemctl reload nginx
+echo "nginx: reload OK"
 
 echo
-echo "== Health =="
-curl -fsS http://127.0.0.1:4000/health
+echo "== Frontend on disk (должно совпадать с root в nginx) =="
+echo "dist=$PROJECT_ROOT/frontend/dist"
+ls -la "$PROJECT_ROOT/frontend/dist/index.html" 2>/dev/null || true
+echo "bundles referenced in index.html:"
+grep -oE 'assets/[^"]+\.(js|css)' "$PROJECT_ROOT/frontend/dist/index.html" 2>/dev/null | sort -u || true
+echo "nginx root lines (sites-enabled):"
+grep -R "root \|alias " /etc/nginx/sites-enabled/ 2>/dev/null | grep -v '#' || true
+
 echo
-echo "Update completed successfully."
+echo "== Backend health (не валит деплой, если порт другой или сервис ещё поднимается) =="
+if sleep 2 && curl -fsS --max-time 5 http://127.0.0.1:4000/health; then
+  echo "health: OK"
+else
+  echo "WARN: curl http://127.0.0.1:4000/health failed — проверь PORT в backend/.env и pm2 logs $PM2_APP_NAME"
+fi
+
+echo
+echo "Update completed (сборка и nginx reload сделаны). Если в браузере старое — см. deploy/PRODUCTION_SERVER_SETUP.md §6."
