@@ -85,11 +85,12 @@ export default function BalanceReferralScreen() {
       </div>
 
       <section className="fm-deposit-history" aria-label="Referral activity">
-        <p className="fm-referral-date-marker fm-referral-date-marker--a">31.12.2024 00:00</p>
-        <p className="fm-referral-date-marker fm-referral-date-marker--b">31.12.2024 00:00</p>
+        <div className="fm-deposit-history-scroll">
+          <p className="fm-referral-date-marker fm-referral-date-marker--a">31.12.2024 00:00</p>
+          <p className="fm-referral-date-marker fm-referral-date-marker--b">31.12.2024 00:00</p>
 
-        <div className="fm-deposit-history-tabs">
-          <Link to={routes.balanceDeposit} className="fm-deposit-tab fm-deposit-tab--muted fm-deposit-tab--as-link">
+          <div className="fm-deposit-history-tabs">
+            <Link to={routes.balanceDeposit} className="fm-deposit-tab fm-deposit-tab--muted fm-deposit-tab--as-link">
             <p className="fm-deposit-tab-label fm-deposit-tab-label--deposit">Deposit</p>
             <div className="fm-deposit-tab-block fm-deposit-tab-block--total">
               <p className="fm-deposit-tab-caption">Total deposited amount:</p>
@@ -108,9 +109,9 @@ export default function BalanceReferralScreen() {
             <span className="fm-deposit-tab-chevron" aria-hidden="true">
               <img alt="" src={depositAssets.tabChevron} />
             </span>
-          </Link>
+            </Link>
 
-          <Link to={routes.balanceDeposit} className="fm-deposit-tab fm-deposit-tab--muted fm-deposit-tab--as-link">
+            <Link to={routes.balanceDeposit} className="fm-deposit-tab fm-deposit-tab--muted fm-deposit-tab--as-link">
             <p className="fm-deposit-tab-label">Withdraw</p>
             <div className="fm-deposit-tab-block fm-deposit-tab-block--total">
               <p className="fm-deposit-tab-caption">Total withdraw amount</p>
@@ -129,9 +130,9 @@ export default function BalanceReferralScreen() {
             <span className="fm-deposit-tab-chevron" aria-hidden="true">
               <img alt="" src={depositAssets.tabChevron} />
             </span>
-          </Link>
+            </Link>
 
-          <article className="fm-deposit-tab fm-deposit-tab--active">
+            <article className="fm-deposit-tab fm-deposit-tab--active">
             <p className="fm-deposit-tab-label fm-referral-tab-label-active">Referral</p>
             <div className="fm-deposit-tab-block fm-deposit-tab-block--total">
               <p className="fm-deposit-tab-caption">Bonuses received from:</p>
@@ -150,28 +151,29 @@ export default function BalanceReferralScreen() {
             <span className="fm-deposit-tab-chevron fm-deposit-tab-chevron--active" aria-hidden="true">
               <img alt="" src={depositAssets.tabChevron} />
             </span>
-          </article>
-        </div>
+            </article>
+          </div>
 
-        <div className="fm-deposit-list-scroll">
-          <ul className="fm-deposit-list">
-            {INVITE_ROWS.map((row) => (
-              <li key={row.user} className="fm-deposit-row fm-referral-invite-row">
-                <div className="fm-deposit-row-icon-wrap">
-                  <span className="fm-deposit-row-icon fm-deposit-row-icon--referral">
-                    <img alt="" src={depositAssets.rowIconAt} />
-                  </span>
-                </div>
-                <p className="fm-referral-user">{row.user}</p>
-                <div className="fm-deposit-row-side fm-referral-invite-side">
-                  <div className="fm-deposit-row-amt">
-                    <span>{row.amt}</span>
-                    <span className="fm-deposit-row-unit">USDT</span>
+          <div className="fm-deposit-list-scroll">
+            <ul className="fm-deposit-list">
+              {INVITE_ROWS.map((row) => (
+                <li key={row.user} className="fm-deposit-row fm-referral-invite-row">
+                  <div className="fm-deposit-row-icon-wrap">
+                    <span className="fm-deposit-row-icon fm-deposit-row-icon--referral">
+                      <img alt="" src={depositAssets.rowIconAt} />
+                    </span>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                  <p className="fm-referral-user">{row.user}</p>
+                  <div className="fm-deposit-row-side fm-referral-invite-side">
+                    <div className="fm-deposit-row-amt">
+                      <span>{row.amt}</span>
+                      <span className="fm-deposit-row-unit">USDT</span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

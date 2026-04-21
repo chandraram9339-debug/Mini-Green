@@ -14,11 +14,6 @@ import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
-import {
-  TELEGRAM_CHANNEL_URL,
-  TELEGRAM_CHAT_URL,
-  openTelegramOrExternal,
-} from "../../config/links";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
 import { useAppSession } from "../../session/useAppSession";
@@ -104,6 +99,7 @@ export default function HomeScreen() {
 
       <FigmaAppBar
         assets={defaultAppBarAssetUrls}
+        bellBadge={25}
         showLogo
         onBack={() => {
           if (window.history.length > 1) navigate(-1);
@@ -195,24 +191,14 @@ export default function HomeScreen() {
       </section>
 
       <div className="fm-abs fm-social">
-        <button
-          type="button"
-          className="fm-social-a"
-          onClick={() => openTelegramOrExternal(TELEGRAM_CHANNEL_URL)}
-          aria-label={t("home.channelAria")}
-        >
+        <Link to={routes.social} className="fm-social-a" aria-label={t("home.socialMediaAria")}>
           <img alt="" src={homeAssets.group6} />
-          <span>{t("home.channel")}</span>
-        </button>
-        <button
-          type="button"
-          className="fm-social-b"
-          onClick={() => openTelegramOrExternal(TELEGRAM_CHAT_URL)}
-          aria-label={t("home.chatAria")}
-        >
+          <span>{t("home.socialMedia")}</span>
+        </Link>
+        <Link to={routes.support} className="fm-social-b" aria-label={t("home.supportAria")}>
           <img alt="" src={homeAssets.group7} />
-          <span>{t("home.chat")}</span>
-        </button>
+          <span>{t("support.title")}</span>
+        </Link>
       </div>
 
       <FigmaTabBar icons={homeTabIcons} />

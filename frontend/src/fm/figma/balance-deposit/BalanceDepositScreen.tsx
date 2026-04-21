@@ -251,7 +251,8 @@ export default function BalanceDepositScreen() {
       </div>
 
       <section className="fm-deposit-history" aria-label={t("deposit.historyAria")}>
-        <div className="fm-deposit-history-tabs" role="tablist" aria-label={t("deposit.historyTabsAria")}>
+        <div className="fm-deposit-history-scroll">
+          <div className="fm-deposit-history-tabs" role="tablist" aria-label={t("deposit.historyTabsAria")}>
           <article
             role="tab"
             aria-selected={tab === "deposit"}
@@ -367,46 +368,47 @@ export default function BalanceDepositScreen() {
               <img alt="" src={depositAssets.tabChevron} />
             </Link>
           </article>
-        </div>
+          </div>
 
-        <div className="fm-deposit-list-scroll">
-          {historyLoading && hasApiBase() && !apiHistory ? (
-            <p className="fm-deposit-loading" style={{ padding: "12px 20px", margin: 0, fontSize: 14, opacity: 0.7 }}>
-              {t("common.loading")}
-            </p>
-          ) : null}
-          <ul className="fm-deposit-list">
-            {rows.map((row, i) => (
-              <li
-                key={`${row.date}-${row.id}-${i}`}
-                className={`fm-deposit-row${tab === "referral" ? " fm-deposit-row--referral" : ""}`}
-              >
-                <div className="fm-deposit-row-icon-wrap">
-                  <span className={`fm-deposit-row-icon ${historyRowIconMod}`}>
-                    <img alt="" src={historyRowIcon} />
-                  </span>
-                </div>
-                <div className="fm-deposit-row-text">
-                  <p className="fm-deposit-row-title">
-                    {row.i18nTitleKey ? t(row.i18nTitleKey as MessageKey) : row.title}
-                  </p>
-                  <p className="fm-deposit-row-meta">{metaLabel}</p>
-                  <p className="fm-deposit-row-meta">{row.id}</p>
-                </div>
-                <div className="fm-deposit-row-side">
-                  <div className="fm-deposit-row-amt">
-                    <span>{row.main}</span>
-                    <span className="fm-deposit-row-unit">USDT</span>
+          <div className="fm-deposit-list-scroll">
+            {historyLoading && hasApiBase() && !apiHistory ? (
+              <p className="fm-deposit-loading" style={{ padding: "12px 20px", margin: 0, fontSize: 14, opacity: 0.7 }}>
+                {t("common.loading")}
+              </p>
+            ) : null}
+            <ul className="fm-deposit-list">
+              {rows.map((row, i) => (
+                <li
+                  key={`${row.date}-${row.id}-${i}`}
+                  className={`fm-deposit-row${tab === "referral" ? " fm-deposit-row--referral" : ""}`}
+                >
+                  <div className="fm-deposit-row-icon-wrap">
+                    <span className={`fm-deposit-row-icon ${historyRowIconMod}`}>
+                      <img alt="" src={historyRowIcon} />
+                    </span>
                   </div>
-                  <div className="fm-deposit-row-fee">
-                    <span>{row.fee}</span>
-                    {row.fee !== "—" ? <span className="fm-deposit-row-unit">USDT</span> : null}
+                  <div className="fm-deposit-row-text">
+                    <p className="fm-deposit-row-title">
+                      {row.i18nTitleKey ? t(row.i18nTitleKey as MessageKey) : row.title}
+                    </p>
+                    <p className="fm-deposit-row-meta">{metaLabel}</p>
+                    <p className="fm-deposit-row-meta">{row.id}</p>
                   </div>
-                  <p className="fm-deposit-row-date">{row.date}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+                  <div className="fm-deposit-row-side">
+                    <div className="fm-deposit-row-amt">
+                      <span>{row.main}</span>
+                      <span className="fm-deposit-row-unit">USDT</span>
+                    </div>
+                    <div className="fm-deposit-row-fee">
+                      <span>{row.fee}</span>
+                      {row.fee !== "—" ? <span className="fm-deposit-row-unit">USDT</span> : null}
+                    </div>
+                    <p className="fm-deposit-row-date">{row.date}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

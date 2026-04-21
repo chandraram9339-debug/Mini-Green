@@ -27,7 +27,7 @@
   height: 0;
   left: 50%;
   transform: translateX(-50%);
-  top: 55px;
+  top: 54px;
   width: 350px;
 }
 
@@ -388,4 +388,29 @@ button.fm-withdraw-cta:focus-visible {
   background: transparent;
   cursor: pointer;
   padding: 0;
+}
+
+/* Под фикс. статус (44) + app bar (56) */
+.fm-withdraw .fm-withdraw-appbar {
+  position: fixed;
+  top: max(0px, env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 99;
+  background-color: var(--fm-page-bg);
+}
+
+.fm-withdraw .fm-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
 }

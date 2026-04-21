@@ -8,12 +8,13 @@
   top: auto;
   bottom: 0;
   width: 390px;
-  max-width: 100%;
+  height: 72px;
+  min-height: 72px;
+  max-width: 390px;
   box-sizing: border-box;
-  /* 72px ряд иконок + safe-area: белый таб до низа экрана, без зазора цвета страницы */
-  min-height: calc(72px + var(--fm-tab-bar-safe-bottom));
-  height: auto;
-  padding-bottom: var(--fm-tab-bar-safe-bottom);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   /* Выше всех абсолютных секций экрана (графики, история), иначе иконки «пропадают» под слоями */
   z-index: 100;
   background-color: var(--color-white);
@@ -24,11 +25,10 @@
 }
 
 .fm-tabbar-nav {
-  position: absolute;
-  left: 50%;
-  top: 36px;
-  transform: translate(-50%, -50%);
-  display: flex;
+  position: relative;
+  display: inline-flex;
+  width: 298px;
+  height: 52px;
   gap: 30px;
   align-items: flex-start;
 }
@@ -39,8 +39,11 @@
   padding: 14px;
   border-radius: var(--figma-radius-icon-hit);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
+  gap: 10px;
   align-items: flex-start;
+  position: relative;
+  flex: 0 0 auto;
   transition:
     background-color var(--figma-duration) var(--figma-ease),
     transform 0.12s ease;
