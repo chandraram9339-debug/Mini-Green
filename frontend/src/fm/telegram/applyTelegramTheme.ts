@@ -1,3 +1,5 @@
+import { applyFmTheme } from "../theme/fmTheme";
+
 /** Подставляет themeParams Telegram в `--tg-theme-*` для превью и после смены темы. */
 const THEME_PARAM_MAP = [
   ["bg_color", "--tg-theme-bg-color"],
@@ -15,8 +17,12 @@ function normalizeHex(raw: string): string {
 }
 
 export function applyTelegramThemeParams(): void {
-  const tp = window.Telegram?.WebApp?.themeParams as Record<string, string | undefined> | undefined;
+  const tg = window.Telegram?.WebApp;
+  const tp = tg?.themeParams as Record<string, string | undefined> | undefined;
   if (!tp) return;
+  if (tg?.colorScheme === "dark" || tg?.colorScheme === "light") {
+    applyFmTheme(tg.colorScheme);
+  }
   const root = document.documentElement;
   for (const [key, cssVar] of THEME_PARAM_MAP) {
     const raw = tp[key];

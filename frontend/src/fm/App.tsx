@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import BalanceDepositScreen from "./figma/balance-deposit/BalanceDepositScreen";
 import BalanceReferralScreen from "./figma/balance-referral/BalanceReferralScreen";
@@ -21,13 +22,24 @@ import { routes } from "./figma/routes";
 import { FmLocaleProvider } from "./i18n/FmLocaleContext";
 import { AppSessionProvider } from "./session/AppSessionProvider";
 import { SessionBanner } from "./session/SessionBanner";
+import { SplashScreen } from "./splash/SplashScreen";
+import "./splash/splashScreen.css";
+
+const SPLASH_DURATION_MS = 3500;
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => setShowSplash(false), SPLASH_DURATION_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   return (
     <BrowserRouter>
       <FmLocaleProvider>
         <AppSessionProvider>
-          <div className="app-shell">
+          <div className={`app-shell${showSplash ? " app-shell--splash-hidden" : ""}`}>
             <SessionBanner />
             <Routes>
               <Route path="/" element={<Navigate to={routes.bot} replace />} />
@@ -50,6 +62,7 @@ export default function App() {
               <Route path={routes.userAgreement} element={<UserAgreementScreen />} />
             </Routes>
           </div>
+          {showSplash ? <SplashScreen durationMs={SPLASH_DURATION_MS} /> : null}
         </AppSessionProvider>
       </FmLocaleProvider>
     </BrowserRouter>

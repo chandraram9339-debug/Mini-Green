@@ -52,6 +52,13 @@ body {
   /* Telegram / iOS: «чёлка» и home indicator, без поломки ширины 390 */
   padding-top: max(0px, env(safe-area-inset-top, 0px));
   padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  transition: opacity 220ms ease;
+}
+
+.app-shell--splash-hidden {
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
 .fm-session-banner {

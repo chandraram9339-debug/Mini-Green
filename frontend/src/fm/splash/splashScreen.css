@@ -1,0 +1,210 @@
+.fm-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(circle at center, var(--fm-splash-glow) 0%, transparent 55%),
+    var(--fm-splash-bg);
+  animation: fm-splash-exit var(--fm-splash-duration, 3500ms) ease both;
+  pointer-events: none;
+}
+
+.fm-splash--light {
+  --fm-splash-bg: var(--tg-theme-bg-color, #ecf1f4);
+  --fm-splash-glow: rgba(117, 154, 198, 0.14);
+  --fm-splash-pulse-shadow: rgba(45, 110, 147, 0.3);
+  --fm-splash-pulse-core: rgba(45, 110, 147, 0.92);
+}
+
+.fm-splash--dark {
+  --fm-splash-bg: var(--tg-theme-bg-color, #141920);
+  --fm-splash-glow: rgba(117, 154, 198, 0.18);
+  --fm-splash-pulse-shadow: rgba(181, 221, 213, 0.35);
+  --fm-splash-pulse-core: rgba(181, 221, 213, 0.95);
+}
+
+.fm-splash-shell {
+  width: 390px;
+  max-width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.fm-splash-logo-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.fm-splash-logo-stage {
+  width: 228px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+.fm-splash-logo-orbit {
+  position: relative;
+  width: 228px;
+  height: 52px;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.fm-splash-logo-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+}
+
+.fm-splash-logo-face--back {
+  transform: rotateY(180deg);
+}
+
+.fm-splash-logo-image {
+  display: block;
+  width: 196px;
+  height: 24px;
+  object-fit: contain;
+  max-width: none;
+  max-height: none;
+  filter: drop-shadow(0 10px 22px rgba(45, 110, 147, 0.16));
+}
+
+.fm-splash-logo-shimmer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 196px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0) 10%,
+    rgba(255, 255, 255, 0.14) 32%,
+    rgba(255, 255, 255, 0.88) 48%,
+    rgba(181, 214, 255, 0.52) 56%,
+    rgba(255, 255, 255, 0.1) 70%,
+    rgba(255, 255, 255, 0) 88%
+  );
+  background-repeat: no-repeat;
+  background-size: 196px 100%;
+  pointer-events: none;
+  opacity: 0.92;
+  animation: fm-splash-shimmer var(--fm-splash-duration, 3500ms) both;
+  -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 196px 24px;
+  mask-image: url("/assets/app-bar/palladium-logo.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 196px 24px;
+}
+
+.fm-splash-pulse-lane {
+  position: relative;
+  width: 178px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.fm-splash-pulse-core {
+  position: absolute;
+  left: -38px;
+  top: 50%;
+  width: 54px;
+  height: 2px;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      color-mix(in srgb, var(--fm-splash-pulse-core) 72%, white) 28%,
+      var(--fm-splash-pulse-core) 52%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  box-shadow:
+    0 0 10px var(--fm-splash-pulse-shadow),
+    0 0 22px var(--fm-splash-pulse-shadow);
+  transform: translateY(-50%);
+  animation: fm-splash-impulse var(--fm-splash-duration, 3500ms) both;
+}
+
+@keyframes fm-splash-shimmer {
+  0% {
+    background-position: -230px 50%;
+    opacity: 0.15;
+  }
+  18% {
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 0.82;
+  }
+  100% {
+    background-position: 230px 50%;
+    opacity: 0.24;
+  }
+}
+
+@keyframes fm-splash-impulse {
+  0% {
+    left: -38px;
+    opacity: 0;
+  }
+  9% {
+    opacity: 0.12;
+  }
+  13% {
+    opacity: 1;
+  }
+  20% {
+    left: calc(100% - 10px);
+    opacity: 0.92;
+  }
+  28% {
+    left: calc(100% + 16px);
+    opacity: 0;
+  }
+  100% {
+    left: calc(100% + 16px);
+    opacity: 0;
+  }
+}
+
+@keyframes fm-splash-exit {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-splash,
+  .fm-splash-logo-shimmer,
+  .fm-splash-pulse-core {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+}
