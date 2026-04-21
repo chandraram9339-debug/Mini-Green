@@ -9,6 +9,8 @@
   height: 100%;
   min-height: 870px;
   margin: 0 auto;
+  /* Запас под фиксированный таббар — нижний контент можно прокрутить выше белой плашки. */
+  padding-bottom: var(--fm-tab-bar-stack-height);
   /* Фон страницы — --fm-page-bg / токены Figma (в Mini App без палитры Telegram). */
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
@@ -1105,4 +1107,31 @@ a.fm-btn-details-chart {
 .fm-social-b:focus-visible {
   outline: 2px solid var(--color-blue-dark);
   outline-offset: 2px;
+}
+
+/*
+ * Экран выше вьюпорта (и/или min-height кадра) даёт прокрутку документа: absolute bottom:0
+ * цепляется к низу длинного main — таб «уезжает». Держим шапку и таб у краёв окна Mini App.
+ */
+.fm-home .fm-appbar {
+  position: fixed;
+  top: max(0px, env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 99;
+}
+
+.fm-home .fm-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
 }

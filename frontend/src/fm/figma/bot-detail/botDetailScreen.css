@@ -6,6 +6,7 @@
   height: 100%;
   min-height: max(1288px, 100%);
   margin: 0 auto;
+  padding-bottom: var(--fm-tab-bar-stack-height);
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
   /* Слои как в Figma: нижние секции перекрывают график, без «наслоения» линии на карточки */
@@ -652,3 +653,26 @@
   white-space: nowrap;
 }
 
+/* См. комментарий у `.fm-home .fm-appbar` в homeScreen.css — тот же сдвиг при прокрутке длинного кадра. */
+.fm-bot .fm-appbar {
+  position: fixed;
+  top: max(0px, env(safe-area-inset-top, 0px));
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 99;
+}
+
+.fm-bot .fm-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 390px;
+  margin-left: auto;
+  margin-right: auto;
+}
