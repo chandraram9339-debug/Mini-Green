@@ -1,7 +1,7 @@
 import "../home/homeScreen.css";
 import "./topUpScreen.css";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { FigmaAppBar } from "../components/FigmaAppBar";
@@ -13,7 +13,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
-import { hapticLight, showMiniAppAlert } from "../../telegram/uiFeedback";
+import { hapticLight, hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { depositAssets } from "../balance-deposit/depositAssets";
 import { topUpAssets } from "./topUpAssets";
@@ -54,6 +54,13 @@ export default function TopUpScreen() {
   const depositAddress = wallet?.depositAddress ?? DEPOSIT_WALLET_ADDRESS;
   const [qrOk, setQrOk] = useState(true);
   const [paidBusy, setPaidBusy] = useState(false);
+  const [paidSuccessVisible, setPaidSuccessVisible] = useState(false);
+
+  useEffect(() => {
+    if (!paidSuccessVisible) return;
+    const timeoutId = window.setTimeout(() => setPaidSuccessVisible(false), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [paidSuccessVisible]);
 
   async function copyAddress(): Promise<void> {
     try {
@@ -71,8 +78,8 @@ export default function TopUpScreen() {
     try {
       const ok = await confirmDepositPaid();
       if (ok) {
-        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
-        depositNotify(t("topup.alertPaidOk"), () => navigate(routes.home));
+        hapticSuccess();
+        setPaidSuccessVisible(true);
       } else {
         window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("error");
         depositNotify(t("topup.alertPaidFail"));
@@ -90,7 +97,6 @@ export default function TopUpScreen() {
         assets={defaultAppBarAssetUrls}
         backTo={routes.balanceDeposit}
         title={t("deposit.title")}
-        bellBadge="3"
       />
 
       <section className="fm-topup-card" aria-label={t("topup.sectionAria")}>
@@ -125,6 +131,14 @@ export default function TopUpScreen() {
           {t("topup.paid")}
         </button>
       </section>
+
+      {paidSuccessVisible ? (
+        <div className="fm-topup-paid-toast" aria-live="polite" aria-label={t("topup.alertPaidOk")}>
+          <span className="fm-topup-paid-toast-icon" aria-hidden="true">
+            &#10003;
+          </span>
+        </div>
+      ) : null}
 
       <FigmaTabBar icons={topUpTabIcons} />
     </main>

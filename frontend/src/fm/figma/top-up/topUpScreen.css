@@ -140,3 +140,33 @@
   outline: 2px solid var(--color-blue-dark);
   outline-offset: 3px;
 }
+
+.fm-topup-paid-toast {
+  position: absolute;
+  left: 50%;
+  top: 372px;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.fm-topup-paid-toast-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #73c1b1;
+  color: var(--color-white);
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow: 0 8px 24px rgba(45, 110, 147, 0.12);
+}
