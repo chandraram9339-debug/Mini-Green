@@ -150,10 +150,19 @@
   justify-content: center;
 }
 
-.fm-withdraw-done-icon-wrap img {
+.fm-withdraw-done-icon {
   width: 52px;
   height: 52px;
-  display: block;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #73c1b1;
+  color: var(--color-white);
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .fm-withdraw-done-label {

@@ -717,6 +717,28 @@ export function registerAdminApi(app: express.Express) {
     if (b.push_auto_text_no_deposit != null) setS("push_auto_text_no_deposit", b.push_auto_text_no_deposit);
     if (b.push_auto_text_deposited != null) setS("push_auto_text_deposited", b.push_auto_text_deposited);
     if (b.push_auto_text_all != null) setS("push_auto_text_all", b.push_auto_text_all);
+    // #region agent log
+    fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
+      body: JSON.stringify({
+        sessionId: "9e63b5",
+        runId: "core-repro",
+        hypothesisId: "H5",
+        location: "backend/src/admin/adminApi.ts:720",
+        message: "admin config patched",
+        data: {
+          minDepositUsdt: b.min_deposit_usdt ?? null,
+          depositFeeBps: b.deposit_fee_bps ?? null,
+          withdrawFeeBps: b.withdraw_fee_bps ?? null,
+          withdrawAutoApprove: b.withdraw_auto_approve ?? null,
+          topupBank: b.topup_bank_tron != null ? Boolean(String(b.topup_bank_tron).trim()) : null,
+          withdrawWallet: b.withdraw_wallet_tron != null ? Boolean(String(b.withdraw_wallet_tron).trim()) : null,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
     res.json({ ok: true, current: getFeeSnapshot(db, config) });
   });
 

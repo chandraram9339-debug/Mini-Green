@@ -84,7 +84,9 @@ export default function WithdrawDoneScreen() {
 
       <div className="fm-withdraw-done-hero">
         <div className="fm-withdraw-done-icon-wrap">
-          <img alt="" src={w.doneCheck} />
+          <span className="fm-withdraw-done-icon" aria-hidden="true">
+            &#10003;
+          </span>
         </div>
         <p className="fm-withdraw-done-label">Done!</p>
       </div>

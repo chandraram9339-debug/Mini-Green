@@ -50,7 +50,7 @@ function withdrawNotify(message: string, then?: () => void): void {
   }
 }
 
-/** «1| Confirm» — node 1:3883: адрес, сумма, комиссия; ТЗ — алерт и главная. */
+/** «1| Confirm» — node 1:3883: адрес, сумма, комиссия; следующий шаг — done screen. */
 export default function WithdrawConfirmScreen() {
   useWithdrawDraftGuard();
   const navigate = useNavigate();
@@ -109,7 +109,7 @@ export default function WithdrawConfirmScreen() {
           <img alt="" src={w.lineAppBar} />
         </div>
         <p className="fm-withdraw-appbar-title">USDT Transfer</p>
-        <button type="button" className="fm-withdraw-back" aria-label="Back" onClick={() => navigate(routes.withdrawAmount)}>
+        <button type="button" className="fm-withdraw-back" aria-label="Back" onClick={() => navigate(routes.withdraw)}>
           <span className="fm-withdraw-icon-btn">
             <img alt="" src={w.back} />
           </span>

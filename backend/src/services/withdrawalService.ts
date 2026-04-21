@@ -113,6 +113,29 @@ export function createWithdrawal(
     };
   }
   const av = availableMinorDb(db, u);
+  // #region agent log
+  fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
+    body: JSON.stringify({
+      sessionId: "9e63b5",
+      runId: "core-repro",
+      hypothesisId: "H3",
+      location: "backend/src/services/withdrawalService.ts:116",
+      message: "withdrawal request evaluated",
+      data: {
+        tg,
+        amountMinor,
+        feeMinor,
+        need,
+        availableMinor: av,
+        autoApprove: getWithdrawAutoApprove(db, c),
+        liveTronSend: c.liveTronSend,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
   if (need > av) {
     return { ok: false, error: "insufficient" as const };
   }

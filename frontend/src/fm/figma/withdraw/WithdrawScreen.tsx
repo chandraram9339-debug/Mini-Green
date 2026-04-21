@@ -36,6 +36,13 @@ const withdrawTabIcons: TabBarIconUrls = {
   support: w.tabSupport,
 };
 
+function nextWithdrawRequestKey(): string {
+  if (typeof window !== "undefined" && window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function parseAmountInput(s: string): number | null {
   const n = Number.parseFloat(s.replace(",", ".").trim());
   return Number.isFinite(n) ? n : null;
@@ -53,7 +60,7 @@ function mapWithdrawValidationMessage(
   return err;
 }
 
-/** Экран «1| Withdraw» — node 1:3808: адрес TRON + сумма, валидация по ТЗ. */
+/** Экран «1| Withdraw» — node 1:3808: адрес TRON + сумма, затем сразу «USDT Transfer». */
 export default function WithdrawScreen() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
@@ -89,8 +96,8 @@ export default function WithdrawScreen() {
       setError(mapWithdrawValidationMessage(amtErr, t) ?? amtErr);
       return;
     }
-    writeWithdrawDraft({ address: trimmed, amountUsdt: amt });
-    navigate(routes.withdrawRecipient);
+    writeWithdrawDraft({ address: trimmed, amountUsdt: amt, requestKey: nextWithdrawRequestKey() });
+    navigate(routes.withdrawConfirm);
   }
 
   return (
