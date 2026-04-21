@@ -70,14 +70,15 @@ export function adminTestDeposit(
   return r;
 }
 
-export function adminManualWithdraw(
+export async function adminManualWithdraw(
   db: Database,
   c: AppConfig,
   tg: string,
   toAddress: string,
-  amountMinor: number
+  amountMinor: number,
+  trace = "admin-manual-user"
 ) {
-  const r = createWithdrawal(db, c, tg, toAddress, amountMinor);
+  const r = await createWithdrawal(db, c, tg, toAddress, amountMinor, undefined, trace);
   if (!r.ok) throw new Error(r.error);
   return r;
 }

@@ -79,6 +79,7 @@ export default function WithdrawConfirmScreen() {
       });
 
       if (!result.ok) {
+        await refreshNotifications();
         hapticError();
         withdrawNotify(result.error ?? "Could not create withdrawal request.");
         return;

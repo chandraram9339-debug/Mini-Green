@@ -27,6 +27,27 @@ export type AdminConfigResponse = {
   app_config: Record<string, string>;
 };
 
+export type WalletHealthEntry = {
+  key: "gas_bank" | "withdraw_wallet";
+  label: string;
+  address: string | null;
+  address_source: "app_config" | "private_key" | "unresolved";
+  trx_balance_sun: number | null;
+  trx_balance_trx: number | null;
+  usdt_balance_minor: number | null;
+  usdt_balance_usdt: number | null;
+  ok: boolean;
+  alerts: string[];
+};
+
+export type WalletHealthResponse = {
+  live_tron_send: boolean;
+  checked_at: string;
+  gas_bank: WalletHealthEntry;
+  withdraw_wallet: WalletHealthEntry;
+  alerts: string[];
+};
+
 export type DepositRow = {
   id: string;
   user_id: number;

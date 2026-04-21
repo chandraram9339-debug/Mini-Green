@@ -228,7 +228,7 @@ export function registerMiniappContract(app: express.Express) {
     }
   });
 
-  app.post("/withdrawals", requireMiniappAuth, (req, res) => {
+  app.post("/withdrawals", requireMiniappAuth, async (req, res) => {
     const address =
       typeof req.body?.address === "string"
         ? req.body.address.trim()
@@ -257,17 +257,27 @@ export function registerMiniappContract(app: express.Express) {
       res.status(400).json({ message: "amount too small" });
       return;
     }
-    const r = createWithdrawal(getDb(), config, req.userId!, address, amountMinor, requestKey);
+    const r = await createWithdrawal(
+      getDb(),
+      config,
+      req.userId!,
+      address,
+      amountMinor,
+      requestKey,
+      String(res.locals.traceId ?? "miniapp-withdraw")
+    );
     if (!r.ok) {
       const m =
         r.error === "invalid_tron_address"
           ? "Invalid TRON address"
           : r.error === "insufficient"
             ? "Insufficient available balance"
+            : r.error === "withdraw_temporarily_unavailable"
+              ? "Withdrawal is temporarily unavailable. Please try again later."
             : r.error === "below_min"
               ? "Amount below minimum"
               : "Cannot create withdrawal";
-      res.status(r.error === "insufficient" ? 409 : 400).json({ message: m });
+      res.status(r.error === "insufficient" || r.error === "withdraw_temporarily_unavailable" ? 409 : 400).json({ message: m });
       return;
     }
     logEvent(String(res.locals.traceId ?? "no-trace"), "miniapp.withdraw.create", {

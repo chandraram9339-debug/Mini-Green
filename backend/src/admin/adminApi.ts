@@ -44,6 +44,7 @@ import {
   triggerTestPurchaseCapi,
   triggerTestSubscribeCapi
 } from "../integrations/metaCapi.js";
+import { getWalletHealthReport } from "../integrations/walletHealth.js";
 
 function timingSafeAdminKey(headerVal: unknown, secret: string): boolean {
   if (typeof headerVal !== "string" || !secret) return false;
@@ -210,6 +211,14 @@ export function registerAdminApi(app: express.Express) {
     res.json({ policy, app_config: map });
   });
 
+  app.get("/admin/wallet-health", requireAdmin, async (_req, res) => {
+    try {
+      res.json(await getWalletHealthReport(getDb(), config));
+    } catch (e) {
+      res.status(500).json({ error: String(e) });
+    }
+  });
+
   app.get("/admin/stats", requireAdmin, (_req, res) => {
     const db = getDb();
     const d1 = windowStart(1);
@@ -365,11 +374,17 @@ export function registerAdminApi(app: express.Express) {
     res.json({ items: listWithdrawals(getDb(), st) });
   });
 
-  app.post("/admin/withdrawals/:id/approve", requireAdmin, (req, res) => {
+  app.post("/admin/withdrawals/:id/approve", requireAdmin, async (req, res) => {
     const id = String(req.params.id);
-    const r = setWithdrawalSent(getDb(), config, id);
+    const r = await setWithdrawalSent(getDb(), config, id, String(res.locals.traceId ?? "admin-approve"));
     if (!r.ok) {
-      res.status(400).json(r);
+      const status =
+        r.error === "not_found"
+          ? 404
+          : r.error === "insufficient" || r.error === "withdraw_temporarily_unavailable"
+            ? 409
+            : 400;
+      res.status(status).json(r);
       return;
     }
     res.json({ ok: true });
@@ -612,7 +627,7 @@ export function registerAdminApi(app: express.Express) {
     }
   });
 
-  app.post("/admin/users/:tgId/manual-withdraw", requireAdmin, (req, res) => {
+  app.post("/admin/users/:tgId/manual-withdraw", requireAdmin, async (req, res) => {
     const tg = String(req.params.tgId).trim();
     const b = req.body as { to_address?: string; amount_minor?: unknown; amount_usdt?: unknown };
     const to = String(b.to_address ?? "").trim();
@@ -629,11 +644,18 @@ export function registerAdminApi(app: express.Express) {
       return;
     }
     try {
-      const r = adminManualWithdraw(getDb(), config, tg, to, amountMinor);
+      const r = await adminManualWithdraw(
+        getDb(),
+        config,
+        tg,
+        to,
+        amountMinor,
+        String(res.locals.traceId ?? "admin-manual-user")
+      );
       res.json({ ok: true, result: r });
     } catch (e) {
       const m = e instanceof Error ? e.message : String(e);
-      res.status(400).json({ error: m });
+      res.status(m === "withdraw_temporarily_unavailable" || m === "insufficient" ? 409 : 400).json({ error: m });
     }
   });
 

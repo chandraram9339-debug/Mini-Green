@@ -394,7 +394,15 @@ export function registerLegacyApiV1(app: express.Express) {
     let cr: { ok: true; id: string; auto: boolean } | { ok: false; error: string } | null = null;
     try {
       await ensureUser(db, config, validation.userId, null);
-      cr = createWithdrawal(getDb(), config, validation.userId, toAddr, amountMinor) as
+      cr = await createWithdrawal(
+        getDb(),
+        config,
+        validation.userId,
+        toAddr,
+        amountMinor,
+        undefined,
+        String(res.locals.traceId ?? "legacy-withdraw")
+      ) as
         | { ok: true; id: string; auto: boolean }
         | { ok: false; error: string };
     } catch (e) {
@@ -412,6 +420,13 @@ export function registerLegacyApiV1(app: express.Express) {
           409,
           "INSUFFICIENT_AVAILABLE_FUNDS",
           "available balance is insufficient for withdraw"
+        );
+      else if (cr.error === "withdraw_temporarily_unavailable")
+        sendError(
+          res,
+          409,
+          "WITHDRAW_TEMPORARILY_UNAVAILABLE",
+          "withdrawal is temporarily unavailable, please try again later"
         );
       else
         sendError(

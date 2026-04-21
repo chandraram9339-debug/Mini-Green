@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { Database } from "better-sqlite3";
-import { applyFee2Part, usdtHumanToMinor } from "../domain/amounts.js";
+import { applyFee2Part } from "../domain/amounts.js";
 import type { AppConfig } from "../config.js";
 import { tryClaimIdempotency } from "../domain/idempotency.js";
 import {
@@ -16,6 +16,7 @@ import { logEvent } from "../httpEnvelope.js";
 import { logChain } from "../integrations/opsLog.js";
 import { stubWithdrawSend } from "../integrations/chainStubs.js";
 import { sendUsdtTrc20 } from "../integrations/tronChainSend.js";
+import { checkWithdrawWalletCapacity } from "../integrations/walletHealth.js";
 import {
   sibAfterWithdrawRejected,
   sibAfterWithdrawSent,
@@ -34,6 +35,31 @@ function lockedForWithdraws(db: Database, userId: number) {
 
 function availableMinorDb(db: Database, user: { id: number; balance_usdt_minor: number }) {
   return user.balance_usdt_minor - lockedForWithdraws(db, user.id);
+}
+
+function notifyWithdrawTemporarilyUnavailable(db: Database, userId: number, createdAt: string) {
+  const message = "Withdrawal is temporarily unavailable. Please try again later.";
+  const recent = db
+    .prepare(
+      `SELECT id
+       FROM user_notifications
+       WHERE user_id = ?
+         AND kind = 'withdraw'
+         AND variant = 'error'
+         AND message = ?
+         AND created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 minutes')
+       ORDER BY created_at DESC
+       LIMIT 1`
+    )
+    .get(userId, message) as { id: string } | undefined;
+  if (recent) return recent.id;
+  return insertUserNotification(db, {
+    user_id: userId,
+    kind: "withdraw",
+    variant: "error",
+    message,
+    created_at: createdAt,
+  });
 }
 
 export function calculateWithdrawFeeMinor(amountMinor: number, fees: Pick<FeeSnapshot, "withdrawFeeFixedUsdt" | "withdrawFeeBps">) {
@@ -74,13 +100,14 @@ export function getAvailableForWithdraw(
   return { ok: true, u, av: availableMinorDb(db, u) };
 }
 
-export function createWithdrawal(
+export async function createWithdrawal(
   db: Database,
   c: AppConfig,
   tg: string,
   toAddress: string,
   amountMinor: number,
   requestKey?: string | null,
+  trace = "withdraw",
 ) {
   if (!isValidTronTrc20Address(toAddress)) {
     return { ok: false, error: "invalid_tron_address" as const };
@@ -138,6 +165,20 @@ export function createWithdrawal(
   // #endregion
   if (need > av) {
     return { ok: false, error: "insufficient" as const };
+  }
+
+  const walletCapacity = await checkWithdrawWalletCapacity(db, c, amountMinor);
+  if (!walletCapacity.ok) {
+    notifyWithdrawTemporarilyUnavailable(db, u.id, now);
+    logEvent(trace, "withdraw.capacity_blocked", {
+      tg,
+      reason: walletCapacity.reason,
+      address: walletCapacity.address,
+      required_minor: amountMinor,
+      trx_balance_sun: walletCapacity.trx_balance_sun,
+      usdt_balance_minor: walletCapacity.usdt_balance_minor,
+    });
+    return { ok: false, error: "withdraw_temporarily_unavailable" as const };
   }
 
   if (getWithdrawAutoApprove(db, c)) {
@@ -291,7 +332,7 @@ export function listWithdrawals(db: Database, st?: string) {
     .all();
 }
 
-export function setWithdrawalSent(db: Database, c: AppConfig, wId: string) {
+export async function setWithdrawalSent(db: Database, c: AppConfig, wId: string, trace = "admin-manual") {
   const w = db.prepare("SELECT * FROM withdrawals WHERE id = ?").get(wId) as {
     id: string;
     user_id: number;
@@ -306,6 +347,20 @@ export function setWithdrawalSent(db: Database, c: AppConfig, wId: string) {
   const need = w.amount_minor + w.fee_minor;
   const u = db.prepare("SELECT * FROM users WHERE id = ?").get(w.user_id) as { balance_usdt_minor: number };
   if (u.balance_usdt_minor < need) return { ok: false, error: "insufficient" };
+  const walletCapacity = await checkWithdrawWalletCapacity(db, c, w.amount_minor);
+  if (!walletCapacity.ok) {
+    notifyWithdrawTemporarilyUnavailable(db, w.user_id, new Date().toISOString());
+    logEvent(trace, "withdraw.capacity_blocked", {
+      withdrawal_id: wId,
+      user_id: w.user_id,
+      reason: walletCapacity.reason,
+      address: walletCapacity.address,
+      required_minor: w.amount_minor,
+      trx_balance_sun: walletCapacity.trx_balance_sun,
+      usdt_balance_minor: walletCapacity.usdt_balance_minor,
+    });
+    return { ok: false, error: "withdraw_temporarily_unavailable" as const };
+  }
   const tr = db.transaction(() => {
     addBalance(db, w.user_id, -need);
     const now = new Date().toISOString();
@@ -313,7 +368,6 @@ export function setWithdrawalSent(db: Database, c: AppConfig, wId: string) {
   });
   tr();
   sibAfterWithdrawSent(db, w.user_id);
-  const trace = "admin-manual";
   const row = db.prepare("SELECT w.*, u.tg_user_id as tg FROM withdrawals w JOIN users u ON w.user_id=u.id WHERE w.id = ?").get(wId) as { to_address: string; amount_minor: number; tg: string; user_id: number } | null;
   if (row) {
     fireSibJournalSyncHook(c, row.tg, trace);

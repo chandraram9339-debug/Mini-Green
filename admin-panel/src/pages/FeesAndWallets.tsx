@@ -1,10 +1,58 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiJson } from "../api";
-import type { AdminConfigResponse, FeePolicy } from "../types";
+import type { AdminConfigResponse, FeePolicy, WalletHealthEntry, WalletHealthResponse } from "../types";
+
+function fmtWalletAmount(value: number | null, suffix: string): string {
+  if (value == null) return "—";
+  return `${value} ${suffix}`;
+}
+
+function HealthCard({ title, entry }: { title: string; entry: WalletHealthEntry }) {
+  return (
+    <div className="card" style={{ flex: 1, minWidth: 320 }}>
+      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <p className={entry.ok ? "ok" : "err"} style={{ marginTop: 0 }}>
+        {entry.ok ? "Баланс в норме" : "Есть предупреждения"}
+      </p>
+      <table className="data">
+        <tbody>
+          <tr>
+            <td>Label</td>
+            <td>{entry.label || "—"}</td>
+          </tr>
+          <tr>
+            <td>Address</td>
+            <td style={{ maxWidth: 220, wordBreak: "break-all" }}>{entry.address ?? "—"}</td>
+          </tr>
+          <tr>
+            <td>Address source</td>
+            <td>{entry.address_source}</td>
+          </tr>
+          <tr>
+            <td>TRX</td>
+            <td>{fmtWalletAmount(entry.trx_balance_trx, "TRX")}</td>
+          </tr>
+          <tr>
+            <td>USDT</td>
+            <td>{fmtWalletAmount(entry.usdt_balance_usdt, "USDT")}</td>
+          </tr>
+        </tbody>
+      </table>
+      {entry.alerts.length > 0 ? (
+        <ul style={{ marginBottom: 0 }}>
+          {entry.alerts.map((alert, index) => (
+            <li key={`${entry.key}-${index}`}>{alert}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 export default function FeesAndWallets() {
   const [policy, setPolicy] = useState<FeePolicy | null>(null);
   const [appConfig, setAppConfig] = useState<Record<string, string>>({});
+  const [walletHealth, setWalletHealth] = useState<WalletHealthResponse | null>(null);
 
   const [minDepositUsdt, setMinDepositUsdt] = useState("");
   const [depositFeeFixedUsdt, setDepositFeeFixedUsdt] = useState("");
@@ -47,6 +95,28 @@ export default function FeesAndWallets() {
         setWithdrawAutoApprove(wa === "1" || wa === "true");
       })
       .catch((e: Error) => setErr(e.message));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: number | undefined;
+
+    const loadWalletHealth = () => {
+      apiJson<WalletHealthResponse>("/admin/wallet-health")
+        .then((payload) => {
+          if (!cancelled) setWalletHealth(payload);
+        })
+        .catch((e: Error) => {
+          if (!cancelled) setErr(e.message);
+        });
+    };
+
+    loadWalletHealth();
+    timer = window.setInterval(loadWalletHealth, 30000);
+    return () => {
+      cancelled = true;
+      if (timer != null) window.clearInterval(timer);
+    };
   }, []);
 
   async function saveFees(e: FormEvent) {
@@ -117,6 +187,63 @@ export default function FeesAndWallets() {
       <h2>Комиссии, пороги Meta и кошельки</h2>
       {err ? <div className="err">{err}</div> : null}
       {msg ? <div className="ok">{msg}</div> : null}
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Мониторинг кошельков вывода</h3>
+        <p className="muted">
+          Блок обновляется автоматически каждые 30 секунд. Если на TRX или USDT-кошельках мало средств, здесь
+          появится предупреждение, а пользовательский вывод будет отклонён с сообщением «try again later».
+        </p>
+        {walletHealth?.alerts.length ? (
+          <div className="err" style={{ marginBottom: "0.75rem" }}>
+            {walletHealth.alerts.join(" ")}
+          </div>
+        ) : (
+          <div className="ok" style={{ marginBottom: "0.75rem" }}>
+            Критичных предупреждений по кошелькам нет.
+          </div>
+        )}
+        <div className="muted" style={{ marginBottom: "0.75rem" }}>
+          LIVE_TRON_SEND: {walletHealth?.live_tron_send ? "enabled" : "disabled"} · проверено:{" "}
+          {walletHealth?.checked_at ?? "—"}
+        </div>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <HealthCard
+            title="TRX gas wallet"
+            entry={
+              walletHealth?.gas_bank ?? {
+                key: "gas_bank",
+                label: "",
+                address: null,
+                address_source: "unresolved",
+                trx_balance_sun: null,
+                trx_balance_trx: null,
+                usdt_balance_minor: null,
+                usdt_balance_usdt: null,
+                ok: false,
+                alerts: ["Загрузка статуса..."],
+              }
+            }
+          />
+          <HealthCard
+            title="Withdraw wallet"
+            entry={
+              walletHealth?.withdraw_wallet ?? {
+                key: "withdraw_wallet",
+                label: "",
+                address: null,
+                address_source: "unresolved",
+                trx_balance_sun: null,
+                trx_balance_trx: null,
+                usdt_balance_minor: null,
+                usdt_balance_usdt: null,
+                ok: false,
+                alerts: ["Загрузка статуса..."],
+              }
+            }
+          />
+        </div>
+      </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Комиссии и лимиты</h3>
