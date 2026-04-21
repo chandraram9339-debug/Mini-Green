@@ -177,7 +177,9 @@ chmod +x ~/miniapp/deploy/update-server.sh
 
 1. Убедись, что на сервере реально новый коммит: `cd ~/miniapp && git rev-parse HEAD` и сравни с GitHub.
 2. Пересобери фронт и перезагрузи nginx: `bash deploy/update-server.sh` (или вручную `pnpm --filter miniapp-frontend build` и `systemctl reload nginx`).
-3. Проверь, что `root` в nginx указывает на тот же каталог, куда пишет сборка: `grep root /etc/nginx/sites-enabled/*` → должно быть что-то вроде `/root/miniapp/frontend/dist`.
+3. Проверь, что `root` в nginx указывает на тот же каталог, куда пишет сборка: `grep root /etc/nginx/sites-enabled/*`. Если там, например, `/var/www/palladium-miniapp`, а `pnpm build` кладёт файлы в `/root/miniapp/frontend/dist`, пользователи **всегда** будут видеть старую версию, пока не скопируешь `dist` или не поменяешь `root`. Быстрый фикс после сборки:  
+   `rsync -a --delete ~/miniapp/frontend/dist/ /var/www/palladium-miniapp/`  
+   Постоянно: при деплое задай `FRONTEND_PUBLISH_DIR` (см. `deploy/update-server.sh`).
 4. **Кэш WebView:** в шаблоне nginx для этого проекта у `index.html` выставлены заголовки без кэша. Если конфиг на сервере старый — добавь блок `location = /index.html` из `deploy/nginx-miniapp-same-origin.conf.example`, затем `nginx -t && systemctl reload nginx`.
 5. Полностью закрой мини-апп в Telegram и открой снова (иногда кэш держится до перезапуска клиента).
 

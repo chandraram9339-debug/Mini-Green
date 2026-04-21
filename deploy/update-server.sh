@@ -4,11 +4,17 @@ set -euo pipefail
 PROJECT_ROOT="${PROJECT_ROOT:-$HOME/miniapp}"
 BRANCH="${BRANCH:-$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)}"
 PM2_APP_NAME="${PM2_APP_NAME:-miniapp-backend}"
+# Если nginx смотрит не в frontend/dist, а в /var/www/... — задай каталог (со слэшем на конце не нужен):
+#   FRONTEND_PUBLISH_DIR=/var/www/palladium-miniapp ./deploy/update-server.sh
+FRONTEND_PUBLISH_DIR="${FRONTEND_PUBLISH_DIR:-}"
 
 echo "== Update server =="
 echo "project_root=$PROJECT_ROOT"
 echo "branch=$BRANCH"
 echo "pm2_app=$PM2_APP_NAME"
+if [[ -n "$FRONTEND_PUBLISH_DIR" ]]; then
+  echo "frontend_publish_dir=$FRONTEND_PUBLISH_DIR"
+fi
 
 cd "$PROJECT_ROOT"
 
@@ -33,6 +39,14 @@ else
   echo "Workspace package.json not found, using per-package install/build"
   (cd backend && npm install && npm run build)
   (cd frontend && npm install && npm run build)
+fi
+
+if [[ -n "$FRONTEND_PUBLISH_DIR" ]]; then
+  echo
+  echo "== Publish frontend -> $FRONTEND_PUBLISH_DIR =="
+  mkdir -p "$FRONTEND_PUBLISH_DIR"
+  rsync -a --delete "$PROJECT_ROOT/frontend/dist/" "$FRONTEND_PUBLISH_DIR/"
+  echo "rsync: OK ($PROJECT_ROOT/frontend/dist/ -> $FRONTEND_PUBLISH_DIR/)"
 fi
 
 echo
