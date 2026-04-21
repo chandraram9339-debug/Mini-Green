@@ -7,8 +7,13 @@
   left: 0;
   top: auto;
   bottom: 0;
-  height: 72px;
   width: 390px;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* 72px ряд иконок + safe-area: белый таб до низа экрана, без зазора цвета страницы */
+  min-height: calc(72px + var(--fm-tab-bar-safe-bottom));
+  height: auto;
+  padding-bottom: var(--fm-tab-bar-safe-bottom);
   /* Выше всех абсолютных секций экрана (графики, история), иначе иконки «пропадают» под слоями */
   z-index: 100;
   background-color: var(--color-white);
@@ -21,7 +26,7 @@
 .fm-tabbar-nav {
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 36px;
   transform: translate(-50%, -50%);
   display: flex;
   gap: 30px;

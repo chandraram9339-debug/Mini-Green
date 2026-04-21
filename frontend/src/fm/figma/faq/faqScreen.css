@@ -19,7 +19,7 @@
   position: absolute;
   left: 20px;
   top: 86px;
-  bottom: 72px;
+  bottom: var(--fm-tab-bar-stack-height);
   width: 350px;
   display: flex;
   flex-direction: column;

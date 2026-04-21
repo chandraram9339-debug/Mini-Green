@@ -3,6 +3,10 @@ export {};
 type TelegramWebApp = {
   /** Сырой query-string для валидации на сервере (Telegram Mini App). */
   initData?: string;
+  /** Высота видимой области WebView (px). */
+  viewportHeight?: number;
+  /** Высота без клавиатуры / стабильная — лучше для вёрстки на весь экран. */
+  viewportStableHeight?: number;
   ready: () => void;
   expand: () => void;
   themeParams?: Record<string, string | undefined>;

@@ -5,6 +5,11 @@
 @import "./figma/figma-tab-bar.css";
 
 :root {
+  /* Fallback до init Telegram WebApp; в клиенте перезаписывается из viewportStableHeight (px). */
+  --tg-viewport-stable-height: 100dvh;
+  /* Нижний отступ: только внутри таббара (фон таба до физического низа), не полоса под табом. */
+  --fm-tab-bar-safe-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  --fm-tab-bar-stack-height: calc(72px + var(--fm-tab-bar-safe-bottom));
   color-scheme: light only;
   /* Рамка вокруг 390px — фон вне фрейма из превью; не в переменных Figma */
   --color-app-chrome: #d8dde2;
@@ -36,8 +41,7 @@ body {
 }
 
 #root {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: var(--tg-viewport-stable-height);
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -51,13 +55,11 @@ body {
   background-color: var(--fm-page-bg);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-black) 8%, transparent);
   box-sizing: border-box;
-  /* Telegram / iOS: «чёлка» и home indicator, без поломки ширины 390 */
+  /* Верх safe-area; низ — внутри .fm-tabbar, иначе под белым табом видна полоска --fm-page-bg */
   padding-top: max(0px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
   transition: opacity 220ms ease;
-  /* Заполняем высоту WebView: контент + таббар прижаты к низу, без «полосы» под табом */
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* Высота как у Telegram WebView (не 100dvh — там часто лишние пиксели до низа миниаппа) */
+  min-height: var(--tg-viewport-stable-height);
   display: flex;
   flex-direction: column;
 }

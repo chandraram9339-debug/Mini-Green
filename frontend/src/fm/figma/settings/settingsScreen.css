@@ -8,8 +8,8 @@
   height: 100%;
   min-height: 824px;
   margin: 0 auto;
-  /* Зона, где рисуется 72px таб; контент .fm-settings-body сидит выше, не залезает */
-  padding-bottom: 80px;
+  /* Запас под таб (72px + safe-area) + небольшой зазор */
+  padding-bottom: calc(8px + var(--fm-tab-bar-stack-height));
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
   isolation: isolate;
@@ -34,7 +34,6 @@
   width: 390px;
   max-width: 100%;
   margin: 0;
-  height: 72px;
 }
 
 .fm-settings-body {

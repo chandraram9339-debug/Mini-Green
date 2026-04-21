@@ -28,7 +28,7 @@
 .fm-splash-shell {
   width: 390px;
   max-width: 100%;
-  min-height: 100vh;
+  min-height: var(--tg-viewport-stable-height);
   display: flex;
   align-items: center;
   justify-content: center;

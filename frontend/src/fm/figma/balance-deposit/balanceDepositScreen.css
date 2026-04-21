@@ -497,4 +497,8 @@ a.fm-deposit-tab-chevron:active {
   width: 390px;
   max-width: 100%;
   z-index: 10;
+  box-sizing: border-box;
+  min-height: calc(72px + var(--fm-tab-bar-safe-bottom));
+  height: auto;
+  padding-bottom: var(--fm-tab-bar-safe-bottom);
 }
