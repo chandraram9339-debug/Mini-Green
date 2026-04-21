@@ -119,13 +119,15 @@ export function FigmaGraphic({ chart, points }: { chart?: GraphicChartAssets; po
           <svg className="fm-chart-line-svg" viewBox="0 0 325 123" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="fm-chart-area-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2d6e93" stopOpacity="0.26" />
-                <stop offset="60%" stopColor="#759ac6" stopOpacity="0.12" />
-                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                <stop className="fm-chart-area-stop fm-chart-area-stop--top" offset="0%" stopColor="#2d6e93" stopOpacity="0.26" />
+                <stop className="fm-chart-area-stop fm-chart-area-stop--mid" offset="60%" stopColor="#759ac6" stopOpacity="0.12" />
+                <stop className="fm-chart-area-stop fm-chart-area-stop--bottom" offset="100%" stopColor="#ffffff" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <path d={geom.pathArea} fill="url(#fm-chart-area-gradient)" />
+            <path className="fm-chart-area-glow" d={geom.pathArea} fill="url(#fm-chart-area-gradient)" />
+            <path className="fm-chart-area-fill" d={geom.pathArea} fill="url(#fm-chart-area-gradient)" />
             <path
+              className="fm-chart-line-path"
               d={geom.pathLine}
               fill="none"
               stroke="#55647b"

@@ -723,6 +723,157 @@ a.fm-btn-details-chart {
   height: 100%;
 }
 
+.fm-chart-area-glow {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  opacity: 0.32;
+  filter: blur(12px);
+  animation: fm-chart-glow-breath 5.8s ease-in-out infinite;
+}
+
+.fm-chart-area-fill {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: fm-chart-area-breath 5.8s ease-in-out infinite;
+}
+
+.fm-chart-line-path {
+  animation: fm-chart-line-tint 5.8s ease-in-out infinite;
+}
+
+.fm-chart-area-stop--top {
+  animation: fm-chart-gradient-top 5.8s ease-in-out infinite;
+}
+
+.fm-chart-area-stop--mid {
+  animation: fm-chart-gradient-mid 5.8s ease-in-out infinite;
+}
+
+@keyframes fm-chart-area-breath {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: scaleY(0.992);
+  }
+  8% {
+    opacity: 0.92;
+    transform: scaleY(1.014);
+  }
+  14% {
+    opacity: 0.8;
+    transform: scaleY(0.996);
+  }
+  22% {
+    opacity: 0.9;
+    transform: scaleY(1.012);
+  }
+  28% {
+    opacity: 0.78;
+    transform: scaleY(0.992);
+  }
+}
+
+@keyframes fm-chart-glow-breath {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scaleY(0.985);
+  }
+  8% {
+    opacity: 0.34;
+    transform: scaleY(1.024);
+  }
+  14% {
+    opacity: 0.2;
+    transform: scaleY(0.992);
+  }
+  22% {
+    opacity: 0.3;
+    transform: scaleY(1.018);
+  }
+  28% {
+    opacity: 0.18;
+    transform: scaleY(0.985);
+  }
+}
+
+@keyframes fm-chart-gradient-top {
+  0%,
+  100% {
+    stop-color: #2d6e93;
+    stop-opacity: 0.26;
+  }
+  8% {
+    stop-color: #7f6170;
+    stop-opacity: 0.29;
+  }
+  14% {
+    stop-color: #2d6e93;
+    stop-opacity: 0.26;
+  }
+  22% {
+    stop-color: #7a5b68;
+    stop-opacity: 0.285;
+  }
+  28% {
+    stop-color: #2d6e93;
+    stop-opacity: 0.26;
+  }
+}
+
+@keyframes fm-chart-gradient-mid {
+  0%,
+  100% {
+    stop-color: #759ac6;
+    stop-opacity: 0.12;
+  }
+  8% {
+    stop-color: #b28f9c;
+    stop-opacity: 0.145;
+  }
+  14% {
+    stop-color: #759ac6;
+    stop-opacity: 0.12;
+  }
+  22% {
+    stop-color: #ac8895;
+    stop-opacity: 0.14;
+  }
+  28% {
+    stop-color: #759ac6;
+    stop-opacity: 0.12;
+  }
+}
+
+@keyframes fm-chart-line-tint {
+  0%,
+  100% {
+    stroke: #55647b;
+  }
+  8% {
+    stroke: #5d6172;
+  }
+  14% {
+    stroke: #55647b;
+  }
+  22% {
+    stroke: #5b606f;
+  }
+  28% {
+    stroke: #55647b;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-chart-area-glow,
+  .fm-chart-area-fill,
+  .fm-chart-line-path,
+  .fm-chart-area-stop--top,
+  .fm-chart-area-stop--mid {
+    animation: none;
+  }
+}
+
 .fm-graphic-status {
   position: absolute;
   left: 20px;
