@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { createWithdrawalRequest } from "../../api/createWithdrawal";
 import { hasApiBase } from "../../api/env";
 import { useAppSession } from "../../session/useAppSession";
+import { hapticError, hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
@@ -42,12 +43,7 @@ const withdrawTabIcons: TabBarIconUrls = {
 };
 
 function withdrawNotify(message: string, then?: () => void): void {
-  const tg = window.Telegram?.WebApp;
-  if (tg?.showAlert) tg.showAlert(message, then);
-  else {
-    window.alert(message);
-    then?.();
-  }
+  showMiniAppAlert(message, { force: true, onClose: then });
 }
 
 /** «1| Confirm» — node 1:3883: адрес, сумма, комиссия; следующий шаг — done screen. */
@@ -71,7 +67,7 @@ export default function WithdrawConfirmScreen() {
         clearWithdrawDonePayload();
         writeWithdrawDonePayload({ address: draft.address, amountUsdt: draft.amountUsdt, feeUsdt: fee });
         clearWithdrawDraft();
-        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
+        hapticSuccess();
         navigate(routes.withdrawDone);
         return;
       }
@@ -83,7 +79,7 @@ export default function WithdrawConfirmScreen() {
       });
 
       if (!result.ok) {
-        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("error");
+        hapticError();
         withdrawNotify(result.error ?? "Could not create withdrawal request.");
         return;
       }
@@ -93,7 +89,7 @@ export default function WithdrawConfirmScreen() {
       clearWithdrawDraft();
       await refreshWallet();
       await refreshNotifications();
-      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("success");
+      hapticSuccess();
       navigate(routes.withdrawDone);
     } finally {
       setSubmitting(false);

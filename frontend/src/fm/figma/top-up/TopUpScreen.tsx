@@ -13,7 +13,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
-import { hapticLight, hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
+import { hapticError, hapticLight, hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { depositAssets } from "../balance-deposit/depositAssets";
 import { topUpAssets } from "./topUpAssets";
@@ -38,12 +38,7 @@ function qrImageUrl(data: string) {
 }
 
 function depositNotify(message: string, onOk?: () => void): void {
-  const tg = window.Telegram?.WebApp;
-  if (tg?.showAlert) tg.showAlert(message, onOk);
-  else {
-    window.alert(message);
-    onOk?.();
-  }
+  showMiniAppAlert(message, { force: true, onClose: onOk });
 }
 
 /** Экран «1| Top up» — node 1:3904, `screen-top-up__assembly.json`. App Bar как `top-up__app-bar-deposit__1-4877.tsx`. */
@@ -81,7 +76,7 @@ export default function TopUpScreen() {
         hapticSuccess();
         setPaidSuccessVisible(true);
       } else {
-        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred?.("error");
+        hapticError();
         depositNotify(t("topup.alertPaidFail"));
       }
     } finally {

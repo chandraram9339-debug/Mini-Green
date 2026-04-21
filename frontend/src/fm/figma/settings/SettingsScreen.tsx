@@ -16,19 +16,12 @@ import { routes } from "../routes";
 import { settingsAssets as s } from "./settingsAssets";
 import { openTelegramReferralShare } from "../../config/links";
 import { logGreySurfaces } from "../../debug/logGreySurfaces";
-
-const PUSH_KEY = "fm-push";
-const VIB_KEY = "fm-vibration";
-
-function readToggleLocal(key: string, defaultOn: boolean): boolean {
-  try {
-    const v = localStorage.getItem(key);
-    if (v === null) return defaultOn;
-    return v !== "0";
-  } catch {
-    return defaultOn;
-  }
-}
+import {
+  isPushEnabled,
+  isVibrationEnabled,
+  setPushEnabled,
+  setVibrationEnabled,
+} from "../../preferences/devicePreferences";
 
 const settingsTabIcons: TabBarIconUrls = {
   home: homeAssets.group2,
@@ -73,8 +66,8 @@ export default function SettingsScreen() {
   const { locale, setLocale, t } = useFmLocale();
   const [langOpen, setLangOpen] = useState(false);
   const langWrapRef = useRef<HTMLDivElement>(null);
-  const [pushOn, setPushOn] = useState(() => readToggleLocal(PUSH_KEY, true));
-  const [vibrationOn, setVibrationOn] = useState(() => readToggleLocal(VIB_KEY, true));
+  const [pushOn, setPushOn] = useState(() => isPushEnabled());
+  const [vibrationOn, setVibrationOn] = useState(() => isVibrationEnabled());
 
   useEffect(() => {
     if (!langOpen) return;
@@ -99,11 +92,7 @@ export default function SettingsScreen() {
   const togglePush = useCallback(() => {
     setPushOn((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem(PUSH_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
+      setPushEnabled(next);
       return next;
     });
   }, []);
@@ -111,11 +100,7 @@ export default function SettingsScreen() {
   const toggleVibration = useCallback(() => {
     setVibrationOn((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem(VIB_KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
+      setVibrationEnabled(next);
       return next;
     });
   }, []);

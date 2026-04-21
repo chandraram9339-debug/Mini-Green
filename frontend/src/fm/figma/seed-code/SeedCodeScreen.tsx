@@ -11,6 +11,7 @@ import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
 import { faqAssets } from "../faq/faqAssets";
 import { getSeedWords } from "./seedWords";
+import { hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
 
 const statusAssets: StatusBarAssetUrls = {
   networkSignalLight: faqAssets.networkSignalLight,
@@ -31,10 +32,8 @@ async function copySeedPhrase(words: readonly string[], copiedLabel: string): Pr
   const text = words.join(" ");
   try {
     await navigator.clipboard.writeText(text);
-    const tg = window.Telegram?.WebApp;
-    tg?.HapticFeedback?.notificationOccurred?.("success");
-    if (tg?.showAlert) tg.showAlert(copiedLabel);
-    else window.alert(copiedLabel);
+    hapticSuccess();
+    showMiniAppAlert(copiedLabel);
   } catch {
     window.prompt("Copy:", text);
   }
