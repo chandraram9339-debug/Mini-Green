@@ -1,13 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Outfit:wght@400;500;600&display=swap");
+/* Repo root: miniapp/figma-miniapp-design-system/ (variant A bundle) */
+@import "../../../figma-miniapp-design-system/figma-tokens--node-1-3643-Ready.css";
+@import "./figma/figma-layout-tokens.css";
+@import "./figma/figma-tab-bar.css";
 
 /* В Mini App класс ставится из applyTelegramTheme — не даём WebView уйти в системную тёмную схему. */
 html.fm-brand-lock {
   color-scheme: light only;
 }
-/* Repo root: miniapp/figma-miniapp-design-system/ (variant A bundle) */
-@import "../../../figma-miniapp-design-system/figma-tokens--node-1-3643-Ready.css";
-@import "./figma/figma-layout-tokens.css";
-@import "./figma/figma-tab-bar.css";
 
 :root {
   /* Fallback до init Telegram WebApp; в клиенте перезаписывается из viewportStableHeight (px). */
