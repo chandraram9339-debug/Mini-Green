@@ -1119,7 +1119,15 @@ a.fm-btn-details-chart {
  * Экран выше вьюпорта (и/или min-height кадра) даёт прокрутку документа: absolute bottom:0
  * цепляется к низу длинного main — таб «уезжает». Держим шапку и таб у краёв окна Mini App.
  */
-.fm-home .fm-appbar {
+.fm-home .fm-appbar,
+.fm-deposit .fm-appbar,
+.fm-support .fm-appbar,
+.fm-notifications .fm-appbar,
+.fm-faq .fm-appbar,
+.fm-topup .fm-appbar,
+.fm-agreement .fm-appbar,
+.fm-seed .fm-appbar,
+.fm-social .fm-appbar {
   position: fixed;
   top: max(0px, env(safe-area-inset-top, 0px));
   left: 0;
@@ -1131,7 +1139,15 @@ a.fm-btn-details-chart {
   z-index: 99;
 }
 
-.fm-home .fm-tabbar {
+.fm-home .fm-tabbar,
+.fm-deposit .fm-tabbar,
+.fm-support .fm-tabbar,
+.fm-notifications .fm-tabbar,
+.fm-faq .fm-tabbar,
+.fm-topup .fm-tabbar,
+.fm-agreement .fm-tabbar,
+.fm-seed .fm-tabbar,
+.fm-social .fm-tabbar {
   position: fixed;
   left: 0;
   right: 0;

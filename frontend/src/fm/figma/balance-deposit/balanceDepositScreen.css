@@ -5,9 +5,13 @@
   width: 390px;
   max-width: 100%;
   margin: 0 auto;
-  height: 100%;
-  min-height: 100%;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Таб фиксирован к низу окна; контент не уезжает под него */
+  padding-bottom: var(--fm-tab-bar-stack-height);
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
 }
@@ -16,18 +20,28 @@
   box-sizing: border-box;
 }
 
+.fm-deposit-top-stack {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 390px;
+  margin: 0 auto;
+}
+
 .fm-deposit-chrome-spacer {
   height: 56px;
   flex-shrink: 0;
+  width: 100%;
 }
 
-/* Current Balance — y 130–317 (от верха страницы: spacer 100 + 30) */
+/* Current Balance — y 130–317 (от верха страницы: spacer 100 + 30), node 1:3678 */
 .fm-deposit-balance {
   position: relative;
   margin-top: 30px;
   width: 390px;
+  max-width: 100%;
   height: 187px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .fm-deposit-balance-copy {
@@ -135,30 +149,39 @@ a.fm-deposit-act {
   display: block;
 }
 
-/* Actions History — как в макете gap 30 от блока баланса */
+/* Вкладки Deposit / Withdraw / Referral + скролл только списка (остальное flex-shrink: 0). */
 .fm-deposit-history {
   position: relative;
-  margin-top: 30px;
+  margin-top: 18px;
   margin-left: 20px;
   margin-right: 20px;
   width: 350px;
   max-width: calc(100% - 40px);
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  /* Эталон SVG 350×661: низ вкладок y=137, первая карточка y=150 → зазор 13px */
   gap: 13px;
+  overflow: hidden;
 }
 
 .fm-deposit-history-tabs {
   display: flex;
   gap: 13px;
   align-items: stretch;
+  flex-shrink: 0;
 }
 
 .fm-deposit-tab {
+  /* Эталон SVG 108×137: rx=8; круг 28×28 (#2D6E93), inset справа и снизу 10px → низ 38px под круг */
+  --fm-deposit-tab-chevron-inset: 10px;
+  --fm-deposit-tab-chevron-size: 28px;
   position: relative;
   flex: 0 0 108px;
   width: 108px;
-  min-height: 137px;
+  height: 137px;
+  flex-shrink: 0;
   border-radius: var(--figma-radius-card-sm);
   overflow: hidden;
   cursor: pointer;
@@ -166,8 +189,13 @@ a.fm-deposit-act {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  padding: 10px 8px 34px 10px;
-  gap: 6px;
+  box-sizing: border-box;
+  padding:
+    8px
+    8px
+    calc(var(--fm-deposit-tab-chevron-inset) + var(--fm-deposit-tab-chevron-size))
+    10px;
+  gap: 4px;
 }
 
 a.fm-deposit-tab {
@@ -219,19 +247,19 @@ a.fm-deposit-tab {
   position: static;
   width: 100%;
   min-width: 0;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .fm-deposit-tab-caption {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   font-family: var(--font-caption-xs-family), sans-serif;
   font-size: var(--font-caption-xs-size);
-  line-height: 1.25;
+  line-height: 1.2;
   color: var(--color-grey-dark);
 }
 
 .fm-deposit-tab-caption--tight {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .fm-deposit-tab-amt {
@@ -277,16 +305,16 @@ a.fm-deposit-tab {
   color: var(--color-grey-medium);
 }
 
-/* Стрелки вкладок — node 1:3821: активная Green Light + вниз, остальные Blue dark */
+/* Стрелки вкладок — отступ справа и снизу от края карточки одинаковый */
 .fm-deposit-tab-chevron {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 28px;
-  height: 28px;
+  right: var(--fm-deposit-tab-chevron-inset, 10px);
+  bottom: var(--fm-deposit-tab-chevron-inset, 10px);
+  width: var(--fm-deposit-tab-chevron-size, 28px);
+  height: var(--fm-deposit-tab-chevron-size, 28px);
   padding: 6px;
   border: none;
-  border-radius: 20px;
+  border-radius: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -309,7 +337,7 @@ a.fm-deposit-tab-chevron {
 /* Базовый глиф — «влево»; поворот вниз для выбранной вкладки */
 .fm-deposit-tab-chevron--active {
   background-color: var(--color-green-light);
-  border-radius: 30px;
+  border-radius: 14px;
 }
 
 .fm-deposit-tab-chevron--active img {
@@ -321,11 +349,14 @@ a.fm-deposit-tab-chevron {
 }
 
 .fm-deposit-list-scroll {
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
-  max-height: min(430px, calc(100dvh - 470px - env(safe-area-inset-bottom, 0px)));
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -342,15 +373,18 @@ a.fm-deposit-tab-chevron {
   list-style: none;
   display: flex;
   flex-direction: column;
+  /* Эталон SVG: карточки y=150,254,… высота 95 → межстрочный зазор 9px */
   gap: 9px;
 }
 
+/* List item — node 1:3677; эталон SVG: белая карточка 350×95, rx=12, иконка 24px */
 .fm-deposit-row {
   position: relative;
   display: flex;
   gap: 10px;
-  align-items: flex-start;
-  padding: 16px 10px;
+  align-items: center;
+  min-height: 95px;
+  padding: 0 10px;
   background-color: var(--color-white);
   border-radius: var(--figma-radius-card);
 }
@@ -401,6 +435,7 @@ a.fm-deposit-tab-chevron {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  padding-top: 0;
 }
 
 .fm-deposit-row-title {
@@ -409,6 +444,7 @@ a.fm-deposit-tab-chevron {
   font-size: var(--font-h2-size);
   font-weight: 500;
   letter-spacing: 0.18px;
+  line-height: 1.2;
   color: var(--color-black);
 }
 
@@ -416,6 +452,7 @@ a.fm-deposit-tab-chevron {
   margin: 0;
   font-family: var(--font-body-m-family), sans-serif;
   font-size: var(--font-body-m-size);
+  line-height: 1.25;
   color: var(--color-grey-medium);
 }
 
@@ -423,10 +460,10 @@ a.fm-deposit-tab-chevron {
   margin-left: auto;
   flex-shrink: 0;
   text-align: right;
-  padding-top: 7px;
+  padding-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 8px;
   align-items: flex-end;
 }
 
@@ -441,12 +478,14 @@ a.fm-deposit-tab-chevron {
   align-items: flex-start;
   gap: 4px;
   justify-content: flex-end;
+  line-height: 1;
 }
 
 .fm-deposit-row-amt span:first-child {
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 16px;
+  line-height: 1.1;
   color: var(--color-black);
 }
 
@@ -454,6 +493,7 @@ a.fm-deposit-tab-chevron {
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 13px;
+  line-height: 1.1;
   color: var(--color-grey-medium);
 }
 
@@ -461,14 +501,15 @@ a.fm-deposit-tab-chevron {
   font-family: var(--font-body-m-family), sans-serif;
   font-size: 9px;
   color: var(--color-grey-medium);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .fm-deposit-row-date {
   margin: 0;
+  margin-top: 0;
   font-family: var(--font-body-m-family), sans-serif;
   font-size: 10px;
-  line-height: 1.2;
+  line-height: 1.15;
   font-weight: 400;
   letter-spacing: 0.02em;
   color: var(--color-grey-medium);
@@ -487,18 +528,4 @@ a.fm-deposit-tab-chevron {
 .fm-deposit-act:active,
 a.fm-deposit-tab-chevron:active {
   opacity: 0.92;
-}
-
-.fm-deposit .fm-tabbar {
-  position: relative;
-  top: auto;
-  left: auto;
-  margin-top: 24px;
-  width: 390px;
-  max-width: 100%;
-  z-index: 10;
-  box-sizing: border-box;
-  min-height: calc(72px + var(--fm-tab-bar-safe-bottom));
-  height: auto;
-  padding-bottom: var(--fm-tab-bar-safe-bottom);
 }

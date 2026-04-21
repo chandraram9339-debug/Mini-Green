@@ -1,8 +1,4 @@
-/* Detail Balance | Referral — frame 390×915, node 1:3687 */
-
-.fm-deposit.fm-referral {
-  min-height: max(915px, 100%);
-}
+/* Detail Balance | Referral — frame 390×915, node 1:3687 (высоту ведёт flex у `.fm-deposit`) */
 
 /* Эталон: метки дат absolute right на фрейме — относительно блока истории */
 .fm-referral-date-marker {
@@ -22,12 +18,13 @@
   pointer-events: none;
 }
 
+/* Высота вкладок 137px (SVG 108×137) */
 .fm-referral-date-marker--a {
-  top: 188px;
+  top: 171px;
 }
 
 .fm-referral-date-marker--b {
-  top: 449px;
+  top: 432px;
 }
 
 a.fm-deposit-tab--as-link {

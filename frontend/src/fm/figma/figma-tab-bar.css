@@ -1,6 +1,6 @@
 /**
  * Tab Bar — node 1:3645 (Ready). Один источник: тени/радиусы из `figma-layout-tokens.css`.
- * По умолчанию таб прижат к низу экрана (bottom: 0). См. `.fm-deposit .fm-tabbar` — потоковый вариант.
+ * По умолчанию таб прижат к низу main (bottom: 0). Home / Deposit: `position: fixed` в homeScreen.css.
  */
 .fm-tabbar {
   position: absolute;

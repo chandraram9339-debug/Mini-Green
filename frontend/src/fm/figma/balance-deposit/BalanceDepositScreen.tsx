@@ -218,33 +218,37 @@ export default function BalanceDepositScreen() {
 
       <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} showLogo />
 
-      {/* Status 44px + App bar 56px — абсолютные слои не участвуют в потоке; якорь для отступов как в макете (y 130). */}
-      <div className="fm-deposit-chrome-spacer" aria-hidden="true" />
+      {/*
+       * Верх «Detail Balance» (Figma node 1:3678) + отступ под фикс. app bar — не участвует в скролле истории.
+       */}
+      <div className="fm-deposit-top-stack">
+        <div className="fm-deposit-chrome-spacer" aria-hidden="true" />
 
-      <section className="fm-deposit-balance" aria-label={t("deposit.balanceAria")}>
-        <div className="fm-deposit-balance-copy">
-          <p className="fm-deposit-balance-title">{t("wallet.currentBalance")}</p>
-          <div className="fm-deposit-balance-amt">
-            <strong>{balanceUsdt.toFixed(2)}</strong>
-            <span className="fm-deposit-u">USDT</span>
+        <section className="fm-deposit-balance" aria-label={t("deposit.balanceAria")}>
+          <div className="fm-deposit-balance-copy">
+            <p className="fm-deposit-balance-title">{t("wallet.currentBalance")}</p>
+            <div className="fm-deposit-balance-amt">
+              <strong>{balanceUsdt.toFixed(2)}</strong>
+              <span className="fm-deposit-u">USDT</span>
+            </div>
+            <p className="fm-deposit-balance-addr">{formatShortAddress(depositAddress, 6, 6)}</p>
           </div>
-          <p className="fm-deposit-balance-addr">{formatShortAddress(depositAddress, 6, 6)}</p>
-        </div>
 
-        <Link to={routes.depositTopUp} className="fm-deposit-act fm-deposit-act--topup">
-          <span className="fm-deposit-act-icon-wrap">
-            <img alt="" src={depositAssets.group11} />
-          </span>
-          {t("home.topUp")}
-        </Link>
+          <Link to={routes.depositTopUp} className="fm-deposit-act fm-deposit-act--topup">
+            <span className="fm-deposit-act-icon-wrap">
+              <img alt="" src={depositAssets.group11} />
+            </span>
+            {t("home.topUp")}
+          </Link>
 
-        <Link to={routes.withdraw} className="fm-deposit-act fm-deposit-act--withdraw">
-          <span className="fm-deposit-act-icon-wrap">
-            <img alt="" src={depositAssets.group10} />
-          </span>
-          {t("home.withdraw")}
-        </Link>
-      </section>
+          <Link to={routes.withdraw} className="fm-deposit-act fm-deposit-act--withdraw">
+            <span className="fm-deposit-act-icon-wrap">
+              <img alt="" src={depositAssets.group10} />
+            </span>
+            {t("home.withdraw")}
+          </Link>
+        </section>
+      </div>
 
       <section className="fm-deposit-history" aria-label={t("deposit.historyAria")}>
         <div className="fm-deposit-history-tabs" role="tablist" aria-label={t("deposit.historyTabsAria")}>

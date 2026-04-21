@@ -55,32 +55,34 @@ export default function BalanceReferralScreen() {
 
       <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} title={t("referral.tab")} />
 
-      <div className="fm-deposit-chrome-spacer" aria-hidden="true" />
+      <div className="fm-deposit-top-stack">
+        <div className="fm-deposit-chrome-spacer" aria-hidden="true" />
 
-      <section className="fm-deposit-balance" aria-label="Current balance">
-        <div className="fm-deposit-balance-copy">
-          <p className="fm-deposit-balance-title">Current balance</p>
-          <div className="fm-deposit-balance-amt">
-            <strong>{balanceUsdt.toFixed(2)}</strong>
-            <span className="fm-deposit-u">USDT</span>
+        <section className="fm-deposit-balance" aria-label="Current balance">
+          <div className="fm-deposit-balance-copy">
+            <p className="fm-deposit-balance-title">Current balance</p>
+            <div className="fm-deposit-balance-amt">
+              <strong>{balanceUsdt.toFixed(2)}</strong>
+              <span className="fm-deposit-u">USDT</span>
+            </div>
+            <p className="fm-deposit-balance-addr">{formatShortAddress(depositAddress, 6, 6)}</p>
           </div>
-          <p className="fm-deposit-balance-addr">{formatShortAddress(depositAddress, 6, 6)}</p>
-        </div>
 
-        <Link to={routes.depositTopUp} className="fm-deposit-act fm-deposit-act--topup">
-          <span className="fm-deposit-act-icon-wrap">
-            <img alt="" src={depositAssets.group11} />
-          </span>
-          Top up
-        </Link>
+          <Link to={routes.depositTopUp} className="fm-deposit-act fm-deposit-act--topup">
+            <span className="fm-deposit-act-icon-wrap">
+              <img alt="" src={depositAssets.group11} />
+            </span>
+            Top up
+          </Link>
 
-        <Link to={routes.withdraw} className="fm-deposit-act fm-deposit-act--withdraw">
-          <span className="fm-deposit-act-icon-wrap">
-            <img alt="" src={depositAssets.group10} />
-          </span>
-          Withdraw
-        </Link>
-      </section>
+          <Link to={routes.withdraw} className="fm-deposit-act fm-deposit-act--withdraw">
+            <span className="fm-deposit-act-icon-wrap">
+              <img alt="" src={depositAssets.group10} />
+            </span>
+            Withdraw
+          </Link>
+        </section>
+      </div>
 
       <section className="fm-deposit-history" aria-label="Referral activity">
         <p className="fm-referral-date-marker fm-referral-date-marker--a">31.12.2024 00:00</p>
@@ -151,24 +153,26 @@ export default function BalanceReferralScreen() {
           </article>
         </div>
 
-        <ul className="fm-deposit-list">
-          {INVITE_ROWS.map((row) => (
-            <li key={row.user} className="fm-deposit-row fm-referral-invite-row">
-              <div className="fm-deposit-row-icon-wrap">
-                <span className="fm-deposit-row-icon fm-deposit-row-icon--referral">
-                  <img alt="" src={depositAssets.rowIconAt} />
-                </span>
-              </div>
-              <p className="fm-referral-user">{row.user}</p>
-              <div className="fm-deposit-row-side fm-referral-invite-side">
-                <div className="fm-deposit-row-amt">
-                  <span>{row.amt}</span>
-                  <span className="fm-deposit-row-unit">USDT</span>
+        <div className="fm-deposit-list-scroll">
+          <ul className="fm-deposit-list">
+            {INVITE_ROWS.map((row) => (
+              <li key={row.user} className="fm-deposit-row fm-referral-invite-row">
+                <div className="fm-deposit-row-icon-wrap">
+                  <span className="fm-deposit-row-icon fm-deposit-row-icon--referral">
+                    <img alt="" src={depositAssets.rowIconAt} />
+                  </span>
                 </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <p className="fm-referral-user">{row.user}</p>
+                <div className="fm-deposit-row-side fm-referral-invite-side">
+                  <div className="fm-deposit-row-amt">
+                    <span>{row.amt}</span>
+                    <span className="fm-deposit-row-unit">USDT</span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <FigmaTabBar icons={referralTabIcons} />
