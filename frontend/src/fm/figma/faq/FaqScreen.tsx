@@ -113,6 +113,16 @@ function FaqChevron({ expanded }: { expanded: boolean }) {
   );
 }
 
+function FaqMintChevron() {
+  return (
+    <span className="fm-faq-chevron-wrap">
+      <span className="fm-faq-mint-btn" aria-hidden="true">
+        <img alt="" src={faqAssets.rowMint} />
+      </span>
+    </span>
+  );
+}
+
 /** Экран «1| FAQ» — node 1:3758: разделы → вопросы. */
 export default function FaqScreen() {
   const { t } = useFmLocale();
@@ -147,11 +157,8 @@ export default function FaqScreen() {
                           onClick={() => setOpenId("")}
                         >
                           <p className="fm-faq-row-title fm-faq-row-title--expanded">{item.title}</p>
-                          <FaqChevron expanded={true} />
+                          <FaqMintChevron />
                         </button>
-                        <span className="fm-faq-mint-btn" aria-hidden="true">
-                          <img alt="" src={faqAssets.rowMint} />
-                        </span>
                       </div>
                       <div className="fm-faq-answer">{item.body}</div>
                     </>

@@ -3,10 +3,12 @@
 .fm-faq {
   position: relative;
   width: 390px;
+  height: 959px;
   min-height: 959px;
   margin: 0 auto;
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .fm-faq * {
@@ -18,13 +20,26 @@
 }
 
 .fm-faq-list {
+  position: absolute;
   left: 20px;
   top: 86px;
+  bottom: 72px;
   width: 350px;
   display: flex;
   flex-direction: column;
   gap: 9px;
-  padding-bottom: 120px;
+  padding-bottom: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fm-faq-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .fm-faq-section-heading {
@@ -69,25 +84,11 @@
 }
 
 .fm-faq-expand-top {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
   width: 100%;
-  padding-right: 8px;
 }
 
 .fm-faq-expand-top .fm-faq-row-hit {
-  flex: 1;
   padding: 0;
-}
-
-.fm-faq-expand-top .fm-faq-mint-btn {
-  position: relative;
-  left: auto;
-  top: auto;
-  flex-shrink: 0;
 }
 
 .fm-faq-row--collapsed {
@@ -118,16 +119,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 4px;
   border-radius: var(--figma-radius-icon-hit);
   background-color: var(--color-blue-dark);
 }
 
 .fm-faq-chevron-btn img {
-  width: 16px;
-  height: 16px;
+  width: 11.6667px;
+  height: 9.41421px;
   display: block;
 }
 
@@ -155,7 +156,7 @@
 
 .fm-faq-mint-btn {
   position: absolute;
-  left: 310px;
+  right: 16px;
   top: 12px;
   width: 24px;
   height: 24px;
@@ -171,6 +172,7 @@
   width: 13.714px;
   height: 13.714px;
   display: block;
+  transform: rotate(-90deg);
 }
 
 .fm-faq-answer {
