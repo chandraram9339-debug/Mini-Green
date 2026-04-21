@@ -48,6 +48,12 @@ server {
     try_files \$uri =404;
   }
 
+  location = /index.html {
+    expires -1;
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+    try_files /index.html =404;
+  }
+
   location / {
     try_files \$uri \$uri/ /index.html;
   }

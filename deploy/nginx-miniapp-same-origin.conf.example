@@ -34,6 +34,13 @@ server {
     try_files $uri =404;
   }
 
+  # Свежий index.html после деплоя: иначе WebView/Telegram может держать старую оболочку и старые имена чанков.
+  location = /index.html {
+    expires -1;
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+    try_files /index.html =404;
+  }
+
   location / {
     try_files $uri $uri/ /index.html;
   }

@@ -171,7 +171,15 @@ chmod +x ~/miniapp/deploy/update-server.sh
 ~/miniapp/deploy/update-server.sh
 ```
 
-## 6. Быстрая проверка
+## 6. «Задеплоил, а в Mini App ничего не поменялось»
+
+1. Убедись, что на сервере реально новый коммит: `cd ~/miniapp && git rev-parse HEAD` и сравни с GitHub.
+2. Пересобери фронт и перезагрузи nginx: `bash deploy/update-server.sh` (или вручную `pnpm --filter miniapp-frontend build` и `systemctl reload nginx`).
+3. Проверь, что `root` в nginx указывает на тот же каталог, куда пишет сборка: `grep root /etc/nginx/sites-enabled/*` → должно быть что-то вроде `/root/miniapp/frontend/dist`.
+4. **Кэш WebView:** в шаблоне nginx для этого проекта у `index.html` выставлены заголовки без кэша. Если конфиг на сервере старый — добавь блок `location = /index.html` из `deploy/nginx-miniapp-same-origin.conf.example`, затем `nginx -t && systemctl reload nginx`.
+5. Полностью закрой мини-апп в Telegram и открой снова (иногда кэш держится до перезапуска клиента).
+
+## 7. Быстрая проверка
 
 Проверить backend:
 
@@ -194,7 +202,7 @@ grep -R "5173\\|5174" /etc/nginx/sites-enabled /etc/nginx/sites-available
 
 Команда выше не должна показывать активный proxy на vite dev server.
 
-## 7. Server preflight
+## 8. Server preflight
 
 Перед финальным запуском удобно прогнать автоматическую проверку:
 
@@ -214,7 +222,7 @@ chmod +x ~/miniapp/deploy/server-preflight.sh
 - `curl http://127.0.0.1:4000/health`
 - остались ли в `nginx` ссылки на `5173/5174`
 
-## 8. Что у тебя сломано сейчас
+## 9. Что у тебя сломано сейчас
 
 По текущим симптомам backend жив, `frontend/dist` уже собран, но `nginx` всё ещё смотрит на старый dev flow.
 

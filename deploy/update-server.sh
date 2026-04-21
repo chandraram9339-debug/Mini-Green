@@ -14,7 +14,9 @@ cd "$PROJECT_ROOT"
 
 echo
 echo "== Git pull =="
+git fetch origin "$BRANCH"
 git pull --ff-only origin "$BRANCH"
+echo "commit=$(git rev-parse HEAD)"
 
 echo
 echo "== Build backend =="
@@ -24,6 +26,9 @@ if [[ -f "$PROJECT_ROOT/package.json" ]]; then
   pnpm install
   pnpm --filter miniapp-backend build
   pnpm --filter miniapp-frontend build
+  echo
+  echo "== Frontend dist (index.html) =="
+  ls -la "$PROJECT_ROOT/frontend/dist/index.html" || true
 else
   echo "Workspace package.json not found, using per-package install/build"
   (cd backend && npm install && npm run build)
