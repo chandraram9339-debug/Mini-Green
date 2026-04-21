@@ -9,6 +9,12 @@ type TelegramWebApp = {
   viewportStableHeight?: number;
   ready: () => void;
   expand: () => void;
+  /** Цвет шапки окна миниаппа (#RRGGBB или ключ темы). */
+  setHeaderColor?: (color: string) => void;
+  /** Цвет фона под WebView. */
+  setBackgroundColor?: (color: string) => void;
+  /** Нижняя панель (если есть у клиента). */
+  setBottomBarColor?: (color: string) => void;
   themeParams?: Record<string, string | undefined>;
   onEvent?: (eventType: string, callback: () => void) => void;
   offEvent?: (eventType: string, callback: () => void) => void;
