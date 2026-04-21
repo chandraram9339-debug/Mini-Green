@@ -6,11 +6,17 @@
 .fm-home {
   position: relative;
   width: 390px;
-  height: 100%;
-  min-height: 870px;
+  max-width: 100%;
   margin: 0 auto;
-  /* Запас под фиксированный таббар — нижний контент можно прокрутить выше белой плашки. */
-  padding-bottom: var(--fm-tab-bar-stack-height);
+  /*
+   * Координаты макета 1:3644 — от верха рамки 870×390 (включая полосу статуса 0–44).
+   * FigmaStatusBar в DOM не рендерится, а блок баланса уже сдвинут на −44px (как под статус).
+   * График и соц-кнопки должны использовать ту же систему: top_figma − 44, иначе между
+   * нижней кнопкой Details у баланса и графиком появляется ~44px лишнего пустого места.
+   */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
   /* Фон страницы — --fm-page-bg / токены Figma (в Mini App без палитры Telegram). */
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
@@ -620,9 +626,9 @@ a.fm-btn-details-chart {
   color: inherit;
 }
 
-/* ---------- Graphic (node 1:3649, y 384–686) ---------- */
+/* ---------- Graphic (node 1:3649, y 384–686 в полной рамке; здесь top = 384 − 44) ---------- */
 .fm-graphic {
-  top: 384px;
+  top: 340px;
   height: 302px;
   width: 390px;
   overflow: hidden;
@@ -1028,9 +1034,9 @@ a.fm-btn-details-chart {
   white-space: nowrap;
 }
 
-/* ---------- Social / Support (node 1:3646) ---------- */
+/* ---------- Social / Support (node 1:3646; top = 716 − 44) ---------- */
 .fm-social {
-  top: 716px;
+  top: 672px;
   height: 52px;
   width: 390px;
   overflow: hidden;
