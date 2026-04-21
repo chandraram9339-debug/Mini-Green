@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
+import { appBarLogoUrl } from "../assets/appBarShared";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
@@ -50,7 +51,9 @@ export default function WithdrawDoneScreen() {
         <div className="fm-withdraw-appbar-line">
           <img alt="" src={w.lineAppBar} />
         </div>
-        <p className="fm-withdraw-appbar-title">USDT Transfer</p>
+        <div className="fm-withdraw-appbar-brand" aria-label="USDT Transfer">
+          <img alt="Palladium" src={appBarLogoUrl} />
+        </div>
         <Link to={routes.home} className="fm-withdraw-back" aria-label="Back">
           <span className="fm-withdraw-icon-btn">
             <img alt="" src={w.back} />

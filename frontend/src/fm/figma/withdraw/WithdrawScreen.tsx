@@ -10,6 +10,7 @@ import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import type { MessageKey } from "../../i18n/messages";
+import { appBarLogoUrl } from "../assets/appBarShared";
 import { routes } from "../routes";
 import {
   validateWithdrawAmount,
@@ -108,7 +109,9 @@ export default function WithdrawScreen() {
         <div className="fm-withdraw-appbar-line">
           <img alt="" src={w.lineAppBar} />
         </div>
-        <p className="fm-withdraw-appbar-title">{t("withdraw.title")}</p>
+        <div className="fm-withdraw-appbar-brand" aria-label={t("withdraw.title")}>
+          <img alt="Palladium" src={appBarLogoUrl} />
+        </div>
         <button type="button" className="fm-withdraw-back" aria-label={t("common.back")} onClick={() => navigate(routes.home)}>
           <span className="fm-withdraw-icon-btn">
             <img alt="" src={w.back} />

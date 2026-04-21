@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { useAppSession } from "../../session/useAppSession";
+import { appBarLogoUrl } from "../assets/appBarShared";
 import type { AppBarAssetUrls } from "../types/appBarAssets";
 import { routes } from "../routes";
 
@@ -78,9 +79,9 @@ export function FigmaAppBar({
         <img alt="" src={assets.dividerLine} />
       </div>
 
-      {title ? (
-        <p className="fm-appbar-title">{title}</p>
-      ) : null}
+      <div className="fm-appbar-brand" aria-label={title ?? "Palladium"}>
+        <img alt="Palladium" src={appBarLogoUrl} />
+      </div>
 
       <div className="fm-back-wrap">
         {backTo ? (

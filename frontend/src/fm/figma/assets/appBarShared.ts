@@ -9,6 +9,7 @@ const b = "/assets/app-bar";
 
 /** Иконка Close (withdraw flow, node 1:3819 и др.) — только там, где нет bell/settings */
 export const appBarCloseUrl = `${b}/close.svg` as const;
+export const appBarLogoUrl = `${b}/palladium-logo.png` as const;
 
 /** Алиасы для экранов с кастомным header (withdraw), без дубля строк */
 export const appBarBackUrl = `${b}/back.svg` as const;

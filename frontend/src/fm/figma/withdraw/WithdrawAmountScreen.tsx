@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
+import { appBarLogoUrl } from "../assets/appBarShared";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { routes } from "../routes";
@@ -82,7 +83,9 @@ export default function WithdrawAmountScreen() {
         <div className="fm-withdraw-appbar-line">
           <img alt="" src={w.lineAppBar} />
         </div>
-        <p className="fm-withdraw-appbar-title">Amount</p>
+        <div className="fm-withdraw-appbar-brand" aria-label="Amount">
+          <img alt="Palladium" src={appBarLogoUrl} />
+        </div>
         <Link to={routes.withdrawRecipient} className="fm-withdraw-back" aria-label="Back">
           <span className="fm-withdraw-icon-btn">
             <img alt="" src={w.back} />
