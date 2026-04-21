@@ -18,6 +18,8 @@ type FigmaAppBarProps = {
   bellStatic?: boolean;
   /** На экране Settings иконка шестерёнки справа без ссылки (node 1:3805). */
   settingsStatic?: boolean;
+  /** Логотип в центре только на первых ключевых экранах. */
+  showLogo?: boolean;
 };
 
 /** Title bar с Back / колокольчик / шестерёнка — эталоны разных экранов задают разные SVG. */
@@ -29,6 +31,7 @@ export function FigmaAppBar({
   bellBadge,
   bellStatic = false,
   settingsStatic = false,
+  showLogo = false,
 }: FigmaAppBarProps) {
   const { notificationUnreadCount } = useAppSession();
   const resolvedBellBadge =
@@ -79,9 +82,13 @@ export function FigmaAppBar({
         <img alt="" src={assets.dividerLine} />
       </div>
 
-      <div className="fm-appbar-brand" aria-label={title ?? "Palladium"}>
-        <img alt="Palladium" src={appBarLogoUrl} />
-      </div>
+      {showLogo ? (
+        <div className="fm-appbar-brand" aria-label="Palladium">
+          <img alt="Palladium" src={appBarLogoUrl} />
+        </div>
+      ) : title ? (
+        <p className="fm-appbar-title">{title}</p>
+      ) : null}
 
       <div className="fm-back-wrap">
         {backTo ? (

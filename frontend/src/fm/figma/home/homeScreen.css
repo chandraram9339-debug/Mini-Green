@@ -156,9 +156,9 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 11.5px;
+  top: 10px;
   width: 220px;
-  height: 33px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,17 +168,21 @@
 
 .fm-appbar-brand img {
   display: block;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  width: 168px;
+  height: 20px;
+  max-width: none;
+  max-height: none;
   object-fit: contain;
 }
 
 .fm-appbar-brand::after {
   content: "";
   position: absolute;
-  inset: 0;
+  left: 50%;
+  top: 50%;
+  width: 168px;
+  height: 20px;
+  transform: translate(-50%, -50%);
   background: linear-gradient(
     110deg,
     rgba(255, 255, 255, 0) 18%,
@@ -188,19 +192,19 @@
     rgba(255, 255, 255, 0.08) 66%,
     rgba(255, 255, 255, 0) 82%
   );
-  background-size: 220px 100%;
+  background-size: 168px 100%;
   background-repeat: no-repeat;
-  animation: fm-logo-shimmer 4.4s ease-in-out infinite;
+  animation: fm-logo-shimmer 5.9s ease-in-out infinite;
   pointer-events: none;
   opacity: 0.95;
   -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
-  -webkit-mask-size: contain;
+  -webkit-mask-size: 168px 20px;
   mask-image: url("/assets/app-bar/palladium-logo.png");
   mask-repeat: no-repeat;
   mask-position: center;
-  mask-size: contain;
+  mask-size: 168px 20px;
 }
 
 @keyframes fm-logo-shimmer {
@@ -216,7 +220,6 @@
   .fm-appbar-brand::after {
     animation: none;
     opacity: 0.3;
-    background-position: center;
   }
 }
 
@@ -728,25 +731,50 @@ a.fm-btn-details-chart {
   transform-origin: center bottom;
   opacity: 0.32;
   filter: blur(12px);
-  animation: fm-chart-glow-breath 5.8s ease-in-out infinite;
+  animation: none;
 }
 
 .fm-chart-area-fill {
   transform-box: fill-box;
   transform-origin: center bottom;
-  animation: fm-chart-area-breath 5.8s ease-in-out infinite;
+  animation: none;
 }
 
 .fm-chart-line-path {
-  animation: fm-chart-line-tint 5.8s ease-in-out infinite;
+  animation: none;
 }
 
 .fm-chart-area-stop--top {
-  animation: fm-chart-gradient-top 5.8s ease-in-out infinite;
+  animation: none;
 }
 
 .fm-chart-area-stop--mid {
+  animation: none;
+}
+
+.fm-chart--animated .fm-chart-area-glow {
+  animation: fm-chart-glow-breath 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
+}
+
+.fm-chart--animated .fm-chart-area-fill {
+  animation: fm-chart-area-breath 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
+}
+
+.fm-chart--animated .fm-chart-line-path {
+  animation: fm-chart-line-tint 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
+}
+
+.fm-chart--animated .fm-chart-area-stop--top {
+  animation: fm-chart-gradient-top 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
+}
+
+.fm-chart--animated .fm-chart-area-stop--mid {
   animation: fm-chart-gradient-mid 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
 }
 
 @keyframes fm-chart-area-breath {

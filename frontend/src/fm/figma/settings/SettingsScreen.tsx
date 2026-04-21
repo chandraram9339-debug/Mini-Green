@@ -215,7 +215,7 @@ export default function SettingsScreen() {
 
         <section className="fm-settings-section" aria-label={t("settings.push")}>
           <div className="fm-settings-row fm-settings-row--simple fm-settings-row--toggle-row">
-            <span className="fm-settings-lead-icon">
+            <span className="fm-settings-lead-icon fm-settings-lead-icon--push">
               <img alt="" src={s.bell} />
             </span>
             <span className="fm-settings-row-label">{t("settings.push")}</span>
@@ -241,14 +241,14 @@ export default function SettingsScreen() {
 
         <section className="fm-settings-section" aria-label={t("settings.support")}>
           <Link to={routes.support} className="fm-settings-row fm-settings-row--simple fm-settings-row--link">
-            <span className="fm-settings-lead-icon">
+            <span className="fm-settings-lead-icon fm-settings-lead-icon--support">
               <img alt="" src={s.iconSupport} />
             </span>
             <span className="fm-settings-row-label">{t("settings.support")}</span>
           </Link>
 
           <Link to={routes.faq} className="fm-settings-row fm-settings-row--simple fm-settings-row--link">
-            <span className="fm-settings-lead-icon">
+            <span className="fm-settings-lead-icon fm-settings-lead-icon--faq">
               <img alt="" src={s.iconFaq} />
             </span>
             <span className="fm-settings-row-label">{t("settings.faq")}</span>
@@ -259,14 +259,14 @@ export default function SettingsScreen() {
             className="fm-settings-row fm-settings-row--simple fm-settings-row--link fm-settings-row--button"
             onClick={openTelegramReferralShare}
           >
-            <span className="fm-settings-lead-icon fm-settings-lead-icon--referral-boost">
+            <span className="fm-settings-lead-icon fm-settings-lead-icon--referral">
               <img alt="" src={s.userPlus} />
             </span>
             <span className="fm-settings-row-label">{t("settings.referralLink")}</span>
           </button>
 
           <Link to={routes.seedCode} className="fm-settings-row fm-settings-row--simple fm-settings-row--link">
-            <span className="fm-settings-lead-icon fm-settings-lead-icon--seed-boost">
+            <span className="fm-settings-lead-icon fm-settings-lead-icon--seed">
               <img alt="" src={s.alertTriangle} />
             </span>
             <span className="fm-settings-row-label">{t("settings.seedCode")}</span>
@@ -278,7 +278,7 @@ export default function SettingsScreen() {
         </div>
 
         <Link to={routes.userAgreement} className="fm-settings-row fm-settings-row--simple fm-settings-row--link">
-          <span className="fm-settings-lead-icon">
+          <span className="fm-settings-lead-icon fm-settings-lead-icon--file">
             <img alt="" src={s.iconFile} />
           </span>
           <span className="fm-settings-row-label">{t("settings.userAgreement")}</span>

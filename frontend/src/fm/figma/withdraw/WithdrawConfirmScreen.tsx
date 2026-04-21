@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { createWithdrawalRequest } from "../../api/createWithdrawal";
 import { hasApiBase } from "../../api/env";
 import { useAppSession } from "../../session/useAppSession";
-import { appBarLogoUrl } from "../assets/appBarShared";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
@@ -109,9 +108,7 @@ export default function WithdrawConfirmScreen() {
         <div className="fm-withdraw-appbar-line">
           <img alt="" src={w.lineAppBar} />
         </div>
-        <div className="fm-withdraw-appbar-brand" aria-label="USDT Transfer">
-          <img alt="Palladium" src={appBarLogoUrl} />
-        </div>
+        <p className="fm-withdraw-appbar-title">USDT Transfer</p>
         <button type="button" className="fm-withdraw-back" aria-label="Back" onClick={() => navigate(routes.withdraw)}>
           <span className="fm-withdraw-icon-btn">
             <img alt="" src={w.back} />

@@ -216,7 +216,7 @@ export default function BalanceDepositScreen() {
     <main className="fm-deposit" data-node-id="1:3675" aria-label={t("deposit.ariaScreen")}>
       <FigmaStatusBar assets={depositStatusAssets} />
 
-      <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} />
+      <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} showLogo />
 
       {/* Status 44px + App bar 56px — абсолютные слои не участвуют в потоке; якорь для отступов как в макете (y 130). */}
       <div className="fm-deposit-chrome-spacer" aria-hidden="true" />

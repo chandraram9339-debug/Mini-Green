@@ -4,7 +4,6 @@ import "./withdraw-flow.css";
 
 import { Link } from "react-router-dom";
 
-import { appBarLogoUrl } from "../assets/appBarShared";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
@@ -42,9 +41,7 @@ export default function WithdrawRecipientScreen() {
         <div className="fm-withdraw-appbar-line">
           <img alt="" src={w.lineAppBar} />
         </div>
-        <div className="fm-withdraw-appbar-brand" aria-label="Recipient">
-          <img alt="Palladium" src={appBarLogoUrl} />
-        </div>
+        <p className="fm-withdraw-appbar-title">Recipient</p>
         <Link to={routes.withdraw} className="fm-withdraw-back" aria-label="Back">
           <span className="fm-withdraw-icon-btn">
             <img alt="" src={w.back} />

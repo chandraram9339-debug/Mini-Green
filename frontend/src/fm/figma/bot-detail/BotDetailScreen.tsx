@@ -200,7 +200,7 @@ export default function BotDetailScreen() {
     <main className="fm-bot" data-node-id="1:3701" aria-label={t("bot.ariaScreen")}>
       <FigmaStatusBar assets={botStatusAssets} />
 
-      <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} />
+      <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} showLogo />
 
       <section className="fm-abs fm-bot-status-panel" aria-label={t("bot.statusAria")}>
         <div className="fm-bot-status-row">
@@ -259,6 +259,7 @@ export default function BotDetailScreen() {
             line: botDetailAssets.line1,
           }}
           points={chartPoints}
+          animate={isBotActive}
         />
       </div>
 

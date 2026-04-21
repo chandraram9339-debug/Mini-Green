@@ -47,23 +47,27 @@
 
 .fm-support-row-icon-wrap {
   flex-shrink: 0;
-  width: 17px;
-  height: 17px;
-  overflow: visible;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Явные px: SVG с width/height 100% внутри <img> иначе может тянуться под другие правила; 17px заметнее чем −5px от эталона 24 */
 .fm-support .fm-support-row-icon-img {
-  width: 17px;
-  height: 17px;
-  max-width: 17px;
-  max-height: 17px;
   display: block;
-  object-fit: contain;
   flex-shrink: 0;
+}
+
+.fm-support .fm-support-row-icon-img--support {
+  width: 18px;
+  height: 17px;
+}
+
+.fm-support .fm-support-row-icon-img--faq {
+  width: 8px;
+  height: 14px;
 }
 
 .fm-support-row-title {

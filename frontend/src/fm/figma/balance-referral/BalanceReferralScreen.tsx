@@ -11,6 +11,7 @@ import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
+import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatShortAddress } from "../withdraw/withdrawDraft";
@@ -41,6 +42,7 @@ const INVITE_ROWS = [
 
 /** Экран «Detail Balance | Referral» — node 1:3687, `detail-balance-referral__full-screen__1-3687.tsx`. */
 export default function BalanceReferralScreen() {
+  const { t } = useFmLocale();
   const { balanceUsdt, depositAddress } = useWalletDisplay();
 
   return (
@@ -51,7 +53,7 @@ export default function BalanceReferralScreen() {
     >
       <FigmaStatusBar assets={referralStatusAssets} />
 
-      <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} />
+      <FigmaAppBar assets={defaultAppBarAssetUrls} backTo={routes.home} title={t("referral.tab")} />
 
       <div className="fm-deposit-chrome-spacer" aria-hidden="true" />
 

@@ -59,9 +59,9 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 11.5px;
+  top: 10px;
   width: 220px;
-  height: 33px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,11 +71,13 @@
 
 .fm-withdraw-appbar-brand img {
   display: block;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
+  width: 205.5px;
   height: auto;
+  max-width: none;
+  max-height: none;
   object-fit: contain;
+  animation: fm-logo-image-pulse 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
 }
 
 .fm-withdraw-appbar-brand::after {
@@ -83,19 +85,18 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    110deg,
-    rgba(255, 255, 255, 0) 18%,
-    rgba(255, 255, 255, 0.1) 34%,
-    rgba(255, 255, 255, 0.75) 48%,
-    rgba(181, 214, 255, 0.55) 54%,
-    rgba(255, 255, 255, 0.08) 66%,
-    rgba(255, 255, 255, 0) 82%
+    90deg,
+    rgba(255, 255, 255, 0) 8%,
+    rgba(255, 255, 255, 0.18) 28%,
+    rgba(255, 255, 255, 0.56) 50%,
+    rgba(191, 216, 239, 0.28) 68%,
+    rgba(255, 255, 255, 0) 90%
   );
-  background-size: 220px 100%;
-  background-repeat: no-repeat;
-  animation: fm-logo-shimmer 4.4s ease-in-out infinite;
+  animation: fm-logo-pulse 5.8s ease-in-out infinite;
+  animation-delay: var(--fm-sync-delay, 0ms);
   pointer-events: none;
-  opacity: 0.95;
+  opacity: 0.24;
+  transform: scale(0.992);
   -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
@@ -107,10 +108,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .fm-withdraw-appbar-brand img,
   .fm-withdraw-appbar-brand::after {
     animation: none;
     opacity: 0.3;
-    background-position: center;
   }
 }
 

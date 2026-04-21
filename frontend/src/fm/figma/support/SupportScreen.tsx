@@ -46,14 +46,22 @@ export default function SupportScreen() {
           className="fm-support-row fm-support-row--link"
         >
           <span className="fm-support-row-icon-wrap">
-            <img className="fm-support-row-icon-img" alt="" src={supportAssets.listSupportChat} width={17} height={17} />
+            <img
+              className="fm-support-row-icon-img fm-support-row-icon-img--support"
+              alt=""
+              src={supportAssets.listSupportChat}
+            />
           </span>
           <p className="fm-support-row-title">{t("support.chat")}</p>
         </a>
 
         <Link to={routes.faq} className="fm-support-row fm-support-row--link">
           <span className="fm-support-row-icon-wrap">
-            <img className="fm-support-row-icon-img" alt="" src={supportAssets.listFaq} width={17} height={17} />
+            <img
+              className="fm-support-row-icon-img fm-support-row-icon-img--faq"
+              alt=""
+              src={supportAssets.listFaq}
+            />
           </span>
           <p className="fm-support-row-title">{t("faq.title")}</p>
         </Link>

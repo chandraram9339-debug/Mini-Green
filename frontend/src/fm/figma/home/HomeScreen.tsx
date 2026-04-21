@@ -104,6 +104,7 @@ export default function HomeScreen() {
 
       <FigmaAppBar
         assets={defaultAppBarAssetUrls}
+        showLogo
         onBack={() => {
           if (window.history.length > 1) navigate(-1);
         }}
@@ -169,7 +170,7 @@ export default function HomeScreen() {
             : t("home.chartBalanceAria")
         }
       >
-        <FigmaGraphic points={chartPoints} />
+        <FigmaGraphic points={chartPoints} animate={isBotActive} />
 
         <div className="fm-graphic-status">
           <p>{t("home.botStatus")}</p>

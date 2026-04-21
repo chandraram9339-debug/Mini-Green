@@ -1,9 +1,18 @@
+import { useEffect, useState, type CSSProperties } from "react";
+
 import { homeAssets } from "../home/homeAssets";
 import type { GraphicPoint } from "./tradingChartPoints";
+import { getSynchronizedAnimationDelay } from "./syncAnimation";
 
 export type GraphicChartAssets = {
   vector25: string;
   line: string;
+};
+
+type FigmaGraphicProps = {
+  chart?: GraphicChartAssets;
+  points?: GraphicPoint[];
+  animate?: boolean;
 };
 
 const CHART_SCALES = [
@@ -92,16 +101,32 @@ function buildPercentChartGeom(points: GraphicPoint[]) {
   };
 }
 
-export function FigmaGraphic({ chart, points }: { chart?: GraphicChartAssets; points?: GraphicPoint[] }) {
+export function FigmaGraphic({ chart, points, animate = false }: FigmaGraphicProps) {
   const assets = chart ?? {
     vector25: homeAssets.vector25,
     line: homeAssets.line,
   };
   const geom = buildPercentChartGeom(points ?? []);
   const useDynamicLine = Array.isArray(points) && points.length > 0 && !geom.isEmpty;
+  const [syncDelay, setSyncDelay] = useState(() => getSynchronizedAnimationDelay());
+
+  useEffect(() => {
+    if (!animate) return;
+    setSyncDelay(getSynchronizedAnimationDelay());
+  }, [animate]);
+
+  const chartAnimationStyle = {
+    "--fm-sync-delay": syncDelay,
+  } as CSSProperties;
 
   return (
-    <div className="fm-chart" data-node-id="1:3505" data-name="Graphic">
+    <div
+      className={`fm-chart${animate ? " fm-chart--animated" : ""}`}
+      data-node-id="1:3505"
+      data-name="Graphic"
+      data-chart-animated={animate ? "true" : "false"}
+      style={chartAnimationStyle}
+    >
       <div className="fm-chart-scale">
         {(useDynamicLine ? geom.yLabels : CHART_SCALES).map((label) => (
           <div key={label} className="fm-scale-row">
