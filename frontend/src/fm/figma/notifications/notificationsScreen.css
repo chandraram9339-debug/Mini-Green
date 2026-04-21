@@ -3,6 +3,7 @@
 .fm-notifications {
   position: relative;
   width: 390px;
+  height: 100%;
   min-height: 824px;
   margin: 0 auto;
   background-color: var(--fm-page-bg);
@@ -11,10 +12,6 @@
 
 .fm-notifications * {
   box-sizing: border-box;
-}
-
-.fm-notifications .fm-tabbar {
-  top: 752px;
 }
 
 .fm-notify-stack {

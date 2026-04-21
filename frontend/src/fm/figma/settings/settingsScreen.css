@@ -5,6 +5,7 @@
 .fm-settings {
   position: relative;
   width: 390px;
+  height: 100%;
   min-height: 824px;
   margin: 0 auto;
   /* Зона, где рисуется 72px таб; контент .fm-settings-body сидит выше, не залезает */

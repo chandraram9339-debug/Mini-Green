@@ -1,11 +1,12 @@
 /**
  * Tab Bar — node 1:3645 (Ready). Один источник: тени/радиусы из `figma-layout-tokens.css`.
- * Вертикальное положение задаётся на уровне экрана: Home/заглушки 798px; Deposit 1038px; Bot 1216px.
+ * По умолчанию таб прижат к низу экрана (bottom: 0). См. `.fm-deposit .fm-tabbar` — потоковый вариант.
  */
 .fm-tabbar {
   position: absolute;
   left: 0;
-  top: 798px;
+  top: auto;
+  bottom: 0;
   height: 72px;
   width: 390px;
   /* Выше всех абсолютных секций экрана (графики, история), иначе иконки «пропадают» под слоями */

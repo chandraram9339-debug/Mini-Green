@@ -3,7 +3,8 @@
 .fm-bot {
   position: relative;
   width: 390px;
-  min-height: 1288px;
+  height: 100%;
+  min-height: max(1288px, 100%);
   margin: 0 auto;
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
@@ -14,10 +15,6 @@
 
 .fm-bot * {
   box-sizing: border-box;
-}
-
-.fm-bot .fm-tabbar {
-  top: 1216px;
 }
 
 /* ---------- Status Bot block y 100–255 ---------- */

@@ -37,8 +37,10 @@ body {
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
 .app-shell {
@@ -53,6 +55,21 @@ body {
   padding-top: max(0px, env(safe-area-inset-top, 0px));
   padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
   transition: opacity 220ms ease;
+  /* Заполняем высоту WebView: контент + таббар прижаты к низу, без «полосы» под табом */
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell > .fm-session-banner {
+  flex-shrink: 0;
+}
+
+.app-shell > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
 }
 
 .app-shell--splash-hidden {
@@ -89,7 +106,8 @@ body {
 }
 
 .fm-route-stub-shell .fm-tabbar {
-  top: 798px;
+  top: auto;
+  bottom: 0;
 }
 
 .fm-route-stub-main {

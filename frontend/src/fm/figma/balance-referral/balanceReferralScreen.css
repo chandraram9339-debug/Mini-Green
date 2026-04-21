@@ -1,5 +1,9 @@
 /* Detail Balance | Referral — frame 390×915, node 1:3687 */
 
+.fm-deposit.fm-referral {
+  min-height: max(915px, 100%);
+}
+
 /* Эталон: метки дат absolute right на фрейме — относительно блока истории */
 .fm-referral-date-marker {
   position: absolute;
