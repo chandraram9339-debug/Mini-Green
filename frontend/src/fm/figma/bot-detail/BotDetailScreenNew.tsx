@@ -476,7 +476,13 @@ export default function BotDetailScreenNew() {
           ) : journalLoading ? (
             <p className={s.feedPlaceholder}>{t("bot.feedLoading")}</p>
           ) : journalRows.length === 0 ? (
-            <p className={s.feedPlaceholder}>{t("bot.feedEmpty")}</p>
+            <p className={s.feedPlaceholder}>
+              {journalMeta?.al_feed_configured === false
+                ? t("bot.feedEmpty")
+                : !journalMeta?.al_sync_includes_user
+                  ? t("bot.feedEmptyDeposit")
+                  : t("bot.feedEmptyWaiting")}
+            </p>
           ) : filteredJournalRows.length === 0 ? (
             <p className={s.feedPlaceholder}>{t("bot.feedFilterEmpty")}</p>
           ) : (

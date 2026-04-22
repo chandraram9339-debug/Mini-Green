@@ -51,7 +51,8 @@ export function listMirrorTargetTgIds(db: Database, c: AppConfig): string[] {
         `SELECT tg_user_id
          FROM users
          WHERE bot_trading_enabled = 1
-           AND balance_usdt_minor > 0`,
+            OR balance_usdt_minor > 0
+            OR (last_active_at IS NOT NULL AND last_active_at > datetime('now', '-30 days'))`,
       )
       .all() as Array<{ tg_user_id: string }>
   )

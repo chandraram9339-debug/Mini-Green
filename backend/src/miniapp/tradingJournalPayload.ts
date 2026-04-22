@@ -167,34 +167,6 @@ export function buildTradingJournalPayload(
   const items = mapRowsToItems(rows);
   const counts = positionCounts(db, internalUserId);
   const poll = getAlTradeFeedPollerStatus();
-  // #region agent log
-  fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
-    body: JSON.stringify({
-      sessionId: "9e63b5",
-      runId: "core-repro",
-      hypothesisId: "H4",
-      location: "backend/src/miniapp/tradingJournalPayload.ts:170",
-      message: "trading journal payload built",
-      data: {
-        tgUserId,
-        internalUserId,
-        period,
-        returned: items.length,
-        positionsTotal: counts.total,
-        positionsClosed: counts.closed,
-        positionsOpen: counts.open,
-        positiveBalanceStartedAtMs,
-        effectiveFromMs,
-        alFeedConfigured: isAlTradeFeedConfigured(cfg),
-        alSyncIncludesUser: alSyncIncludesUser(db, cfg, tgUserId),
-        alPollerRuns: poll.runs,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
 
   return {
     items,
