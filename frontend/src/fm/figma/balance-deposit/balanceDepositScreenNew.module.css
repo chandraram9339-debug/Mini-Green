@@ -21,12 +21,14 @@
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: var(--tg-viewport-stable-height, 100dvh);
+  /* Exact height = viewport: lets flex layout pin TabBar at bottom */
+  height: var(--tg-viewport-stable-height, 100dvh);
+  /* overflow: hidden prevents outer <main> from scrolling this screen */
+  overflow: hidden;
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
   background-color: #ecf1f4;
-  overflow-x: hidden;
   touch-action: pan-y;
   font-family: "Outfit", sans-serif;
   box-sizing: border-box;
@@ -153,11 +155,10 @@
   flex: 1 1 auto;
   overflow-y: auto;
   overflow-x: hidden;
+  /* min-height: 0 is required so flex child can shrink below content size */
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  /* padding-bottom covers the fixed tabbar height */
-  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Balance Section ────────────────────────────────────────── */
@@ -568,20 +569,14 @@
   opacity: 0.7;
 }
 
-/* ── TabBar (sticky at bottom) ──────────────────────────────── */
+/* ── TabBar ──────────────────────────────────────────────────── */
 .tabBar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  /* stays inside max-width centred column */
-  max-width: 500px;
-  margin: 0 auto;
+  /* Natural flex child — always sits at the bottom of the bounded .screen */
+  flex-shrink: 0;
   width: 100%;
   background-color: #ffffff;
   border-radius: 12px 12px 0 0;
   box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
-  z-index: 50;
 }
 
 .tabBarInner {
