@@ -5,7 +5,7 @@
  * Data:   real API data — balance, referrals, bot status, price, chart points.
  * Layout: flex-column, width: 100%, no horizontal scroll, touch-action: pan-y.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { hasApiBase } from "../../api/env";
