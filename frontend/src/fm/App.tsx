@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import BalanceDepositScreen from "./figma/balance-deposit/BalanceDepositScreen";
+import BalanceDepositScreenNew from "./figma/balance-deposit/BalanceDepositScreenNew";
 import BalanceReferralScreen from "./figma/balance-referral/BalanceReferralScreen";
 import SocialMediaScreen from "./figma/social-media/SocialMediaScreen";
 import SupportScreen from "./figma/support/SupportScreen";
@@ -44,7 +44,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Navigate to={routes.bot} replace />} />
               <Route path={routes.home} element={<HomeScreenNew />} />
-              <Route path={routes.balanceDeposit} element={<BalanceDepositScreen />} />
+              <Route path={routes.balanceDeposit} element={<BalanceDepositScreenNew />} />
               <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />
               <Route path={routes.bot} element={<BotDetailScreen />} />
               <Route path={routes.social} element={<SocialMediaScreen />} />
