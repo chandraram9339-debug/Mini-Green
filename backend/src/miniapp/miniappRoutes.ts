@@ -42,28 +42,6 @@ export function registerMiniappContract(app: express.Express) {
     }
     const accessToken = await signAccessToken(v.userId);
     const wallet = buildWalletForUser(v.userId);
-    // #region agent log
-    fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
-      body: JSON.stringify({
-        sessionId: "9e63b5",
-        runId: "core-repro",
-        hypothesisId: "H1",
-        location: "backend/src/miniapp/miniappRoutes.ts:44",
-        message: "auth wallet snapshot",
-        data: {
-          userId: v.userId,
-          source: v.source,
-          balanceUsdt: wallet.balanceUsdt,
-          availableWithdrawUsdt: wallet.availableWithdrawUsdt,
-          hasDepositAddress: Boolean(wallet.depositAddress),
-          botTradingEnabled: wallet.botTradingEnabled,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     logEvent(String(res.locals.traceId ?? "no-trace"), "miniapp.auth.telegram", {
       user_id: v.userId,
       source: v.source
@@ -86,27 +64,6 @@ export function registerMiniappContract(app: express.Express) {
     const db = getDb();
     void (async () => {
       const out = await runDepositOnPaid(db, config, req.userId!, trace);
-      // #region agent log
-      fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
-        body: JSON.stringify({
-          sessionId: "9e63b5",
-          runId: "core-repro",
-          hypothesisId: "H2",
-          location: "backend/src/miniapp/miniappRoutes.ts:67",
-          message: "deposit confirm outcome",
-          data: {
-            userId: req.userId,
-            type: out.type,
-            status: out.status,
-            error: "error" in out ? out.error : null,
-            note: "note" in out ? out.note : null,
-          },
-          timestamp: Date.now(),
-        }),
-      }).catch(() => {});
-      // #endregion
       if (out.type === "error") {
         res.status(out.status).json({ message: out.error });
         return;
@@ -171,26 +128,6 @@ export function registerMiniappContract(app: express.Express) {
     if (enabled) sibOnUserStart(db, u.id);
     else sibOnUserStop(db, u.id);
     fireTradingEngineNotify(req.userId!, enabled ? "start" : "stop", String(res.locals.traceId ?? "no-trace"));
-    // #region agent log
-    fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
-      body: JSON.stringify({
-        sessionId: "9e63b5",
-        runId: "core-repro",
-        hypothesisId: "H4",
-        location: "backend/src/miniapp/miniappRoutes.ts:130",
-        message: "trading state updated",
-        data: {
-          userId: req.userId,
-          enabled,
-          balanceMinor: u.balance_usdt_minor,
-          hadPositiveBalance: u.balance_usdt_minor > 0,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     res.json({ ok: true, botTradingEnabled: enabled });
   });
 
