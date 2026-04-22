@@ -1,0 +1,523 @@
+/*
+ * Bot Detail Screen — Builder.io "Third Screen" design port
+ * Palette (exact HEX from Builder.io global.css HSL tokens):
+ *   bg          #ECF1F4   blue        #2D6E93   blue-mid    #759AC6
+ *   green       #73C1B1   red         #DF7F7F   grey-dark   #55647B
+ *   grey-medium #8494AF   grey-line   #D3DAE5   grey-light  #C8D4E0
+ *   black       #192B48   white       #FFFFFF   inactive    #F4F7F8
+ */
+
+/* ── Screen wrapper ─────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #ecf1f4;
+  touch-action: pan-y;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+}
+
+.screen * {
+  box-sizing: border-box;
+}
+
+/* ── AppBar ─────────────────────────────────────────────────── */
+.appBar {
+  width: 100%;
+  background-color: #ecf1f4;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.appBarRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+}
+
+.appBarBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.appBarBack:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.appBarLogo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.appBarLogo img {
+  display: block;
+  width: 168px;
+  height: 20px;
+  object-fit: contain;
+  max-width: calc(100vw - 96px);
+}
+
+.appBarIcons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.appBarBell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.appBarBellBadge {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 9999px;
+  background-color: #2d6e93;
+}
+
+.appBarBellBadge span {
+  font-size: 6px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1;
+}
+
+.appBarGear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.appBarDivider {
+  height: 1px;
+  background-color: #d3dae5;
+  margin: 0 16px;
+}
+
+/* ── Scrollable body ────────────────────────────────────────── */
+.body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* ── Bot Status Section ─────────────────────────────────────── */
+.statusSection {
+  padding: 24px 16px 8px;
+}
+
+.statusRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 32px;
+}
+
+.statusLine {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.statusCaption {
+  color: #8494af;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.statusLiveRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.statusDotActive   { background-color: #73c1b1; }
+.statusDotInactive { background-color: #df7f7f; }
+
+.statusLabel {
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.statusLabelActive   { color: #73c1b1; }
+.statusLabelInactive { color: #df7f7f; }
+
+.priceLine {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.priceCaption {
+  color: #8494af;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  padding-bottom: 2px;
+  margin: 0;
+}
+
+.priceGroup {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.priceNum {
+  color: #192b48;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.pricePair {
+  color: #55647b;
+  font-family: "Outfit", sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  line-height: 1;
+  padding-bottom: 2px;
+}
+
+/* ── Action Buttons (Start / Stop) ──────────────────────────── */
+.actionRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.btnStart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  height: 52px;
+  border-radius: 9999px;
+  background-color: #2d6e93;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  color: #ffffff;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.btnStop {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  height: 52px;
+  border-radius: 9999px;
+  background-color: #df7f7f;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  color: #ffffff;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.btnStart:hover,
+.btnStop:hover { opacity: 0.9; }
+
+/* Visual dim — does NOT block pointer events; applyBotState() guards double-clicks */
+.btnDim { opacity: 0.45; cursor: default; }
+
+/* ── Trading Stats Section ──────────────────────────────────── */
+.statsSection {
+  padding: 24px 16px 8px;
+}
+
+.sectionTitle {
+  color: #192b48;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin: 0 0 16px;
+}
+
+/* ── Timeframe Tabs ─────────────────────────────────────────── */
+.periodTabs {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.periodTab {
+  flex: 1;
+  padding: 10px 4px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #2d6e93;
+  transition: background-color 0.15s, box-shadow 0.15s;
+  text-align: center;
+}
+
+.periodTabActive {
+  background-color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.periodTabInactive {
+  background-color: #f4f7f8;
+}
+
+/* ── Stats Card ─────────────────────────────────────────────── */
+.statsCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statsLabel {
+  color: #55647b;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  flex: 1;
+  min-width: 0;
+}
+
+.statsVal {
+  color: #192b48;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* ── Trading Chart ──────────────────────────────────────────── */
+.chartShell {
+  width: 100%;
+  overflow: hidden;
+}
+
+.chartScales {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.chartScaleLine {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 14px;
+}
+
+.chartScaleLabel {
+  color: #8494af;
+  font-family: "Outfit", sans-serif;
+  font-size: 6px;
+  width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.chartScaleTick {
+  flex: 1;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+.chartSvgWrap {
+  position: relative;
+  margin-left: 24px;
+  margin-right: 0;
+  /* negative margin-top = scale line height × count to overlap */
+  margin-top: -168px;
+}
+
+.chartSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Trade Feed Section ─────────────────────────────────────── */
+.feedSection {
+  padding: 24px 16px;
+  /* pb-28 equivalent = 112px for safe space above tabbar */
+  padding-bottom: 112px;
+}
+
+.feedFilters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.feedFilter {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.feedFilterActive {
+  background-color: #2d6e93;
+  color: #ffffff;
+}
+
+.feedFilterInactive {
+  background-color: #f4f7f8;
+  color: #55647b;
+}
+
+.feedList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Reset ul defaults */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.feedPlaceholder {
+  color: #8494af;
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px 0;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* ── TabBar ─────────────────────────────────────────────────── */
+.tabBar {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+}
+
+.tabBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.tabItem {
+  flex: 1;
+  max-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.tabItem:hover         { background-color: rgba(0,0,0,0.05); }
+.tabItemActive         { background-color: #2d6e93; }
+.tabItemActive:hover   { opacity: 0.9; }
+
+/* ── Narrow screen overrides ────────────────────────────────── */
+@media (max-width: 360px) {
+  .priceNum       { font-size: 16px; }
+  .periodTab      { font-size: 15px; padding: 8px 2px; }
+  .statsLabel,
+  .statsVal       { font-size: 14px; }
+  .btnStart,
+  .btnStop        { padding: 10px 12px; font-size: 14px; }
+}

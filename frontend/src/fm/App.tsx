@@ -13,7 +13,7 @@ import WithdrawAmountScreen from "./figma/withdraw/WithdrawAmountScreen";
 import WithdrawConfirmScreen from "./figma/withdraw/WithdrawConfirmScreen";
 import WithdrawDoneScreen from "./figma/withdraw/WithdrawDoneScreen";
 import TopUpScreen from "./figma/top-up/TopUpScreen";
-import BotDetailScreen from "./figma/bot-detail/BotDetailScreen";
+import BotDetailScreenNew from "./figma/bot-detail/BotDetailScreenNew";
 import HomeScreenNew from "./figma/home/HomeScreenNew";
 import SeedCodeScreen from "./figma/seed-code/SeedCodeScreen";
 import UserAgreementScreen from "./figma/user-agreement/UserAgreementScreen";
@@ -46,7 +46,7 @@ export default function App() {
               <Route path={routes.home} element={<HomeScreenNew />} />
               <Route path={routes.balanceDeposit} element={<BalanceDepositScreenNew />} />
               <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />
-              <Route path={routes.bot} element={<BotDetailScreen />} />
+              <Route path={routes.bot} element={<BotDetailScreenNew />} />
               <Route path={routes.social} element={<SocialMediaScreen />} />
               <Route path={routes.support} element={<SupportScreen />} />
               <Route path={routes.faq} element={<FaqScreen />} />
