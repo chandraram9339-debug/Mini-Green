@@ -391,11 +391,10 @@
   background-color: #d3dae5;
 }
 
-/* ✦ SVG overlay stretches to fill chart area on any screen */
+/* ✦ SVG overlay stretches to fill full chart area — same width as buttons */
 .chartSvgOverlay {
   position: absolute;
   inset: 0;
-  left: 44px;
   display: flex;
   align-items: stretch;
 }
