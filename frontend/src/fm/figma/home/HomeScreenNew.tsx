@@ -223,7 +223,7 @@ function TabBar({ activeTab }: { activeTab: string }) {
 export default function HomeScreenNew() {
   const navigate = useNavigate();
   const activeTab = useActiveTab();
-  const { phase, botRunning } = useAppSession();
+  const { phase, botRunning, notificationUnreadCount } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
   const apiSessionReady = !hasApiBase() || phase === "ready";
 
@@ -265,7 +265,7 @@ export default function HomeScreenNew() {
   return (
     <div className={s.screen}>
       {/* ── AppBar ── */}
-      <AppBar bellBadge={25} />
+      <AppBar bellBadge={notificationUnreadCount} />
 
       {/* ── Scrollable content ── */}
       <main className={s.scrollBody}>

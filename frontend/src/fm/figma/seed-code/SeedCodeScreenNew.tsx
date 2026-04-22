@@ -1,6 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { hasApiBase } from "../../api/env";
+import { fetchWalletSeed } from "../../api/fetchWalletSeed";
 import { useFmLocale } from "../../i18n/useFmLocale";
+import { useAppSession } from "../../session/useAppSession";
 import { hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
 import { routes } from "../routes";
 import { getSeedWords } from "./seedWords";
@@ -65,8 +69,8 @@ function BottomTabBar() {
       <div className={s.tabBarInner}>
         {tabs.map(({ id, to, label, icon }) => (
           <Link key={id} to={to} className={s.tabItem} aria-label={label}>
-            <div className={`${s.tabItemIcon}${id === "support" ? ` ${s.tabItemIconActive}` : ""}`}>
-              {icon(id === "support")}
+            <div className={s.tabItemIcon}>
+              {icon(false)}
             </div>
           </Link>
         ))}
@@ -78,7 +82,24 @@ function BottomTabBar() {
 /* ── Screen ─────────────────────────────────────────────────── */
 export default function SeedCodeScreenNew() {
   const { t } = useFmLocale();
-  const words = getSeedWords();
+  const { phase } = useAppSession();
+  const [words, setWords] = useState<readonly string[]>(() => getSeedWords());
+  const [seedMode, setSeedMode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasApiBase()) return;
+    if (phase !== "ready") return;
+
+    void fetchWalletSeed().then((payload) => {
+      if (!payload) return;
+      setSeedMode(payload.mode);
+      if (payload.words.length === 12 || payload.words.length === 24) {
+        setWords(payload.words);
+      }
+    });
+  }, [phase]);
+
+  const showDisabledNotice = seedMode === "disabled" || seedMode === "custodial_pk";
 
   return (
     <div className={s.screen} aria-label={t("seed.title")}>
@@ -102,27 +123,36 @@ export default function SeedCodeScreenNew() {
       <div className={s.body}>
         <p className={s.lead}>{t("seed.storeHint")}</p>
 
-        <ul className={s.grid} aria-label={t("seed.title")}>
-          {words.map((w, i) => (
-            <li key={`${i}-${w}`} className={s.word}>
-              <span className={s.wordIdx}>{i + 1}</span>
-              <span>{w}</span>
-            </li>
-          ))}
-        </ul>
+        {showDisabledNotice ? (
+          <p className={s.lead} style={{ opacity: 0.6 }}>
+            {seedMode === "custodial_pk"
+              ? "This wallet uses a custodial private key. Seed phrase is not available."
+              : "Seed phrase is not available for this account."}
+          </p>
+        ) : (
+          <ul className={s.grid} aria-label={t("seed.title")}>
+            {words.map((w, i) => (
+              <li key={`${i}-${w}`} className={s.word}>
+                <span className={s.wordIdx}>{i + 1}</span>
+                <span>{w}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
-        <button
-          type="button"
-          className={s.copyBtn}
-          onClick={() => void copySeedPhrase(words, t("seed.copied"))}
-        >
-          {/* Copy icon */}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 4H16C17.105 4 18 4.895 18 6V14" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M6 8H14C15.105 8 16 8.895 16 10V18C16 19.105 15.105 20 14 20H6C4.895 20 4 19.105 4 18V10C4 8.895 4.895 8 6 8Z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          {t("seed.copy")}
-        </button>
+        {!showDisabledNotice && (
+          <button
+            type="button"
+            className={s.copyBtn}
+            onClick={() => void copySeedPhrase(words, t("seed.copied"))}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 4H16C17.105 4 18 4.895 18 6V14" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M6 8H14C15.105 8 16 8.895 16 10V18C16 19.105 15.105 20 14 20H6C4.895 20 4 19.105 4 18V10C4 8.895 4.895 8 6 8Z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {t("seed.copy")}
+          </button>
+        )}
       </div>
 
       <BottomTabBar />

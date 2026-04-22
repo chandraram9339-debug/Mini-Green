@@ -34,7 +34,7 @@ function useActiveNav() {
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
-function AppBar({ title, onBack }: { title: string; onBack: () => void }) {
+function AppBar({ title, onBack, bellBadge }: { title: string; onBack: () => void; bellBadge?: number }) {
   return (
     <header className={s.appBar}>
       <div className={s.appBarRow}>
@@ -78,9 +78,11 @@ function AppBar({ title, onBack }: { title: string; onBack: () => void }) {
                 strokeLinejoin="round"
               />
             </svg>
-            <span className={s.appBarBellBadge}>
-              <span>25</span>
-            </span>
+            {bellBadge != null && bellBadge > 0 && (
+              <span className={s.appBarBellBadge}>
+                <span>{bellBadge > 99 ? "99" : bellBadge}</span>
+              </span>
+            )}
           </Link>
           <Link to={routes.settings} className={s.appBarGear} aria-label="Settings">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -237,7 +239,7 @@ export default function TopUpScreenNew() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
   const activeNav = useActiveNav();
-  const { wallet, confirmDepositPaid } = useAppSession();
+  const { wallet, confirmDepositPaid, notificationUnreadCount } = useAppSession();
 
   const depositAddress = wallet?.depositAddress ?? DEPOSIT_WALLET_ADDRESS;
 
@@ -286,7 +288,7 @@ export default function TopUpScreenNew() {
 
   return (
     <div className={s.screen} aria-label={t("topup.ariaScreen")}>
-      <AppBar title={t("deposit.title")} onBack={() => navigate(routes.balanceDeposit)} />
+      <AppBar title={t("deposit.title")} onBack={() => navigate(routes.balanceDeposit)} bellBadge={notificationUnreadCount} />
 
       <div className={s.body}>
         {/* Title */}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useFmLocale } from "../../i18n/useFmLocale";
+import { useAppSession } from "../../session/useAppSession";
 import { routes } from "../routes";
 import { openTelegramReferralShare } from "../../config/links";
 import {
@@ -148,7 +149,7 @@ function Toggle({
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
-function AppBar({ title }: { title: string }) {
+function AppBar({ title, bellBadge }: { title: string; bellBadge?: number }) {
   const navigate = useNavigate();
   return (
     <header className={s.appBar}>
@@ -173,7 +174,9 @@ function AppBar({ title }: { title: string }) {
               <path d="M0 15H18" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
               <path d="M7 19H11" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
             </svg>
-            <span className={s.appBarBellBadge}><span>25</span></span>
+            {bellBadge != null && bellBadge > 0 && (
+              <span className={s.appBarBellBadge}><span>{bellBadge > 99 ? "99" : bellBadge}</span></span>
+            )}
           </Link>
           <span className={s.appBarGear} aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -257,6 +260,7 @@ function BottomTabBar({ active }: { active: string }) {
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function SettingsScreenNew() {
   const { locale, setLocale, t } = useFmLocale();
+  const { notificationUnreadCount } = useAppSession();
   const activeNav = useActiveNav();
 
   /* Language dropdown */
@@ -300,7 +304,7 @@ export default function SettingsScreenNew() {
 
   return (
     <div className={s.screen} aria-label={t("settings.title")}>
-      <AppBar title={t("settings.title")} />
+      <AppBar title={t("settings.title")} bellBadge={notificationUnreadCount} />
 
       <div className={s.body}>
 

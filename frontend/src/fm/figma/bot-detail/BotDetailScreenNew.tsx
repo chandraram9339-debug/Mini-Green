@@ -97,7 +97,7 @@ function TradingChart() {
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
-function AppBar() {
+function AppBar({ bellBadge }: { bellBadge?: number }) {
   const navigate = useNavigate();
   return (
     <header className={s.appBar}>
@@ -120,7 +120,9 @@ function AppBar() {
               <path d="M0 15H18" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
               <path d="M7 19H11" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
             </svg>
-            <span className={s.appBarBellBadge}><span>25</span></span>
+            {bellBadge != null && bellBadge > 0 && (
+              <span className={s.appBarBellBadge}><span>{bellBadge > 99 ? "99" : bellBadge}</span></span>
+            )}
           </Link>
           <Link to={routes.settings} className={s.appBarGear} aria-label="Settings">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -203,7 +205,7 @@ function BottomTabBar({ active }: { active: string }) {
 export default function BotDetailScreenNew() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
-  const { phase, mode, botRunning, refreshWallet, setBotRunning } = useAppSession();
+  const { phase, mode, botRunning, refreshWallet, setBotRunning, notificationUnreadCount } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
   const activeNav = useActiveNav();
 
@@ -318,7 +320,7 @@ export default function BotDetailScreenNew() {
 
   return (
     <div className={s.screen} aria-label={t("bot.ariaScreen")}>
-      <AppBar />
+      <AppBar bellBadge={notificationUnreadCount} />
 
       <div className={s.body}>
         {/* ── Bot Status ───────────────────────────────────── */}

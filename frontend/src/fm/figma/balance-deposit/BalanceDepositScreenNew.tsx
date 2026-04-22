@@ -15,6 +15,7 @@ import type { HistoryListRowUi, WalletHistoryBundle } from "../../api/typesHisto
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatShortAddress } from "../withdraw/withdrawDraft";
 import { useFmLocale } from "../../i18n/useFmLocale";
+import { useAppSession } from "../../session/useAppSession";
 import type { MessageKey } from "../../i18n/messages";
 import { routes } from "../routes";
 import { appBarLogoUrl } from "../assets/appBarShared";
@@ -108,7 +109,7 @@ function ArrowRightIcon() {
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
-function AppBar() {
+function AppBar({ bellBadge }: { bellBadge?: number }) {
   const navigate = useNavigate();
   return (
     <header className={s.appBar}>
@@ -131,7 +132,9 @@ function AppBar() {
               <path d="M0 15H18" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
               <path d="M7 19H11" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
             </svg>
-            <span className={s.appBarBellBadge}><span>25</span></span>
+            {bellBadge != null && bellBadge > 0 && (
+              <span className={s.appBarBellBadge}><span>{bellBadge > 99 ? "99" : bellBadge}</span></span>
+            )}
           </Link>
           <Link to={routes.settings} className={s.appBarGear} aria-label="Settings">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -322,6 +325,7 @@ function BottomTabBar({ active }: { active: string }) {
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function BalanceDepositScreenNew() {
   const { t } = useFmLocale();
+  const { notificationUnreadCount } = useAppSession();
   const { balanceUsdt, depositAddress } = useWalletDisplay();
   const activeTab = useActiveTab();
 
@@ -356,7 +360,7 @@ export default function BalanceDepositScreenNew() {
   return (
     <div className={s.screen}>
       {/* AppBar */}
-      <AppBar />
+      <AppBar bellBadge={notificationUnreadCount} />
 
       {/* Scrollable content */}
       <div className={s.body}>
