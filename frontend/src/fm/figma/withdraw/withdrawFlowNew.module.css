@@ -1,0 +1,399 @@
+/*
+ * Withdraw Flow — shared CSS module (Builder.io design port)
+ * All 5 screens: Withdraw entry, Recipient, Amount, Confirm (USDT Transfer), Done
+ * Fixed height; no scroll; max-width 500px centred for web
+ */
+
+/* ── Screen wrapper ─────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #ecf1f4;
+  touch-action: pan-y;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+}
+
+.screen * {
+  box-sizing: border-box;
+}
+
+/* ── AppBar (withdraw-specific: back + title + close X) ─────── */
+.appBar {
+  width: 100%;
+  background-color: #ecf1f4;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.appBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+}
+
+.appBarTitle {
+  flex: 1;
+  text-align: center;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #192b48;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+}
+
+.appBarIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.appBarIconBtn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.appBarDivider {
+  margin: 0 20px;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+/* ── Scrollable body (for long-content screens) ──────────────── */
+.body {
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 0;
+  gap: 16px;
+}
+
+/* ── Input field row ─────────────────────────────────────────── */
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 53px;
+  padding: 0 20px;
+  background-color: #e3e6eb;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #55647b;
+}
+
+.input::placeholder {
+  color: #8494af;
+}
+
+/* Amount input — darker colour for entered value */
+.inputAmount {
+  font-weight: 500;
+  color: #192b48;
+}
+
+.inputBtnText {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  color: #759ac6;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.inputUnit {
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  color: #759ac6;
+  flex-shrink: 0;
+}
+
+/* ── Info / note text ────────────────────────────────────────── */
+.note {
+  font-family: "Outfit", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8494af;
+  margin: 0;
+}
+
+/* ── Recipient preview in the field (read-only step) ─────────── */
+.recipientValue {
+  width: 100%;
+  height: 53px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e3e6eb;
+  border-radius: 12px;
+  padding: 0 20px;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #192b48;
+  text-align: center;
+  word-break: break-all;
+  flex-shrink: 0;
+}
+
+/* ── "To:" label on amount step ─────────────────────────────── */
+.toLabel {
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  color: #8494af;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* ── Balance info block ──────────────────────────────────────── */
+.balanceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.balanceLine {
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  color: #8494af;
+  text-align: right;
+  margin: 0;
+}
+
+.balanceStrong {
+  font-weight: 700;
+}
+
+.balanceUnit {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.balanceFootnote {
+  font-family: "Outfit", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8494af;
+  text-align: right;
+  max-width: 268px;
+  margin: 0;
+  align-self: flex-end;
+}
+
+/* ── Validation error ────────────────────────────────────────── */
+.validationMsg {
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  color: #df7f7f;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Receipt card (Confirm + Done screens) ───────────────────── */
+.receiptCard {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.receiptRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 49px;
+}
+
+.receiptRowDivider {
+  margin: 0 20px;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+.receiptLabel {
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  color: #55647b;
+  margin: 0;
+}
+
+.receiptValue {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #192b48;
+  margin: 0;
+}
+
+.receiptValueUnit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8494af;
+}
+
+/* ── Done screen body (receipt top + done status bottom) ─────── */
+.doneBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── Done hero (bottom-aligned, pushed down by flex spacer) ──── */
+.doneSpacer {
+  flex: 1;
+}
+
+.doneStatusWrap {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 32px;
+}
+
+.doneStatus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.doneIconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  background-color: #73c1b1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doneLabel {
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #55647b;
+  margin: 0;
+}
+
+/* ── Bottom action area (button + gap before TabBar) ─────────── */
+.bottomArea {
+  flex-shrink: 0;
+  padding: 16px 20px 16px;
+}
+
+.ctaBtn {
+  width: 100%;
+  height: 52px;
+  border-radius: 54px;
+  border: none;
+  background-color: #2d6e93;
+  color: #ffffff;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ctaBtn:active:not(:disabled) {
+  opacity: 0.8;
+}
+
+.ctaBtn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.ctaBtn:focus-visible {
+  outline: 2px solid #2d6e93;
+  outline-offset: 3px;
+}
+
+/* ── Bottom TabBar ───────────────────────────────────────────── */
+.tabBar {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+}
+
+.tabBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.tabItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+}
+
+.tabItemIconActive {
+  background-color: #2d6e93;
+}

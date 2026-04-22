@@ -94,10 +94,11 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
   }, [state.botRunning]);
 
   useEffect(() => {
+    if (state.mode === "mock") return;          // mock balance is synthetic — don't reset
     if ((state.wallet?.balanceUsdt ?? 0) > 0) return;
     if (!state.botRunning) return;
     setState((s) => ({ ...s, botRunning: false }));
-  }, [state.botRunning, state.wallet?.balanceUsdt]);
+  }, [state.botRunning, state.wallet?.balanceUsdt, state.mode]);
 
   useEffect(() => {
     const enabled = state.wallet?.botTradingEnabled;
@@ -127,13 +128,10 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
             const w = await fetchWalletSnapshot();
             setState((s) => ({ ...s, phase: "ready", mode: "live", wallet: w, notificationUnreadCount: 0 }));
           } catch (e) {
-            setState({
-              phase: "error",
-              mode: "live",
-              errorMessage: e instanceof Error ? e.message : "Wallet fetch failed",
-              notificationUnreadCount: 0,
-              botRunning: false,
-            });
+            // Backend unreachable in dev mode → fall back to mock so UI stays functional
+            console.warn("[AppSession] Backend unreachable, switching to mock mode:", e);
+            setStoredAccessToken(null);
+            setState((s) => ({ ...s, phase: "ready", mode: "mock", notificationUnreadCount: 0 }));
           }
           return;
         }

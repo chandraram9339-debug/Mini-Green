@@ -1,0 +1,379 @@
+/*
+ * Settings Screen — Builder.io visual design port
+ * Scrollable list; flex layout; max-width 500px centred for web
+ */
+
+/* ── Screen wrapper ─────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #ecf1f4;
+  touch-action: pan-y;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+}
+
+.screen * {
+  box-sizing: border-box;
+}
+
+/* ── AppBar ─────────────────────────────────────────────────── */
+.appBar {
+  width: 100%;
+  background-color: #ecf1f4;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.appBarRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+}
+
+.appBarTitle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #192b48;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.appBarBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.appBarBack:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.appBarIcons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.appBarBell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.appBarBellBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 9999px;
+  background-color: #2d6e93;
+}
+
+.appBarBellBadge span {
+  font-family: "Outfit", sans-serif;
+  color: #ffffff;
+  font-size: 7px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.appBarGear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: none;
+  /* Settings gear on settings screen is non-interactive */
+  pointer-events: none;
+}
+
+.appBarDivider {
+  margin: 0 16px;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+/* ── Scrollable body ────────────────────────────────────────── */
+.body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Section ─────────────────────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+
+/* ── Section divider ─────────────────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: #d3dae5;
+  flex-shrink: 0;
+}
+
+/* ── Settings row card ───────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.row:active {
+  opacity: 0.7;
+}
+
+.rowIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.rowLabel {
+  flex: 1;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.18px;
+  color: #192b48;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rowRightLabel {
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #55647b;
+}
+
+/* Chevron > for link rows */
+.rowChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Language dropdown ───────────────────────────────────────── */
+.langDropdown {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.langOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #d3dae5;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: opacity 0.15s;
+}
+
+.langOption:last-child {
+  border-bottom: none;
+}
+
+.langOption:active {
+  opacity: 0.7;
+}
+
+.langOptionCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.langOptionCheckEmpty {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  border: 2px solid #d3dae5;
+  flex-shrink: 0;
+}
+
+.langOptionLabel {
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #55647b;
+  line-height: 1.3;
+}
+
+/* ── Toggle (custom switch) ──────────────────────────────────── */
+.toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggleTrack {
+  position: absolute;
+  width: 28px;
+  height: 14px;
+  left: 3px;
+  top: 3px;
+  border-radius: 10px;
+  background-color: #e4e8ef;
+  transition: background-color 0.2s;
+}
+
+.toggleThumb {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 0;
+  border-radius: 10px;
+  background-color: #d3dae5;
+  transition: left 0.2s, background-color 0.2s;
+}
+
+.toggleThumbOn {
+  background-color: #73c1b1;
+  left: 14px;
+}
+
+.toggleThumbOff {
+  background-color: #d3dae5;
+  left: 0;
+}
+
+/* ── Bottom TabBar ───────────────────────────────────────────── */
+.tabBar {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+}
+
+.tabBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.tabItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+}
+
+.tabItemIconActive {
+  background-color: #2d6e93;
+}

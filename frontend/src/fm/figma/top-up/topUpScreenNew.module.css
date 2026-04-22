@@ -1,0 +1,315 @@
+/*
+ * Deposit / Top-Up Screen — Builder.io visual design port
+ * Fixed (no scroll); flex layout; max-width 500px centred for web
+ */
+
+/* ── Screen wrapper ─────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #ecf1f4;
+  touch-action: pan-y;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.screen * {
+  box-sizing: border-box;
+}
+
+/* ── AppBar ─────────────────────────────────────────────────── */
+.appBar {
+  width: 100%;
+  background-color: #ecf1f4;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.appBarRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+}
+
+.appBarTitle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #192b48;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.appBarBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.appBarBack:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.appBarIcons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.appBarBell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.appBarBellBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 9999px;
+  background-color: #2d6e93;
+}
+
+.appBarBellBadge span {
+  font-family: "Outfit", sans-serif;
+  color: #ffffff;
+  font-size: 7px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.appBarGear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.appBarDivider {
+  margin: 0 16px;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+/* ── Scrollable body ─────────────────────────────────────────── */
+/* flex-1 flex-col items-center justify-center — vertically centres all content */
+.body {
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 20px;
+}
+
+/* ── Receive title ───────────────────────────────────────────── */
+.receiveTitle {
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #192b48;
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ── QR code ─────────────────────────────────────────────────── */
+.qrWrap {
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background-color: #ecf1f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.qrImg {
+  width: 200px;
+  height: 200px;
+  display: block;
+  object-fit: contain;
+}
+
+/* ── Address card ────────────────────────────────────────────── */
+.addressCard {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addressText {
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #192b48;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-all;
+  margin: 0;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 52px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 54px;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+
+.btn:active:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #2d6e93;
+  outline-offset: 3px;
+}
+
+/* Copy button */
+.btnCopy {
+  background-color: #e3e6eb;
+  color: #55647b;
+}
+
+/* Paid button */
+.btnPaid {
+  background-color: #2d6e93;
+  color: #ffffff;
+}
+
+/* ── Success toast overlay ───────────────────────────────────── */
+.successToast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background-color: #73c1b1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(45, 110, 147, 0.2);
+  animation: toastFadeIn 0.2s ease-out;
+}
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ── Bottom TabBar ───────────────────────────────────────────── */
+.tabBar {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+}
+
+.tabBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.tabItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+}
+
+.tabItemIconActive {
+  background-color: #2d6e93;
+}

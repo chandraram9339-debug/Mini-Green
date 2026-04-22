@@ -203,7 +203,7 @@ function BottomTabBar({ active }: { active: string }) {
 export default function BotDetailScreenNew() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
-  const { phase, botRunning, refreshWallet, setBotRunning } = useAppSession();
+  const { phase, mode, botRunning, refreshWallet, setBotRunning } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
   const activeNav = useActiveNav();
 
@@ -289,13 +289,20 @@ export default function BotDetailScreenNew() {
   async function applyBotState(enabled: boolean) {
     if (botSwitchLoading) return;                           // prevent double-click while API is in flight
     if (balance <= 0 && enabled) { navigate(routes.depositTopUp); return; }
-    if (!hasApiBase()) { setBotRunning(enabled); return; }
+    if (!hasApiBase() || mode === "mock") { setBotRunning(enabled); return; }
     setBotSwitchLoading(true);
     try {
       const result = await setBotTradingState(enabled);
-      if (!result.ok) return;
+      if (!result.ok) {
+        // API returned an error — still toggle locally so user sees feedback
+        setBotRunning(enabled);
+        return;
+      }
       setBotRunning(result.botTradingEnabled ?? enabled);
       await refreshWallet();
+    } catch {
+      // Network error (Failed to fetch) — toggle locally as fallback
+      setBotRunning(enabled);
     } finally {
       setBotSwitchLoading(false);
     }

@@ -3,16 +3,16 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import BalanceDepositScreenNew from "./figma/balance-deposit/BalanceDepositScreenNew";
 import BalanceReferralScreen from "./figma/balance-referral/BalanceReferralScreen";
 import SocialMediaScreen from "./figma/social-media/SocialMediaScreen";
-import SupportScreen from "./figma/support/SupportScreen";
-import FaqScreen from "./figma/faq/FaqScreen";
-import NotificationsScreen from "./figma/notifications/NotificationsScreen";
-import SettingsScreen from "./figma/settings/SettingsScreen";
-import WithdrawScreen from "./figma/withdraw/WithdrawScreen";
-import WithdrawRecipientScreen from "./figma/withdraw/WithdrawRecipientScreen";
-import WithdrawAmountScreen from "./figma/withdraw/WithdrawAmountScreen";
-import WithdrawConfirmScreen from "./figma/withdraw/WithdrawConfirmScreen";
-import WithdrawDoneScreen from "./figma/withdraw/WithdrawDoneScreen";
-import TopUpScreen from "./figma/top-up/TopUpScreen";
+import SupportScreenNew from "./figma/support/SupportScreenNew";
+import FaqScreenNew from "./figma/faq/FaqScreenNew";
+import NotificationsScreenNew from "./figma/notifications/NotificationsScreenNew";
+import SettingsScreenNew from "./figma/settings/SettingsScreenNew";
+import WithdrawScreen from "./figma/withdraw/WithdrawScreenNew";
+import WithdrawRecipientScreen from "./figma/withdraw/WithdrawRecipientScreenNew";
+import WithdrawAmountScreen from "./figma/withdraw/WithdrawAmountScreenNew";
+import WithdrawConfirmScreen from "./figma/withdraw/WithdrawConfirmScreenNew";
+import WithdrawDoneScreen from "./figma/withdraw/WithdrawDoneScreenNew";
+import TopUpScreenNew from "./figma/top-up/TopUpScreenNew";
 import BotDetailScreenNew from "./figma/bot-detail/BotDetailScreenNew";
 import HomeScreenNew from "./figma/home/HomeScreenNew";
 import SeedCodeScreen from "./figma/seed-code/SeedCodeScreen";
@@ -48,14 +48,14 @@ export default function App() {
               <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />
               <Route path={routes.bot} element={<BotDetailScreenNew />} />
               <Route path={routes.social} element={<SocialMediaScreen />} />
-              <Route path={routes.support} element={<SupportScreen />} />
-              <Route path={routes.faq} element={<FaqScreen />} />
-              <Route path={routes.notifications} element={<NotificationsScreen />} />
-              <Route path={routes.settings} element={<SettingsScreen />} />
+              <Route path={routes.support} element={<SupportScreenNew />} />
+              <Route path={routes.faq} element={<FaqScreenNew />} />
+              <Route path={routes.notifications} element={<NotificationsScreenNew />} />
+              <Route path={routes.settings} element={<SettingsScreenNew />} />
               <Route path={routes.withdraw} element={<WithdrawScreen />} />
               <Route path={routes.withdrawConfirm} element={<WithdrawConfirmScreen />} />
               <Route path={routes.withdrawDone} element={<WithdrawDoneScreen />} />
-              <Route path={routes.depositTopUp} element={<TopUpScreen />} />
+              <Route path={routes.depositTopUp} element={<TopUpScreenNew />} />
               <Route path={routes.withdrawRecipient} element={<WithdrawRecipientScreen />} />
               <Route path={routes.withdrawAmount} element={<WithdrawAmountScreen />} />
               <Route path={routes.seedCode} element={<SeedCodeScreen />} />
