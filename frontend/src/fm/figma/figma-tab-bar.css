@@ -5,12 +5,13 @@
 .fm-tabbar {
   position: absolute;
   left: 0;
+  right: 0;
   top: auto;
   bottom: 0;
-  width: 390px;
+  width: 100%;
   height: 72px;
   min-height: 72px;
-  max-width: 390px;
+  max-width: 100%;
   box-sizing: border-box;
   display: flex;
   align-items: center;

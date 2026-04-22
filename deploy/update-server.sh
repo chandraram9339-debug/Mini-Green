@@ -4,9 +4,10 @@ set -euo pipefail
 PROJECT_ROOT="${PROJECT_ROOT:-$HOME/miniapp}"
 BRANCH="${BRANCH:-$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)}"
 PM2_APP_NAME="${PM2_APP_NAME:-miniapp-backend}"
-# Если nginx смотрит не в frontend/dist, а в /var/www/... — задай каталог (со слэшем на конце не нужен):
-#   FRONTEND_PUBLISH_DIR=/var/www/palladium-miniapp ./deploy/update-server.sh
-FRONTEND_PUBLISH_DIR="${FRONTEND_PUBLISH_DIR:-}"
+# Рабочая production-схема: nginx отдаёт фронт из /var/www/palladium-miniapp.
+# При необходимости путь можно переопределить через окружение.
+#   FRONTEND_PUBLISH_DIR=/custom/path ./deploy/update-server.sh
+FRONTEND_PUBLISH_DIR="${FRONTEND_PUBLISH_DIR:-/var/www/palladium-miniapp}"
 
 echo "== Update server =="
 echo "project_root=$PROJECT_ROOT"

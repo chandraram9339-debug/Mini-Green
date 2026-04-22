@@ -2,9 +2,9 @@
 
 .fm-deposit {
   position: relative;
-  width: 390px;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -23,8 +23,7 @@
 .fm-deposit-top-stack {
   flex-shrink: 0;
   width: 100%;
-  max-width: 390px;
-  margin: 0 auto;
+  max-width: 100%;
 }
 
 .fm-deposit-chrome-spacer {
@@ -38,7 +37,7 @@
 .fm-deposit-balance {
   position: relative;
   margin-top: 30px;
-  width: 390px;
+  width: 100%;
   max-width: 100%;
   height: 187px;
   overflow: hidden;

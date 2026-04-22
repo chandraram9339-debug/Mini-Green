@@ -4,7 +4,8 @@
 
 - `backend` работает как Node.js сервис через `pm2`
 - `frontend` собирается в статику `frontend/dist`
-- `nginx` отдаёт `frontend/dist`
+- собранный фронт публикуется в `/var/www/palladium-miniapp`
+- `nginx` отдаёт `/var/www/palladium-miniapp`
 - API-запросы miniapp nginx проксирует на `127.0.0.1:4000`
 - реальные секреты лежат только в `backend/.env` на сервере
 
@@ -39,7 +40,7 @@ Production-сервер:
 `vite dev server` нужен только для локальной разработки. В production должен использоваться только:
 
 - `npm run build`
-- статика из `frontend/dist`
+- статика из `/var/www/palladium-miniapp` (после публикации из `frontend/dist`)
 - `nginx`
 
 ## 2. Какие файлы должны быть на сервере
@@ -160,6 +161,7 @@ git pull
 pnpm install
 pnpm --filter miniapp-backend build
 pnpm --filter miniapp-frontend build
+rsync -a --delete ~/miniapp/frontend/dist/ /var/www/palladium-miniapp/
 pm2 restart miniapp-backend
 nginx -t && systemctl reload nginx
 ```
@@ -176,10 +178,8 @@ chmod +x ~/miniapp/deploy/update-server.sh
 Команды в терминале вводи **по одной строке** (или с `&&` между короткими командами). Если склеить `systemctl reload nginx` и `cd ~/miniapp` в одну строку без пробела, получится бессмысленное имя сервиса и **nginx не перезагрузится**.
 
 1. Убедись, что на сервере реально новый коммит: `cd ~/miniapp && git rev-parse HEAD` и сравни с GitHub.
-2. Пересобери фронт и перезагрузи nginx: `bash deploy/update-server.sh` (или вручную `pnpm --filter miniapp-frontend build` и `systemctl reload nginx`).
-3. Проверь, что `root` в nginx указывает на тот же каталог, куда пишет сборка: `grep root /etc/nginx/sites-enabled/*`. Если там, например, `/var/www/palladium-miniapp`, а `pnpm build` кладёт файлы в `/root/miniapp/frontend/dist`, пользователи **всегда** будут видеть старую версию, пока не скопируешь `dist` или не поменяешь `root`. Быстрый фикс после сборки:  
-   `rsync -a --delete ~/miniapp/frontend/dist/ /var/www/palladium-miniapp/`  
-   Постоянно: при деплое задай `FRONTEND_PUBLISH_DIR` (см. `deploy/update-server.sh`).
+2. Пересобери фронт и перезагрузи nginx: `bash deploy/update-server.sh` (теперь по умолчанию он публикует фронт в `/var/www/palladium-miniapp`).
+3. Проверь, что `root` в nginx указывает на тот же каталог, куда публикуется сборка: `grep root /etc/nginx/sites-enabled/*`. Для текущей production-схемы это должен быть `/var/www/palladium-miniapp`. Если пути разошлись, пользователи будут видеть старую версию.
 4. **Кэш WebView:** в шаблоне nginx для этого проекта у `index.html` выставлены заголовки без кэша. Если конфиг на сервере старый — добавь блок `location = /index.html` из `deploy/nginx-miniapp-same-origin.conf.example`, затем `nginx -t && systemctl reload nginx`.
 5. Полностью закрой мини-апп в Telegram и открой снова (иногда кэш держится до перезапуска клиента).
 
@@ -220,6 +220,7 @@ chmod +x ~/miniapp/deploy/server-preflight.sh
 - наличие `backend/.env`
 - наличие `frontend/.env.production`
 - собранные `backend/dist` и `frontend/dist`
+- публикацию фронта в `/var/www/palladium-miniapp`
 - ключевые env-переменные
 - список сертификатов Let's Encrypt
 - статус `pm2`
@@ -228,12 +229,12 @@ chmod +x ~/miniapp/deploy/server-preflight.sh
 
 ## 9. Что у тебя сломано сейчас
 
-По текущим симптомам backend жив, `frontend/dist` уже собран, но `nginx` всё ещё смотрит на старый dev flow.
+По текущей рабочей схеме backend живёт в `~/miniapp`, а nginx должен смотреть на `/var/www/palladium-miniapp`.
 
 То есть исправление такое:
 
 1. убрать proxy на `5173/5174`
-2. отдавать `frontend/dist` как статику
+2. публиковать `frontend/dist` в `/var/www/palladium-miniapp`
 3. проксировать только API на `127.0.0.1:4000`
 4. backend держать через `pm2`
 

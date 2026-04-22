@@ -4,7 +4,7 @@ set -euo pipefail
 DOMAIN="${1:-}"
 CERT_NAME="${2:-$DOMAIN}"
 BACKEND_PORT="${BACKEND_PORT:-4000}"
-FRONTEND_ROOT="${FRONTEND_ROOT:-/root/miniapp/frontend/dist}"
+FRONTEND_ROOT="${FRONTEND_ROOT:-/var/www/palladium-miniapp}"
 
 if [[ -z "$DOMAIN" ]]; then
   echo "Usage: $0 <domain> [cert-name]" >&2

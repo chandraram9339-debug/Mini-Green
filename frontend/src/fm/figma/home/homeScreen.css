@@ -5,9 +5,9 @@
  */
 .fm-home {
   position: relative;
-  width: 390px;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
@@ -35,7 +35,7 @@
 .fm-appbar {
   top: 0;
   height: 56px;
-  width: 390px;
+  width: 100%;
   overflow: hidden;
   background-color: var(--fm-page-bg);
 }
@@ -276,7 +276,7 @@ a.fm-back-btn {
   top: 86px;
   z-index: 4;
   height: 224px;
-  width: 390px;
+  width: 100%;
   overflow: hidden;
   direction: ltr;
   unicode-bidi: isolate;
@@ -555,7 +555,7 @@ a.fm-btn-details-chart {
   top: 340px;
   z-index: 3;
   height: 302px;
-  width: 390px;
+  width: 100%;
   overflow: hidden;
 }
 
@@ -965,7 +965,7 @@ a.fm-btn-details-chart {
   top: 672px;
   z-index: 2;
   height: 52px;
-  width: 390px;
+  width: 100%;
   overflow: hidden;
 }
 
@@ -1065,9 +1065,7 @@ a.fm-btn-details-chart {
   left: 0;
   right: 0;
   width: 100%;
-  max-width: 390px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 100%;
   z-index: 99;
 }
 
@@ -1085,7 +1083,5 @@ a.fm-btn-details-chart {
   right: 0;
   bottom: 0;
   width: 100%;
-  max-width: 390px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 100%;
 }

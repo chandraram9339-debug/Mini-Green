@@ -2,10 +2,11 @@
 
 .fm-bot {
   position: relative;
-  width: 390px;
+  width: 100%;
+  max-width: 100%;
   height: 100%;
   min-height: max(1288px, 100%);
-  margin: 0 auto;
+  margin: 0;
   padding-bottom: var(--fm-tab-bar-stack-height);
   background-color: var(--fm-page-bg);
   box-sizing: border-box;
@@ -21,7 +22,7 @@
 /* ---------- Status Bot block y 100–255 ---------- */
 .fm-bot-status-panel {
   top: 56px;
-  width: 390px;
+  width: 100%;
   height: 155px;
   overflow: hidden;
   z-index: 2;
@@ -180,7 +181,7 @@
 /* ---------- Graphic y 285–452 — тот же блок, что fm-chart на Home ---------- */
 .fm-bot-chart-shell {
   top: 241px;
-  width: 390px;
+  width: 100%;
   height: 167px;
   overflow: hidden;
   background-color: var(--fm-page-bg);
@@ -197,7 +198,7 @@
 /* ---------- Stats «Trading bot statistics» y 482–747 ---------- */
 .fm-bot-period-stats {
   top: 438px;
-  width: 390px;
+  width: 100%;
   height: 265px;
   overflow: hidden;
   z-index: 3;
@@ -317,7 +318,7 @@
 /* ---------- Trading feed y 777–1186 ---------- */
 .fm-bot-trading-feed {
   top: 733px;
-  width: 390px;
+  width: 100%;
   height: 409px;
   overflow: hidden;
   z-index: 4;
@@ -659,7 +660,5 @@
   right: 0;
   bottom: 0;
   width: 100%;
-  max-width: 390px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 100%;
 }

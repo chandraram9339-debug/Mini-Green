@@ -36,26 +36,37 @@ html.fm-brand-lock {
   --color-grey-line: #2d3540;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
   /* Для Telegram parity фон страницы не должен отличаться под нижним краем экрана. */
   background: var(--fm-page-bg);
 }
 
 #root {
+  width: 100%;
+  max-width: 100%;
   min-height: var(--tg-viewport-stable-height);
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  overflow-x: hidden;
 }
 
 .app-shell {
-  width: 390px;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0;
   /* Один фон с колонкой 390px; шапка/статус — прозрачные, не дублируют --fm-page-bg */
   background-color: var(--fm-page-bg);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-black) 8%, transparent);
   box-sizing: border-box;
   /* Верх safe-area; низ — внутри .fm-tabbar, иначе под белым табом видна полоска --fm-page-bg */
   padding-top: max(0px, env(safe-area-inset-top, 0px));
@@ -64,6 +75,7 @@ body {
   min-height: var(--tg-viewport-stable-height);
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .app-shell > .fm-session-banner {
@@ -74,6 +86,10 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 .app-shell--splash-hidden {
@@ -102,9 +118,10 @@ body {
 /* Заглушки BUILD_INDEX — Status Bar + App Bar + таббар как на прочих Ready-экранах */
 .fm-route-stub-shell {
   position: relative;
-  width: 390px;
+  width: 100%;
+  max-width: 100%;
   min-height: 870px;
-  margin: 0 auto;
+  margin: 0;
   background-color: var(--fm-page-bg);
   isolation: isolate;
 }

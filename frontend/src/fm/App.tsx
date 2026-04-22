@@ -14,7 +14,7 @@ import WithdrawConfirmScreen from "./figma/withdraw/WithdrawConfirmScreen";
 import WithdrawDoneScreen from "./figma/withdraw/WithdrawDoneScreen";
 import TopUpScreen from "./figma/top-up/TopUpScreen";
 import BotDetailScreen from "./figma/bot-detail/BotDetailScreen";
-import HomeScreen from "./figma/home/HomeScreen";
+import HomeScreenNew from "./figma/home/HomeScreenNew";
 import SeedCodeScreen from "./figma/seed-code/SeedCodeScreen";
 import UserAgreementScreen from "./figma/user-agreement/UserAgreementScreen";
 import "./figma/home/homeScreen.css";
@@ -43,7 +43,7 @@ export default function App() {
             <SessionBanner />
             <Routes>
               <Route path="/" element={<Navigate to={routes.bot} replace />} />
-              <Route path={routes.home} element={<HomeScreen />} />
+              <Route path={routes.home} element={<HomeScreenNew />} />
               <Route path={routes.balanceDeposit} element={<BalanceDepositScreen />} />
               <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />
               <Route path={routes.bot} element={<BotDetailScreen />} />
