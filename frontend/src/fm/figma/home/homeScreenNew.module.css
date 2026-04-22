@@ -1,109 +1,80 @@
-/*
- * Home Screen — Builder.io visual design port
- * Fully adaptive: flex layout, max-width: 500px centred, safe areas, no px scrollbar
- */
+/* ============================================================
+   HomeScreenNew — CSS-модуль
+   Figma: «Первый экран Home»
+   Адаптив: mobile 100vw / web max-width 500px, centered
+   ============================================================ */
 
-/* ── Screen wrapper ─────────────────────────────────────────── */
+/* ── Обёртка экрана ────────────────────────────────────────── */
 .screen {
   display: flex;
   flex-direction: column;
-  /* Exact height = viewport: lets flex layout pin TabBar at bottom */
-  height: var(--tg-viewport-stable-height, 100dvh);
-  /* overflow: hidden prevents outer <main> from scrolling this screen */
-  overflow: hidden;
-  /* max-width centring for tablet / desktop Telegram */
   width: 100%;
+  height: 100vh;          /* фиксированный экран без скролла */
   max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: #ecf1f4;
-  touch-action: pan-y;
+  margin: 0 auto;
+  background: #ECF1F4;
+  overflow: hidden;
   font-family: "Outfit", sans-serif;
-  box-sizing: border-box;
 }
 
-.screen * {
-  box-sizing: border-box;
-}
-
-/* ── AppBar ─────────────────────────────────────────────────── */
+/* ── AppBar ────────────────────────────────────────────────── */
 .appBar {
-  width: 100%;
-  background-color: #ecf1f4;
   flex-shrink: 0;
+  width: 100%;
+  background: #ECF1F4;
 }
 
 .appBarRow {
-  position: relative;
-  display: flex;
+  display: grid;
+  /* три колонки: [кнопка-назад] [лого по центру] [иконки] */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
   padding: 0 16px;
   height: 56px;
 }
 
-/* Logo pinned to exact centre regardless of side-button widths */
-.appBarLogo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+.appBarBack {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
-  /* never wider than viewport - logo sits inside the 56px row */
-  max-width: calc(100% - 96px);
-}
-
-.appBarLogo img {
-  display: block;
-  width: 168px;
-  height: 20px;
-  object-fit: contain;
-  max-width: 100%;
-}
-
-.appBarBackBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
   width: 32px;
   height: 32px;
-  border-radius: 9999px;
+  border-radius: 50%;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  transition: background-color 0.15s;
+  transition: background 0.15s;
 }
+.appBarBack:hover { background: rgba(0,0,0,0.05); }
 
-.appBarBackBtn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.appBarLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.appBarLogo img {
+  height: 28px;
+  display: block;
 }
 
 .appBarIcons {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
-.appBarBellBtn {
+.appBarBell {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+  text-decoration: none;
 }
 
-.appBarBellBadge {
+.bellBadge {
   position: absolute;
   top: -4px;
   right: -4px;
@@ -112,50 +83,42 @@
   justify-content: center;
   width: 13px;
   height: 13px;
-  border-radius: 9999px;
-  background-color: #2d6e93;
+  border-radius: 50%;
+  background: #2D6E93;
 }
-
-.appBarBellBadge span {
+.bellBadge span {
   font-family: "Outfit", sans-serif;
-  color: #ffffff;
   font-size: 7px;
   font-weight: 500;
+  color: #fff;
   line-height: 1;
 }
 
-.appBarGearBtn {
+.appBarGear {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+  text-decoration: none;
 }
 
 .appBarDivider {
-  margin: 0 16px;
   height: 1px;
-  background-color: #d3dae5;
+  background: #D3DAE5;
+  margin: 0 16px;
 }
 
-/* ── Scrollable body ────────────────────────────────────────── */
-.scrollBody {
-  flex: 1 1 auto;
+/* ── Основной контент ──────────────────────────────────────── */
+.body {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  /* min-height: 0 is required so flex child can shrink below content size */
-  min-height: 0;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  /* оставляем скролл только если контент не помещается */
 }
 
-/* ── Balance Section ────────────────────────────────────────── */
+/* ── Секция баланса ────────────────────────────────────────── */
 .balanceSection {
-  width: 100%;
   padding: 24px 16px 0;
 }
 
@@ -163,58 +126,44 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  /* ✦ wrap on very narrow screens (<320px) so buttons don't crush text */
-  flex-wrap: wrap;
 }
 
-/* ✦ left column takes available space, never crushes */
 .balanceLeft {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1 1 0;
-  min-width: 0;
 }
 
-.balanceLabel {
-  color: #192b48;
+.balanceTitle {
   font-size: 20px;
   font-weight: 500;
-  letter-spacing: 0.05em;
-  margin: 0;
+  letter-spacing: 0.04em;
+  color: #192B48;
 }
 
-.balanceAmountRow {
+.balanceAmount {
   display: flex;
   align-items: flex-start;
   gap: 4px;
   margin-top: 8px;
-  flex-wrap: wrap;
 }
-
-.balanceAmountValue {
-  color: #192b48;
-  font-family: "Outfit", sans-serif;
+.balanceValue {
   font-size: 52px;
   font-weight: 600;
   line-height: 1;
+  color: #192B48;
 }
-
-.balanceAmountUnit {
-  color: #8494af;
-  font-family: "Outfit", sans-serif;
+.balanceCurrency {
   font-size: 12px;
   font-weight: 400;
+  color: #8494AF;
   margin-top: 8px;
 }
 
-/* ✦ divider scales relative to column, not fixed px */
 .balanceDivider {
-  width: 100%;
-  max-width: 176px;
+  width: 176px;
   height: 1px;
-  background-color: #d3dae5;
+  background: #D3DAE5;
   margin-top: 12px;
 }
 
@@ -224,187 +173,145 @@
   flex-direction: column;
   gap: 2px;
 }
-
-.referralAmountRow {
+.referralAmount {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
-  flex-wrap: wrap;
 }
-
-.referralAmountValue {
-  color: #192b48;
-  font-family: "Outfit", sans-serif;
+.referralValue {
   font-size: 20px;
   font-weight: 500;
   line-height: 1;
+  color: #192B48;
 }
-
-.referralAmountUnit {
-  color: #55647b;
-  font-family: "Outfit", sans-serif;
+.referralCurrency {
   font-size: 9px;
   font-weight: 400;
+  color: #55647B;
   margin-top: 4px;
 }
-
 .referralCaption {
-  color: #55647b;
   font-family: "Inter", sans-serif;
   font-size: 11px;
-  font-weight: 400;
-  margin: 0;
-  overflow-wrap: break-word;
+  color: #55647B;
 }
 
-/* ✦ right column: buttons never shrink below content */
-.balanceRight {
+/* Правая колонка кнопок */
+.balanceActions {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 6px;
-  flex-shrink: 0;
 }
 
-.btnTopUp {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background-color: #73c1b1;
-  border-radius: 9999px;
-  padding: 10px 24px;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.btnTopUp:hover {
-  opacity: 0.9;
-}
-
-.btnTopUpLabel {
-  color: #ffffff;
-  font-family: "Outfit", sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-}
-
+/* Кнопки Top Up / Withdraw */
+.btnTopUp,
 .btnWithdraw {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  background-color: #759ac6;
+  gap: 12px;
   border-radius: 9999px;
-  padding: 10px 20px;
+  padding: 10px 24px;
+  font-size: 12px;
+  font-family: "Outfit", sans-serif;
+  color: #fff;
+  text-decoration: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
-  text-decoration: none;
+  transition: opacity 0.15s;
   white-space: nowrap;
 }
+.btnTopUp:hover,
+.btnWithdraw:hover { opacity: 0.9; }
+.btnTopUp:active,
+.btnWithdraw:active { opacity: 0.8; }
 
-.btnWithdraw:hover {
-  opacity: 0.9;
-}
+.btnTopUp  { background: #73C1B1; }
+.btnWithdraw { background: #759AC6; justify-content: center; }
 
-.btnWithdrawLabel {
-  color: #ffffff;
-  font-family: "Outfit", sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-}
-
-/* ✦ full-width details button */
-.btnDetailsBalance {
-  width: 100%;
-  margin-top: 24px;
+/* Кнопка Details (синяя, широкая) */
+.btnDetails {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #2d6e93;
+  width: 100%;
+  margin-top: 24px;
   border-radius: 9999px;
   padding: 14px 0;
+  background: #2D6E93;
+  font-size: 16px;
+  font-family: "Outfit", sans-serif;
+  color: #fff;
+  text-decoration: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
-  text-decoration: none;
+  transition: opacity 0.15s;
 }
+.btnDetails:hover  { opacity: 0.9; }
+.btnDetails:active { opacity: 0.8; }
 
-.btnDetailsBalance:hover {
-  opacity: 0.9;
-}
-
-.btnDetailsLabel {
-  color: #ffffff;
-  font-family: "Outfit", sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-/* ── Bot Status Section ─────────────────────────────────────── */
+/* ── Секция бота ───────────────────────────────────────────── */
 .botSection {
-  width: 100%;
   padding: 20px 16px 0;
 }
 
-/* ✦ Chart is fully responsive — scales to parent width */
-.chartWrapper {
-  width: 100%;
+/* ── График ────────────────────────────────────────────────── */
+.chartWrap {
   position: relative;
+  width: 100%;
   margin-bottom: 24px;
-  /* min-height prevents collapse when no data */
-  min-height: 170px;
 }
 
+/* Y-метки + горизонтальные линии — нормальный поток (задают высоту) */
 .chartGrid {
-  width: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
-.chartGridRow {
+.chartRow {
   display: flex;
   align-items: center;
   gap: 4px;
   height: 17px;
 }
 
-.chartGridLabel {
-  width: 40px;
+.chartLabel {
+  width: 40px;           /* фиксированная ширина меток */
+  flex-shrink: 0;
   text-align: right;
-  color: #8494af;
   font-size: 6px;
   font-weight: 400;
-  flex-shrink: 0;
+  color: #8494AF;
   line-height: 1;
 }
 
-/* ✦ flex: 1 → takes remaining width automatically */
-.chartGridLine {
+.chartLine {
   flex: 1;
   height: 1px;
-  background-color: #d3dae5;
+  background: #D3DAE5;
 }
 
-/* ✦ SVG overlay stretches to fill full chart area — same width as buttons */
+/* SVG-оверлей начинается после меток (40px + 4px gap = 44px) */
 .chartSvgOverlay {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 44px;            /* ровно ширина .chartLabel + gap */
+  right: 0;
   display: flex;
   align-items: stretch;
+  pointer-events: none;
 }
 
 .chartSvg {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
-/* Bot status info rows */
+/* ── Инфо-блок бота ────────────────────────────────────────── */
 .botInfoGroup {
   display: flex;
   flex-direction: column;
@@ -412,148 +319,86 @@
   margin-bottom: 20px;
 }
 
-.botStatusRow {
+.botStatusRow,
+.priceRow {
   display: flex;
   align-items: center;
   gap: 20px;
-  flex-wrap: wrap;
 }
 
 .botInfoLabel {
-  color: #8494af;
   font-size: 13px;
-  font-weight: 400;
-  flex-shrink: 0;
+  color: #8494AF;
 }
 
-.botStatusValueRow {
+.botStatusValue {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
-.botStatusActiveText {
-  color: #73c1b1;
-  font-size: 20px;
-  font-weight: 400;
-}
-
-.botStatusInactiveText {
-  color: #8494af;
-  font-size: 20px;
-  font-weight: 400;
-}
+.botStatusActive   { font-size: 20px; color: #73C1B1; }
+.botStatusInactive { font-size: 20px; color: #8494AF; }
 
 .priceRow {
-  display: flex;
   align-items: flex-end;
-  gap: 6px;
-  flex-wrap: wrap;
 }
-
-.priceAmountBlock {
+.priceValueBlock {
   display: flex;
   align-items: flex-start;
   gap: 4px;
 }
-
-.priceAmountValue {
-  color: #192b48;
+.priceValue {
   font-size: 20px;
   font-weight: 500;
   line-height: 1;
+  color: #192B48;
 }
-
-.priceAmountUnit {
-  color: #55647b;
+.priceCurrency {
   font-size: 9px;
-  font-weight: 400;
+  color: #55647B;
   margin-top: 4px;
 }
 
-.btnDetailsBot {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: #2d6e93;
-  border-radius: 9999px;
-  padding: 14px 0;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  text-decoration: none;
-}
-
-.btnDetailsBot:hover {
-  opacity: 0.9;
-}
-
-/* ── Action Buttons (Social + Support) ──────────────────────── */
-.actionButtons {
-  width: 100%;
-  padding: 12px 16px 16px;
+/* ── Кнопки Social + Support ───────────────────────────────── */
+.actionRow {
   display: flex;
   gap: 12px;
-  /* ✦ wrap if screen is extremely narrow */
-  flex-wrap: wrap;
+  padding: 12px 16px 16px;
 }
 
-.btnSocialMedia {
-  flex: 1 1 0;
-  min-width: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: #b5ddd5;
-  border-radius: 9999px;
-  padding: 14px 0;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  text-decoration: none;
-}
-
-.btnSocialMedia:hover {
-  opacity: 0.9;
-}
-
+.btnSocial,
 .btnSupport {
-  flex: 1 1 0;
-  min-width: 120px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #73c1b1;
   border-radius: 9999px;
   padding: 14px 0;
+  font-size: 16px;
+  font-family: "Outfit", sans-serif;
+  color: #192B48;
+  text-decoration: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
-  text-decoration: none;
+  transition: opacity 0.15s;
 }
+.btnSocial:hover,
+.btnSupport:hover { opacity: 0.9; }
 
-.btnSupport:hover {
-  opacity: 0.9;
-}
+.btnSocial  { background: #B5DDD5; }
+.btnSupport { background: #73C1B1; }
 
-.btnActionLabel {
-  color: #192b48;
-  font-family: "Outfit", sans-serif;
+.actionLabel {
   font-size: 16px;
-  font-weight: 400;
-  overflow-wrap: break-word;
+  color: #192B48;
 }
 
-/* ── TabBar ─────────────────────────────────────────────────── */
+/* ── TabBar ────────────────────────────────────────────────── */
 .tabBar {
-  /* Natural flex child — always sits at the bottom of the bounded .screen */
   flex-shrink: 0;
   width: 100%;
-  background-color: #ffffff;
+  background: #fff;
   border-radius: 12px 12px 0 0;
   box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
 }
@@ -562,9 +407,7 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 10px 16px;
-  /* ✦ safe area for notch-less iPhones: home indicator zone */
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 10px 16px 16px;
 }
 
 .tabItem {
@@ -572,38 +415,21 @@
   align-items: center;
   justify-content: center;
   padding: 14px;
-  border-radius: 9999px;
-  background: none;
-  border: none;
-  cursor: pointer;
+  border-radius: 50%;
   text-decoration: none;
-  transition: background-color 0.15s;
-  /* ✦ equal share of tab bar width */
-  flex: 1;
-  max-width: 80px;
+  transition: background 0.15s;
 }
-
-.tabItem:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
+.tabItem:hover { background: rgba(0,0,0,0.05); }
 
 .tabItemActive {
-  background-color: #2d6e93;
+  background: #2D6E93;
 }
+.tabItemActive:hover { background: #2D6E93; opacity: 0.9; }
 
-.tabItemActive:hover {
-  background-color: #2d6e93;
-  opacity: 0.9;
-}
-
-/* ── Narrow screen overrides (< 360px) ─────────────────────── */
-@media (max-width: 360px) {
-  .balanceAmountValue {
-    font-size: 40px;
-  }
-
-  .btnTopUp,
-  .btnWithdraw {
-    padding: 9px 16px;
+/* ── Адаптив: веб-рамка ────────────────────────────────────── */
+@media (min-width: 500px) {
+  .screen {
+    border-radius: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
   }
 }
