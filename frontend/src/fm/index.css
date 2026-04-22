@@ -36,6 +36,18 @@ html.fm-brand-lock {
   --color-grey-line: #2d3540;
 }
 
+/* ── Скрыть визуальный скроллбар глобально (прокрутка сохраняется) ── */
+*,
+*::before,
+*::after {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE / Edge (Trident) */
+}
+
+*::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari, Opera */
+}
+
 html,
 body {
   margin: 0;

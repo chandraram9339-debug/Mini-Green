@@ -1,0 +1,216 @@
+/*
+ * Seed Code Screen — adaptive CSS module
+ * Replaces old seedCodeScreen.css (position:absolute + fixed left/top/width)
+ */
+
+/* ── Screen wrapper ─────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #ecf1f4;
+  touch-action: pan-y;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+}
+
+.screen * {
+  box-sizing: border-box;
+}
+
+/* ── AppBar ─────────────────────────────────────────────────── */
+.appBar {
+  width: 100%;
+  background-color: #ecf1f4;
+  flex-shrink: 0;
+}
+
+.appBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+}
+
+.appBarTitle {
+  flex: 1;
+  text-align: center;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #192b48;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+}
+
+.appBarBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.appBarBack:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.appBarPlaceholder {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.appBarDivider {
+  margin: 0 16px;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+/* ── Scrollable body ─────────────────────────────────────────── */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 20px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Lead hint text ──────────────────────────────────────────── */
+.lead {
+  margin: 0;
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #55647b;
+}
+
+/* ── Seed word grid card ─────────────────────────────────────── */
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* ── Individual word ─────────────────────────────────────────── */
+.word {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #192b48;
+}
+
+.wordIdx {
+  flex-shrink: 0;
+  width: 20px;
+  font-family: "Outfit", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #8494af;
+}
+
+/* ── Copy button ─────────────────────────────────────────────── */
+.copyBtn {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 54px;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #ffffff;
+  background-color: #73c1b1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.copyBtn:active {
+  opacity: 0.8;
+}
+
+.copyBtn:focus-visible {
+  outline: 2px solid #2d6e93;
+  outline-offset: 3px;
+}
+
+/* ── Bottom TabBar ───────────────────────────────────────────── */
+.tabBar {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+}
+
+.tabBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.tabItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+}
+
+.tabItemIconActive {
+  background-color: #2d6e93;
+}

@@ -1,0 +1,170 @@
+/*
+ * User Agreement Screen — adaptive CSS module
+ * Replaces old userAgreementScreen.css (position:absolute + fixed left/top/width)
+ */
+
+/* ── Screen wrapper ─────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #ecf1f4;
+  touch-action: pan-y;
+  font-family: "Outfit", sans-serif;
+  box-sizing: border-box;
+}
+
+.screen * {
+  box-sizing: border-box;
+}
+
+/* ── AppBar ─────────────────────────────────────────────────── */
+.appBar {
+  width: 100%;
+  background-color: #ecf1f4;
+  flex-shrink: 0;
+}
+
+.appBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+}
+
+.appBarTitle {
+  flex: 1;
+  text-align: center;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #192b48;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.4px;
+}
+
+.appBarBack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.appBarBack:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.appBarPlaceholder {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.appBarDivider {
+  margin: 0 16px;
+  height: 1px;
+  background-color: #d3dae5;
+}
+
+/* ── Scrollable content card ────────────────────────────────── */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 16px 16px 24px;
+}
+
+.body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── White card wrapping the text ───────────────────────────── */
+.card {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Agreement text ─────────────────────────────────────────── */
+.text {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #192b48;
+  word-break: break-word;
+}
+
+.textMuted {
+  margin: 0 0 8px;
+  white-space: normal;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8494af;
+}
+
+/* ── Bottom TabBar ───────────────────────────────────────────── */
+.tabBar {
+  flex-shrink: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+}
+
+.tabBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 16px;
+  height: 72px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.tabItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  transition: background-color 0.15s;
+}
+
+.tabItemIconActive {
+  background-color: #2d6e93;
+}
