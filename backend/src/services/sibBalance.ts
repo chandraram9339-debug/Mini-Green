@@ -97,7 +97,17 @@ export function sibAfterWithdrawRejected(db: Database, userId: number) {
 export type SibCloseRow = { id?: string; result?: number };
 
 /**
+ * B_new = round(B_current × (1 + r/100)) in USDT minor units (integer).
+ * Implemented as round(B × (100 + r) / 100) — same in ℝ, but avoids float error from `(1 + r/100)` (e.g. 60 @ 2.5%).
+ */
+export function sibNextBalanceMinor(balanceBeforeMinor: number, resultPercent: number): number {
+  return Math.round((balanceBeforeMinor * (100 + resultPercent)) / 100);
+}
+
+/**
  * Apply `closes[].result` as percent of current balance for each closed trade (idempotent per position).
+ * Per deal: **B_new = B_current × (1 + r/100)** with `r` = trade result %; balance is integer USDT minor →
+ * `B_new = round(B_current × (1 + r/100))`, `delta = B_new - B_current`.
  * Skips entirely while a withdrawal waits for admin approval.
  */
 export function sibApplyClosesFromIngest(
@@ -182,7 +192,8 @@ export function sibApplyClosesFromIngest(
 
       u = getUserById(db, userId)!;
       const balanceBefore = u.balance_usdt_minor;
-      const deltaMinor = Math.round((balanceBefore * rp) / 100);
+      const balanceAfterRounded = sibNextBalanceMinor(balanceBefore, rp);
+      const deltaMinor = balanceAfterRounded - balanceBefore;
       addBalance(db, userId, deltaMinor);
 
       const u1 = getUserById(db, userId)!;

@@ -223,6 +223,7 @@ export const messagesEn = {
   "withdraw.amountAria": "Withdrawal amount",
 
   "common.back": "Back",
+  "common.primaryNav": "Primary navigation",
   "common.close": "Close",
   "common.continue": "Continue",
   "common.paste": "Paste",
@@ -247,7 +248,7 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "settings.push": "Notificaciones push",
   "settings.vibration": "Vibración",
   "settings.support": "Soporte",
-  "settings.faq": "FAQ",
+  "settings.faq": "Preguntas frecuentes",
   "settings.referralLink": "Enlace de referido",
   "settings.referralLinkMissing":
     "No se puede crear el enlace: configura el nombre del bot en Admin → Contenido, o VITE_TELEGRAM_BOT_USERNAME, y abre la app desde Telegram.",
@@ -456,6 +457,7 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "withdraw.amountAria": "Monto del retiro",
 
   "common.back": "Atrás",
+  "common.primaryNav": "Navegación principal",
   "common.close": "Cerrar",
   "common.continue": "Continuar",
   "common.paste": "Pegar",
@@ -465,3 +467,23 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "seed.copy": "Copiar",
   "seed.copied": "Copiado",
 };
+
+/** Единая подстановка строк (контекст и экраны без расхождений). */
+export function resolveFmMessage(
+  locale: "en" | "es",
+  key: MessageKey,
+  vars?: Record<string, string | number>,
+): string {
+  let s: string;
+  if (locale === "es") {
+    s = messagesEs[key] ?? messagesEn[key] ?? String(key);
+  } else {
+    s = messagesEn[key] ?? String(key);
+  }
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      s = s.replaceAll(`{${k}}`, String(v));
+    }
+  }
+  return s;
+}

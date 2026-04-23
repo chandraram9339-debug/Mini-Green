@@ -7,7 +7,12 @@ import {
 } from "react";
 
 import { FmLocaleContext, type FmLocale, type FmLocaleContextValue, FM_LANG_STORAGE_KEY } from "./fmLocaleContext";
-import { type MessageKey, messagesEn, messagesEs } from "./messages";
+import {
+  type MessageKey,
+  messagesEn,
+  messagesEs,
+  resolveFmMessage,
+} from "./messages";
 
 function readStoredLocale(): FmLocale {
   try {
@@ -34,17 +39,8 @@ export function FmLocaleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: MessageKey, vars?: Record<string, string | number>) => {
-      const table: Partial<Record<MessageKey, string>> | typeof messagesEn =
-        locale === "es" ? messagesEs : messagesEn;
-      let s = table[key] ?? messagesEn[key] ?? key;
-      if (vars) {
-        for (const [k, v] of Object.entries(vars)) {
-          s = s.replaceAll(`{${k}}`, String(v));
-        }
-      }
-      return s;
-    },
+    (key: MessageKey, vars?: Record<string, string | number>) =>
+      resolveFmMessage(locale, key, vars),
     [locale],
   );
 

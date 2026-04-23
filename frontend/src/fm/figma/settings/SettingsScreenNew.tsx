@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { resolveFmMessage, type MessageKey } from "../../i18n/messages";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
 import { routes } from "../routes";
@@ -152,13 +153,14 @@ function Toggle({
 /* ── AppBar ──────────────────────────────────────────────────── */
 function AppBar({ title, bellBadge }: { title: string; bellBadge?: number }) {
   const navigate = useNavigate();
+  const { t } = useFmLocale();
   return (
     <header className={s.appBar}>
       <div className={s.appBarRow}>
         <button
           className={s.appBarBack}
           onClick={() => navigate(routes.home)}
-          aria-label="Back"
+          aria-label={t("common.back")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M20 12.8H20.8V11.2H20V12V12.8ZM20 12V11.2H4V12V12.8H20V12Z" fill="#55647B"/>
@@ -169,7 +171,7 @@ function AppBar({ title, bellBadge }: { title: string; bellBadge?: number }) {
         <span className={s.appBarTitle}>{title}</span>
 
         <div className={s.appBarIcons}>
-          <Link to={routes.notifications} className={s.appBarBell} aria-label="Notifications">
+          <Link to={routes.notifications} className={s.appBarBell} aria-label={t("notifications.title")}>
             <svg width="18" height="19" viewBox="0 0 18 19" fill="none">
               <path d="M2 15V7C2 5.143 2.738 3.363 4.05 2.05C5.363.738 7.143 0 9 0c1.857 0 3.637.738 4.95 2.05C15.263 3.363 16 5.143 16 7v8" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
               <path d="M0 15H18" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
@@ -194,9 +196,10 @@ function AppBar({ title, bellBadge }: { title: string; bellBadge?: number }) {
 
 /* ── Bottom TabBar ───────────────────────────────────────────── */
 function BottomTabBar({ active }: { active: string }) {
+  const { t } = useFmLocale();
   const tabs = [
     {
-      id: "home", to: routes.home, label: "Home",
+      id: "home", to: routes.home, label: t("tab.home"),
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M20 20H4V10L12 4L20 10V20Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -205,7 +208,7 @@ function BottomTabBar({ active }: { active: string }) {
       ),
     },
     {
-      id: "wallet", to: routes.balanceDeposit, label: "Wallet",
+      id: "wallet", to: routes.balanceDeposit, label: t("tab.wallet"),
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M21 8H3V20H21V8Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -215,7 +218,7 @@ function BottomTabBar({ active }: { active: string }) {
       ),
     },
     {
-      id: "bot", to: routes.bot, label: "Bot",
+      id: "bot", to: routes.bot, label: t("tab.bot"),
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M4 4V20H20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
@@ -224,7 +227,7 @@ function BottomTabBar({ active }: { active: string }) {
       ),
     },
     {
-      id: "support", to: routes.support, label: "Support",
+      id: "support", to: routes.support, label: t("tab.support"),
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill={a ? "#fff" : "#55647B"}/>
@@ -232,10 +235,10 @@ function BottomTabBar({ active }: { active: string }) {
         </svg>
       ),
     },
-  ] as const;
+  ];
 
   return (
-    <nav className={s.tabBar} aria-label="Primary navigation">
+    <nav className={s.tabBar} aria-label={t("common.primaryNav")}>
       <div className={s.tabBarInner}>
         {tabs.map(({ id, to, label, icon }) => {
           const isActive = active === id;
@@ -260,7 +263,7 @@ function BottomTabBar({ active }: { active: string }) {
 
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function SettingsScreenNew() {
-  const { locale, setLocale, t } = useFmLocale();
+  const { locale, setLocale } = useFmLocale();
   const { notificationUnreadCount, wallet, uiSettings } = useAppSession();
   const activeNav = useActiveNav();
 
@@ -301,11 +304,14 @@ export default function SettingsScreenNew() {
   }, []);
 
   const langLabel =
-    locale === "es" ? t("settings.langSpanish") : t("settings.langEnglish");
+    locale === "es"
+      ? resolveFmMessage(locale, "settings.langSpanish")
+      : resolveFmMessage(locale, "settings.langEnglish");
+  const tx = (key: MessageKey) => resolveFmMessage(locale, key);
 
   return (
-    <div className={s.screen} aria-label={t("settings.title")}>
-      <AppBar title={t("settings.title")} bellBadge={notificationUnreadCount} />
+    <div className={s.screen} key={locale} aria-label={tx("settings.title")}>
+      <AppBar title={tx("settings.title")} bellBadge={notificationUnreadCount} />
 
       <div className={s.body}>
 
@@ -316,20 +322,23 @@ export default function SettingsScreenNew() {
             className={s.row}
             aria-expanded={langOpen}
             aria-haspopup="listbox"
-            aria-label={t("settings.language")}
+            aria-label={tx("settings.language")}
             onClick={() => setLangOpen((o) => !o)}
           >
             <span className={s.rowIcon}><TranslateIcon /></span>
-            <span className={s.rowLabel}>{t("settings.language")}</span>
+            <span className={s.rowLabel} key={`${locale}-settings-language`}>{tx("settings.language")}</span>
             <span className={s.rowRight}>
               <span className={s.rowRightLabel}>{langLabel}</span>
             </span>
           </button>
 
           {langOpen && (
-            <div className={s.langDropdown} role="listbox" aria-label={t("settings.language")}>
+            <div className={s.langDropdown} role="listbox" aria-label={tx("settings.language")}>
               {(["en", "es"] as const).map((code) => {
-                const label = code === "en" ? t("settings.langEnglish") : t("settings.langSpanish");
+                const label =
+                  code === "en"
+                    ? resolveFmMessage(locale, "settings.langEnglish")
+                    : resolveFmMessage(locale, "settings.langSpanish");
                 const selected = locale === code;
                 return (
                   <button
@@ -362,14 +371,14 @@ export default function SettingsScreenNew() {
         <div className={s.section}>
           <div className={s.row} style={{ cursor: "default" }}>
             <span className={s.rowIcon}><NotificationIcon /></span>
-            <span className={s.rowLabel}>{t("settings.push")}</span>
-            <Toggle pressed={pushOn} onToggle={togglePush} ariaLabel={t("settings.push")} />
+            <span className={s.rowLabel} key={`${locale}-settings-push`}>{tx("settings.push")}</span>
+            <Toggle pressed={pushOn} onToggle={togglePush} ariaLabel={tx("settings.push")} />
           </div>
 
           <div className={s.row} style={{ cursor: "default" }}>
             <span className={s.rowIcon}><VibrateIcon /></span>
-            <span className={s.rowLabel}>{t("settings.vibration")}</span>
-            <Toggle pressed={vibrationOn} onToggle={toggleVibration} ariaLabel={t("settings.vibration")} />
+            <span className={s.rowLabel} key={`${locale}-settings-vibration`}>{tx("settings.vibration")}</span>
+            <Toggle pressed={vibrationOn} onToggle={toggleVibration} ariaLabel={tx("settings.vibration")} />
           </div>
         </div>
 
@@ -379,13 +388,13 @@ export default function SettingsScreenNew() {
         <div className={s.section}>
           <Link to={routes.support} className={s.row}>
             <span className={s.rowIcon}><SupportChatIcon /></span>
-            <span className={s.rowLabel}>{t("settings.support")}</span>
+            <span className={s.rowLabel} key={`${locale}-settings-support`}>{tx("settings.support")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </Link>
 
           <Link to={routes.faq} className={s.row}>
             <span className={s.rowIcon}><QuestionIcon /></span>
-            <span className={s.rowLabel}>{t("settings.faq")}</span>
+            <span className={s.rowLabel} key={`${locale}-settings-faq`}>{tx("settings.faq")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </Link>
 
@@ -397,17 +406,17 @@ export default function SettingsScreenNew() {
                 wallet?.referralLink,
                 uiSettings?.public_telegram_bot_username,
               );
-              if (!ok) showMiniAppAlert(t("settings.referralLinkMissing"), { force: true });
+              if (!ok) showMiniAppAlert(resolveFmMessage(locale, "settings.referralLinkMissing"), { force: true });
             }}
           >
             <span className={s.rowIcon}><UserPlusIcon /></span>
-            <span className={s.rowLabel}>{t("settings.referralLink")}</span>
+            <span className={s.rowLabel} key={`${locale}-settings-referral`}>{tx("settings.referralLink")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </button>
 
           <Link to={routes.seedCode} className={s.row}>
             <span className={s.rowIcon}><AlertTriangleIcon /></span>
-            <span className={s.rowLabel}>{t("settings.seedCode")}</span>
+            <span className={s.rowLabel} key={`${locale}-settings-seed`}>{tx("settings.seedCode")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </Link>
         </div>
@@ -418,7 +427,7 @@ export default function SettingsScreenNew() {
         <div className={s.section}>
           <Link to={routes.userAgreement} className={s.row}>
             <span className={s.rowIcon}><FileIcon /></span>
-            <span className={s.rowLabel}>{t("settings.userAgreement")}</span>
+            <span className={s.rowLabel} key={`${locale}-settings-agreement`}>{tx("settings.userAgreement")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </Link>
         </div>
