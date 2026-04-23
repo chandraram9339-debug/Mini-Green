@@ -242,7 +242,7 @@ export default function SettingsScreen() {
           <button
             type="button"
             className="fm-settings-row fm-settings-row--simple fm-settings-row--link fm-settings-row--button"
-            onClick={openTelegramReferralShare}
+            onClick={() => openTelegramReferralShare()}
           >
             <span className="fm-settings-lead-icon fm-settings-lead-icon--referral">
               <img alt="" src={s.userPlus} />

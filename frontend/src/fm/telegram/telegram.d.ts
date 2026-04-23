@@ -32,6 +32,13 @@ type TelegramWebApp = {
     notificationOccurred?: (type: "error" | "success" | "warning") => void;
   };
   colorScheme?: "light" | "dark";
+  /** Parsed init data (available in Telegram WebApp context). */
+  initDataUnsafe?: {
+    user?: { id?: number; first_name?: string; last_name?: string; username?: string; language_code?: string };
+    start_param?: string;
+    auth_date?: number;
+    hash?: string;
+  };
 };
 
 declare global {
