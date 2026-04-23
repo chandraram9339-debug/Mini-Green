@@ -6,9 +6,23 @@ export type GraphicPoint = {
 };
 
 /**
- * Баланс в USDT по закрытиям: последняя точка = текущий баланс; кривая — компаунд % сделок
- * после `positiveBalanceStartedAt`, масштабированный к конечному балансу.
- * Поле `value_pct` здесь хранит **USDT**; используйте buildChartGeom(..., "usdt").
+ * Тот же выбор, что на экране бота: системная серия из API, иначе компаунд % по журналу пользователя.
+ */
+export function chartPointsSystemOrUserFallback(
+  systemChartPoints: GraphicPoint[],
+  journalRows: TradingJournalItem[],
+): GraphicPoint[] {
+  if (systemChartPoints.length > 0) return systemChartPoints;
+  return buildCompoundedChartPoints(journalRows);
+}
+
+/**
+ * Баланс в USDT после каждого закрытия (ось Y = деньги).
+ * Предпочтительно **delta_minor** из SIB (фактическое изменение баланса в центах USDT);
+ * если у всех сделок в окне есть дельты — строим от текущего баланса назад/вперёд по сумме дельт.
+ * Иначе — мультипликативная модель по `result_percent`, привязанная к текущему балансу
+ * (корректно, если результат сделки считается как доля от всего баланса; при фиксированном номинале
+ * позиции точнее дельты).
  */
 export function buildPersonalBalanceChartPoints(
   rows: TradingJournalItem[],
@@ -16,31 +30,47 @@ export function buildPersonalBalanceChartPoints(
   positiveBalanceStartedAt: string | null | undefined,
 ): GraphicPoint[] {
   const closed = rows
-    .filter(
-      (row) =>
-        row.status === "closed" &&
-        row.closed_at &&
-        row.result_percent != null &&
-        Number.isFinite(row.result_percent),
-    )
+    .filter((row) => row.status === "closed" && row.closed_at)
     .sort((a, b) => Date.parse(String(a.closed_at)) - Date.parse(String(b.closed_at)));
 
   const startMs =
     positiveBalanceStartedAt != null && String(positiveBalanceStartedAt).trim() !== ""
       ? Date.parse(positiveBalanceStartedAt)
       : NaN;
-  const filtered =
-    Number.isFinite(startMs) ? closed.filter((r) => Date.parse(String(r.closed_at)) >= startMs) : closed;
+  const filtered = Number.isFinite(startMs)
+    ? closed.filter((r) => Date.parse(String(r.closed_at)) >= startMs)
+    : closed;
 
   if (filtered.length === 0) return [];
 
+  const endMinor = Math.round(endBalanceUsdt * 100);
+  const deltas = filtered.map((r) =>
+    r.delta_minor != null && Number.isFinite(r.delta_minor) ? Math.round(r.delta_minor) : null,
+  );
+  const allHaveDelta = deltas.every((d) => d != null);
+
+  if (allHaveDelta) {
+    const dArr = deltas as number[];
+    const sumD = dArr.reduce((s, d) => s + d, 0);
+    let b = endMinor - sumD;
+    return filtered.map((r, i) => {
+      b += dArr[i]!;
+      return { occurred_at: String(r.closed_at), value_pct: b / 100 };
+    });
+  }
+
+  const withPct = filtered.filter(
+    (row) => row.result_percent != null && Number.isFinite(row.result_percent),
+  );
+  if (withPct.length === 0) return [];
+
   let totalC = 1;
-  for (const r of filtered) {
+  for (const r of withPct) {
     totalC *= 1 + Number(r.result_percent) / 100;
   }
 
   let running = 1;
-  return filtered.map((r) => {
+  return withPct.map((r) => {
     running *= 1 + Number(r.result_percent) / 100;
     const balanceUsdt = (endBalanceUsdt * running) / totalC;
     return { occurred_at: String(r.closed_at), value_pct: balanceUsdt };

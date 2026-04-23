@@ -3,7 +3,7 @@
  *
  * UI:    100% Builder.io visual (colors, layout, flex-based — no position:absolute).
  * Data:  real API — fetchTradingJournal, fetchBotTrading, setBotTradingState,
- *        getStatsForPeriod, buildCompoundedChartPoints.
+ *        getStatsForPeriod, chartPointsSystemOrUserFallback.
  * Logic: period tabs (24h/7d/30d/all), system-wide chart from API, trade-result filter, Start/Stop.
  * Adapt: height: 100dvh + flex layout, max-width 500px, no fixed pixels.
  */
@@ -24,8 +24,8 @@ import { getStatsForPeriod } from "../../api/parseBotTrading";
 import { setBotTradingState } from "../../api/setBotTradingState";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 import {
-  buildCompoundedChartPoints,
   buildChartGeom,
+  chartPointsSystemOrUserFallback,
   type GraphicPoint,
 } from "../components/tradingChartPoints";
 import { useFmLocale } from "../../i18n/useFmLocale";
@@ -240,11 +240,11 @@ export default function BotDetailScreenNew() {
 
   const trading = useMemo(() => tradingFromApi ?? botTradingStaticFallback, [tradingFromApi]);
   const fromJournal = balance <= 0;
-  /** График торгов — всегда серия «системы» (канонический зеркальный пользователь), не личный компаунд. */
-  const chartPoints = useMemo(() => {
-    if (systemChartPoints.length > 0) return systemChartPoints;
-    return buildCompoundedChartPoints(journalRows);
-  }, [systemChartPoints, journalRows]);
+  /** График — системная серия % (как на главной до Старта); fallback — компаунд по личному журналу за период. */
+  const chartPoints = useMemo(
+    () => chartPointsSystemOrUserFallback(systemChartPoints, journalRows),
+    [systemChartPoints, journalRows],
+  );
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   const feedWaitingForSession = hasApiBase() && (phase === "idle" || phase === "bootstrapping");

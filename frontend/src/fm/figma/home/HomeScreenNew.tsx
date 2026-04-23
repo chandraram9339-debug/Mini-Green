@@ -19,8 +19,8 @@ import { hasApiBase } from "../../api/env";
 import { fetchTradingJournal, type TradingJournalItem } from "../../api/fetchTradingJournal";
 import { fetchBotTrading } from "../../api/fetchBotTrading";
 import {
-  buildCompoundedChartPoints,
   buildPersonalBalanceChartPoints,
+  chartPointsSystemOrUserFallback,
   buildChartGeom,
   type GraphicPoint,
 } from "../components/tradingChartPoints";
@@ -206,6 +206,7 @@ export default function HomeScreenNew() {
   const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt } = useWalletDisplay();
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
+  const isBotActive = balanceUsdt > 0 && botRunning;
 
   const [chartRows, setChartRows] = useState<TradingJournalItem[]>([]);
   const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
@@ -222,9 +223,11 @@ export default function HomeScreenNew() {
 
     let cancelled = false;
     const load = async () => {
+      /** До Старта — тот же период, что вкладка по умолчанию на 3-м экране (24h), чтобы % график совпадал. После Старта — all, чтобы собрать личные сделки для баланса. */
+      const period = isBotActive ? "all" : "24h";
       const [jr, snap] = await Promise.all([
-        fetchTradingJournal(100, "all"),
-        fetchBotTrading("all"),
+        fetchTradingJournal(100, period),
+        fetchBotTrading(period),
       ]);
       if (cancelled) return;
       setChartRows(jr.items);
@@ -235,15 +238,13 @@ export default function HomeScreenNew() {
     void load();
     const id = window.setInterval(() => void load(), 5_000);
     return () => { cancelled = true; window.clearInterval(id); };
-  }, [apiSessionReady]);
+  }, [apiSessionReady, isBotActive]);
 
-  const isBotActive = balanceUsdt > 0 && botRunning;
   const chartPoints = useMemo(() => {
     if (isBotActive) {
       return buildPersonalBalanceChartPoints(chartRows, balanceUsdt, positiveBalanceStartedAt);
     }
-    if (systemChartPoints.length > 0) return systemChartPoints;
-    return buildCompoundedChartPoints(chartRows);
+    return chartPointsSystemOrUserFallback(systemChartPoints, chartRows);
   }, [isBotActive, chartRows, balanceUsdt, positiveBalanceStartedAt, systemChartPoints]);
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
