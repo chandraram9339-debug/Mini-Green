@@ -201,7 +201,7 @@ function TabBar({ active }: { active: string }) {
 export default function HomeScreenNew() {
   const activeTab = useActiveTab();
   const { t } = useFmLocale();
-  const { phase, botRunning, notificationUnreadCount } = useAppSession();
+  const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
@@ -332,7 +332,7 @@ export default function HomeScreenNew() {
             type="button"
             className={s.btnSocial}
             aria-label="Chat"
-            onClick={() => openTelegramOrExternal(TELEGRAM_CHAT_URL)}
+            onClick={() => openTelegramOrExternal(uiSettings?.chat_url || TELEGRAM_CHAT_URL)}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
               <path d="M12 8H3V14H12L18 19V4L12 8Z" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -343,13 +343,28 @@ export default function HomeScreenNew() {
             <span className={s.actionLabel}>{t("home.chat")}</span>
           </button>
 
-          <Link to={routes.support} className={s.btnSupport} aria-label={t("home.supportAria")}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-              <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="#192B48" />
-              <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span className={s.actionLabel}>{t("support.title")}</span>
-          </Link>
+          {uiSettings?.support_url ? (
+            <button
+              type="button"
+              className={s.btnSupport}
+              aria-label={t("home.supportAria")}
+              onClick={() => openTelegramOrExternal(uiSettings.support_url)}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="#192B48" />
+                <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className={s.actionLabel}>{t("support.title")}</span>
+            </button>
+          ) : (
+            <Link to={routes.support} className={s.btnSupport} aria-label={t("home.supportAria")}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="#192B48" />
+                <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className={s.actionLabel}>{t("support.title")}</span>
+            </Link>
+          )}
         </div>
       </main>
 

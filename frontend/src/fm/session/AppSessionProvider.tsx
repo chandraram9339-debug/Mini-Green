@@ -4,6 +4,7 @@ import { authTelegramWithInitData } from "../api/authTelegram";
 import { confirmDepositPaidRequest } from "../api/confirmDeposit";
 import { hasApiBase } from "../api/env";
 import { fetchNotifications } from "../api/fetchNotifications";
+import { fetchUiSettings } from "../api/fetchUiSettings";
 import { fetchWalletSnapshot } from "../api/fetchWallet";
 import { setStoredAccessToken } from "../api/http";
 import { mergeWalletSnapshots } from "../api/mergeWallets";
@@ -125,8 +126,8 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
           setStoredAccessToken(bearer);
           setState((s) => ({ ...s, phase: "bootstrapping", mode: "live", notificationUnreadCount: 0 }));
           try {
-            const w = await fetchWalletSnapshot();
-            setState((s) => ({ ...s, phase: "ready", mode: "live", wallet: w, notificationUnreadCount: 0 }));
+            const [w, settings] = await Promise.all([fetchWalletSnapshot(), fetchUiSettings()]);
+            setState((s) => ({ ...s, phase: "ready", mode: "live", wallet: w, uiSettings: settings ?? undefined, notificationUnreadCount: 0 }));
           } catch (e) {
             // Backend unreachable in dev mode → fall back to mock so UI stays functional
             console.warn("[AppSession] Backend unreachable, switching to mock mode:", e);
@@ -153,9 +154,9 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
       setState((s) => ({ ...s, phase: "bootstrapping", mode: "live", notificationUnreadCount: 0 }));
       try {
         const { wallet: wAuth } = await authTelegramWithInitData(initData);
-        const wFetch = await fetchWalletSnapshot();
+        const [wFetch, settings] = await Promise.all([fetchWalletSnapshot(), fetchUiSettings()]);
         const merged = mergeWalletSnapshots(wAuth, wFetch);
-        setState((s) => ({ ...s, phase: "ready", mode: "live", wallet: merged, notificationUnreadCount: 0 }));
+        setState((s) => ({ ...s, phase: "ready", mode: "live", wallet: merged, uiSettings: settings ?? undefined, notificationUnreadCount: 0 }));
       } catch (e) {
         const fallbackMock = import.meta.env.VITE_API_AUTH_FALLBACK_MOCK === "true";
         if (fallbackMock) {
