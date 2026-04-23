@@ -23,7 +23,11 @@ import { botTradingStaticFallback, fetchBotTrading } from "../../api/fetchBotTra
 import { getStatsForPeriod } from "../../api/parseBotTrading";
 import { setBotTradingState } from "../../api/setBotTradingState";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
-import { buildChartGeom, type GraphicPoint } from "../components/tradingChartPoints";
+import {
+  buildChartGeom,
+  CHART_VIEWBOX_HEIGHT,
+  type GraphicPoint,
+} from "../components/tradingChartPoints";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { useAppSession } from "../../session/useAppSession";
@@ -58,55 +62,71 @@ function useActiveNav() {
 /* ── График: системная серия % за выбранный период вкладки (время → X, кумулятив → Y) ─ */
 function TradingChart({ points }: { points: GraphicPoint[] }) {
   const geom = buildChartGeom(points, "percent");
+  const yPct = 100 / CHART_VIEWBOX_HEIGHT;
 
   return (
     <div className={s.chartShell}>
-      <div className={s.chartScales}>
-        {geom.yLabels.map((label) => (
-          <div key={label} className={s.chartScaleLine}>
-            <span className={s.chartScaleLabel}>{label}</span>
-            <div className={s.chartScaleTick} />
-          </div>
-        ))}
-      </div>
-      <div className={s.chartSvgWrap}>
-        <svg
-          viewBox="0 0 325 122"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={s.chartSvg}
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="bdChartGrad" x1="162.5" y1="0" x2="162.5" y2="122" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#759AC6" stopOpacity="0.5"/>
-              <stop offset="1" stopColor="#ECF1F4" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
-          {geom.isEmpty ? null : (
-            /* Dynamic chart from real API data with deal dots */
-            <>
-              <path d={geom.pathArea} fill="url(#bdChartGrad)"/>
-              <path d={geom.pathLine} stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-              {/* Deal dots: green = profit, red = loss, grey = neutral */}
-              {geom.dots.map((dot, i) => {
-                const isProfit = dot.deal_pct != null && dot.deal_pct > 0;
-                const isLoss   = dot.deal_pct != null && dot.deal_pct < 0;
-                return (
-                  <circle
-                    key={i}
-                    cx={dot.x.toFixed(2)}
-                    cy={dot.y.toFixed(2)}
-                    r="1.5"
-                    fill={isProfit ? "#73C1B1" : isLoss ? "#DF7F7F" : "#8494AF"}
-                    stroke="#ffffff"
-                    strokeWidth="0.5"
-                  />
-                );
-              })}
-            </>
-          )}
-        </svg>
+      <div className={s.chartPlotRow}>
+        <div className={s.chartYAxis} aria-hidden>
+          {geom.yTicks.map((t, i) => (
+            <span
+              key={i}
+              className={s.chartYAxisLabel}
+              style={{ top: `${t.ySvg * yPct}%` }}
+            >
+              {t.label}
+            </span>
+          ))}
+        </div>
+        <div className={s.chartSvgCol}>
+          <svg
+            viewBox="0 0 325 122"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={s.chartSvg}
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="bdChartGrad" x1="162.5" y1="0" x2="162.5" y2="122" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#759AC6" stopOpacity="0.5"/>
+                <stop offset="1" stopColor="#ECF1F4" stopOpacity="0"/>
+              </linearGradient>
+            </defs>
+            {geom.yTicks.map((t, i) => (
+              <line
+                key={`grid-${i}`}
+                x1="0"
+                y1={t.ySvg}
+                x2="325"
+                y2={t.ySvg}
+                stroke="#d3dae5"
+                strokeWidth="1"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+            {geom.isEmpty ? null : (
+              <>
+                <path d={geom.pathArea} fill="url(#bdChartGrad)"/>
+                <path d={geom.pathLine} stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                {geom.dots.map((dot, i) => {
+                  const isProfit = dot.deal_pct != null && dot.deal_pct > 0;
+                  const isLoss   = dot.deal_pct != null && dot.deal_pct < 0;
+                  return (
+                    <circle
+                      key={i}
+                      cx={dot.x.toFixed(2)}
+                      cy={dot.y.toFixed(2)}
+                      r="1.5"
+                      fill={isProfit ? "#73C1B1" : isLoss ? "#DF7F7F" : "#8494AF"}
+                      stroke="#ffffff"
+                      strokeWidth="0.5"
+                    />
+                  );
+                })}
+              </>
+            )}
+          </svg>
+        </div>
       </div>
     </div>
   );

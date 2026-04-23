@@ -315,23 +315,24 @@
   margin-bottom: 24px;
 }
 
-/* Y-метки + горизонтальные линии — задают высоту блока */
-.chartGrid {
+.chartPlotRow {
   display: flex;
-  flex-direction: column;
+  align-items: stretch;
   width: 100%;
 }
 
-.chartRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding-bottom: 14px;
+.chartYAxis {
+  position: relative;
+  flex: 0 0 24px;
+  flex-shrink: 0;
+  min-height: 0;
 }
 
-.chartLabel {
-  width: 20px;
-  flex-shrink: 0;
+.chartYAxisLabel {
+  position: absolute;
+  left: 0;
+  right: 4px;
+  transform: translateY(-50%);
   text-align: right;
   font-size: 6px;
   font-weight: 400;
@@ -339,25 +340,16 @@
   line-height: 1;
 }
 
-.chartLine {
+.chartSvgCol {
   flex: 1;
-  height: 1px;
-  background: #D3DAE5;
-}
-
-/* SVG поверх шкалы через отрицательный margin-top (10 строк × 17px ≈ 170px) */
-.chartSvgOverlay {
-  position: relative;
-  margin-left: 24px;
-  margin-right: 0;
-  margin-top: -170px;
-  pointer-events: none;
+  min-width: 0;
 }
 
 .chartSvg {
   width: 100%;
   height: auto;
   display: block;
+  vertical-align: top;
 }
 
 /* ── Инфо-блок бота ────────────────────────────────────────── */

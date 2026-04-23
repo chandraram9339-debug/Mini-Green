@@ -22,6 +22,7 @@ import {
   buildPersonalBalanceChartPoints,
   chartPointsSystemOrUserFallback,
   buildChartGeom,
+  CHART_VIEWBOX_HEIGHT,
   computeDepositBalanceYDomain,
   prependDepositTotalAnchor,
   type GraphicPoint,
@@ -102,44 +103,56 @@ function PerformanceChart({
   fixedYDomain?: [number, number];
 }) {
   const geom = buildChartGeom(points, yAxis, fixedYDomain ? { fixedYDomain } : undefined);
-  const yLabels = geom.yLabels;
+  const yPct = 100 / CHART_VIEWBOX_HEIGHT;
 
   return (
     <div className={s.chartWrap}>
-      {/* Шкала Y + горизонтальные линии — занимает полную ширину */}
-      <div className={s.chartGrid}>
-        {yLabels.map((label, i) => (
-          <div key={i} className={s.chartRow}>
-            <span className={s.chartLabel}>{label}</span>
-            <div className={s.chartLine} />
-          </div>
-        ))}
-      </div>
-
-      {/* SVG поверх шкалы — margin-left 24px, margin-top отрицательный */}
-      <div className={s.chartSvgOverlay}>
-        <svg
-          viewBox="0 0 325 122"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className={s.chartSvg}
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id="hnGrad" x1="162.5" y1="0" x2="162.5" y2="122" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#759AC6" stopOpacity="0.5" />
-              <stop offset="1" stopColor="#ECF1F4" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-
-          {geom.isEmpty ? null : (
-            /* Динамический чарт из данных API */
-            <>
-              <path d={geom.pathArea} fill="url(#hnGrad)" />
-              <path d={geom.pathLine} stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </>
-          )}
-        </svg>
+      <div className={s.chartPlotRow}>
+        <div className={s.chartYAxis} aria-hidden>
+          {geom.yTicks.map((t, i) => (
+            <span
+              key={i}
+              className={s.chartYAxisLabel}
+              style={{ top: `${t.ySvg * yPct}%` }}
+            >
+              {t.label}
+            </span>
+          ))}
+        </div>
+        <div className={s.chartSvgCol}>
+          <svg
+            viewBox="0 0 325 122"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={s.chartSvg}
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="hnGrad" x1="162.5" y1="0" x2="162.5" y2="122" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#759AC6" stopOpacity="0.5" />
+                <stop offset="1" stopColor="#ECF1F4" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {geom.yTicks.map((t, i) => (
+              <line
+                key={`grid-${i}`}
+                x1="0"
+                y1={t.ySvg}
+                x2="325"
+                y2={t.ySvg}
+                stroke="#D3DAE5"
+                strokeWidth="1"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+            {geom.isEmpty ? null : (
+              <>
+                <path d={geom.pathArea} fill="url(#hnGrad)" />
+                <path d={geom.pathLine} stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </>
+            )}
+          </svg>
+        </div>
       </div>
     </div>
   );

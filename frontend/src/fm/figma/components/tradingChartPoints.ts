@@ -170,6 +170,8 @@ export type ChartGeom = {
   pathLine: string;
   pathArea: string;
   yLabels: string[];
+  /** Подписи Y с y в user space SVG — та же система, что у линии графика (viewBox height). */
+  yTicks: Array<{ label: string; ySvg: number }>;
   dots: ChartDot[];
 };
 
@@ -179,6 +181,22 @@ export type BuildChartGeomOptions = {
 };
 
 const STATIC_Y_LABELS = ["7.00%","6.00%","5.00%","4.00%","3.00%","2.00%","1.00%","0.00%","-1.00%","-2.00%"];
+
+/** Высота по Y в `viewBox="0 0 325 …"` — для позиционирования подписей рядом с SVG. */
+export const CHART_VIEWBOX_HEIGHT = 122;
+
+function buildStaticYTicks(): Array<{ label: string; ySvg: number }> {
+  const emptyMin = -2;
+  const emptyMax = 7;
+  const H = CHART_VIEWBOX_HEIGHT;
+  const range = emptyMax - emptyMin;
+  return Array.from({ length: 10 }, (_, i) => {
+    const v = emptyMax - (i * range) / 9;
+    const norm = (v - emptyMin) / range;
+    const ySvg = H - norm * H;
+    return { label: STATIC_Y_LABELS[i]!, ySvg };
+  });
+}
 
 /**
  * Converts GraphicPoints into SVG path strings, Y-axis labels and trade deal dots.
@@ -195,10 +213,18 @@ export function buildChartGeom(
   yAxis: "percent" | "usdt" = "percent",
   options?: BuildChartGeomOptions,
 ): ChartGeom {
-  const W = 325, H = 122;
+  const W = 325;
+  const H = CHART_VIEWBOX_HEIGHT;
 
   if (points.length === 0) {
-    return { isEmpty: true, pathLine: "", pathArea: "", yLabels: STATIC_Y_LABELS, dots: [] };
+    return {
+      isEmpty: true,
+      pathLine: "",
+      pathArea: "",
+      yLabels: [...STATIC_Y_LABELS],
+      yTicks: buildStaticYTicks(),
+      dots: [],
+    };
   }
 
   const sorted = [...points].sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at));
@@ -244,10 +270,15 @@ export function buildChartGeom(
   const last  = coords[coords.length - 1]!;
   const pathArea = `${pathLine} L ${last[0].toFixed(2)} ${H} L ${first[0].toFixed(2)} ${H} Z`;
 
-  const yLabels = Array.from({ length: 10 }, (_, i) => {
+  const rangeV = Math.max(maxV - minV, 0.0001);
+  const yTicks = Array.from({ length: 10 }, (_, i) => {
     const v = maxV - (i * (maxV - minV)) / 9;
-    return yAxis === "usdt" ? `${v.toFixed(2)}` : `${v.toFixed(2)}%`;
+    const norm = (v - minV) / rangeV;
+    const ySvg = H - norm * H;
+    const label = yAxis === "usdt" ? `${v.toFixed(2)}` : `${v.toFixed(2)}%`;
+    return { label, ySvg };
   });
+  const yLabels = yTicks.map((t) => t.label);
 
   // Dots: one per deal, colour indicates profit/loss of that individual trade
   const dots: ChartDot[] = sorted.map((p, i) => {
@@ -268,5 +299,5 @@ export function buildChartGeom(
     return { x, y, value_pct: p.value_pct, deal_pct };
   });
 
-  return { isEmpty: false, pathLine, pathArea, yLabels, dots };
+  return { isEmpty: false, pathLine, pathArea, yLabels, yTicks, dots };
 }
