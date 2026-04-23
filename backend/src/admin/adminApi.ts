@@ -20,6 +20,7 @@ import {
   adminReferralCredit,
   adminResetBalance,
   adminTestDeposit,
+  adminTestReferrals,
   adminUserExtendedStats,
   adminWipeUser,
   parseGrossMinorFromBody
@@ -153,6 +154,33 @@ export function registerAdminApi(app: express.Express) {
     try {
       const r = adminTestDeposit(getDb(), config, tg, gross, fromW, tr);
       res.json({ ok: true, deposit_id: r.depositId, net_minor: r.net_minor, fee_minor: r.fee_minor });
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      res.status(m === "not_found" ? 404 : 400).json({ error: m });
+    }
+  });
+
+  /** Test referrals: inserts N referral_payouts rows + credits balance; no real inviter needed. */
+  app.post("/admin/test-transactions/referral", requireAdmin, (req, res) => {
+    const tr = String(res.locals.traceId ?? "admin");
+    const b = req.body as { tg_user_id?: string; count?: unknown; amount_per_referral_usdt?: unknown; amount_per_referral_minor?: unknown };
+    const tg = String(b.tg_user_id ?? "").trim();
+    const count = Math.round(Number(b.count ?? 1));
+    let minor: number | null = null;
+    if (b.amount_per_referral_minor != null && b.amount_per_referral_minor !== "") {
+      const n = Number(b.amount_per_referral_minor);
+      if (Number.isFinite(n) && n > 0) minor = Math.round(n);
+    } else if (b.amount_per_referral_usdt != null && b.amount_per_referral_usdt !== "") {
+      const n = Number(b.amount_per_referral_usdt);
+      if (Number.isFinite(n) && n > 0) minor = usdtHumanToMinor(n);
+    }
+    if (!tg || minor == null) {
+      res.status(400).json({ error: "tg_user_id and amount_per_referral_usdt required" });
+      return;
+    }
+    try {
+      const r = adminTestReferrals(getDb(), tg, count, minor, tr);
+      res.json(r);
     } catch (e) {
       const m = e instanceof Error ? e.message : String(e);
       res.status(m === "not_found" ? 404 : 400).json({ error: m });

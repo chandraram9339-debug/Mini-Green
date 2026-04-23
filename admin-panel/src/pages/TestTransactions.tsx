@@ -19,6 +19,8 @@ export default function TestTransactions() {
   const [depFromWallet, setDepFromWallet] = useState("");
   const [wdAmountUsdt, setWdAmountUsdt] = useState("");
   const [wdToAddr, setWdToAddr] = useState("");
+  const [refCount, setRefCount] = useState("1");
+  const [refAmountUsdt, setRefAmountUsdt] = useState("");
 
   async function findUser(e?: FormEvent) {
     e?.preventDefault();
@@ -74,6 +76,48 @@ export default function TestTransactions() {
       const u2 = await apiJson<UserLite>(
         `/admin/test-transactions/user/${encodeURIComponent(user.tg_user_id)}`
       );
+      setUser(u2);
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitTestReferral(e: FormEvent) {
+    e.preventDefault();
+    if (!user) return;
+    setErr("");
+    setMsg("");
+    const count = Math.round(Number(refCount));
+    const amt = Number(refAmountUsdt.replace(",", "."));
+    if (!Number.isFinite(count) || count < 1 || count > 100) {
+      setErr("Количество рефералов: от 1 до 100.");
+      return;
+    }
+    if (!Number.isFinite(amt) || amt <= 0) {
+      setErr("Укажите сумму вознаграждения за одного реферала (USDT).");
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await apiJson<{ ok: boolean; count: number; total_minor: number }>(
+        "/admin/test-transactions/referral",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            tg_user_id: user.tg_user_id,
+            count,
+            amount_per_referral_usdt: amt
+          })
+        }
+      );
+      setMsg(
+        `Добавлено ${r.count} реф. выплат. Итого зачислено: ${usdFromMinor(r.total_minor)} USDT. В мини-аппе → История → Рефералы появятся строки.`
+      );
+      setRefCount("1");
+      setRefAmountUsdt("");
+      const u2 = await apiJson<UserLite>(`/admin/test-transactions/user/${encodeURIComponent(user.tg_user_id)}`);
       setUser(u2);
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : String(e));
@@ -232,6 +276,50 @@ export default function TestTransactions() {
               </div>
               <button type="submit" className="btn btn-primary" disabled={busy}>
                 Записать тестовый вывод
+              </button>
+            </form>
+          </div>
+
+          <div className="card">
+            <h3 style={{ marginTop: 0 }}>Тестовые рефералы</h3>
+            <p className="muted">
+              Добавляет N записей в таблицу реферальных выплат и зачисляет сумму на баланс пользователя.
+              В мини-аппе → История → вкладка «Рефералы» появятся строки с суммой вознаграждения.
+            </p>
+            <form onSubmit={submitTestReferral}>
+              <div className="row">
+                <label>Количество рефералов</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="Например 3"
+                  value={refCount}
+                  onChange={(e) => setRefCount(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+              <div className="row">
+                <label>Вознаграждение за одного реферала, USDT</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Например 5"
+                  value={refAmountUsdt}
+                  onChange={(e) => setRefAmountUsdt(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+              <p className="muted" style={{ marginTop: "0.4rem" }}>
+                Итого будет зачислено:{" "}
+                <strong>
+                  {(Number(refCount) > 0 && Number(refAmountUsdt.replace(",", ".")) > 0)
+                    ? `${(Number(refCount) * Number(refAmountUsdt.replace(",", "."))).toFixed(2)} USDT`
+                    : "—"}
+                </strong>
+              </p>
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                Добавить тестовые рефералы
               </button>
             </form>
           </div>

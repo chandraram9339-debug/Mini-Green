@@ -138,6 +138,41 @@ export function adminReferralCredit(
   return { ok: true as const, from_deposit_id: depId };
 }
 
+/**
+ * Test helper: inserts N referral_payouts rows for a user and credits their balance.
+ * Uses the user themselves as `from_user_id` (self-referral) since FK requires a valid user.
+ * Each entry gets a staggered timestamp so they appear as separate referrals in history.
+ */
+export function adminTestReferrals(
+  db: Database,
+  tg: string,
+  count: number,
+  amountPerReferralMinor: number,
+  trace: string
+) {
+  if (!Number.isFinite(count) || count < 1 || count > 100) throw new Error("count_invalid");
+  if (!Number.isFinite(amountPerReferralMinor) || amountPerReferralMinor <= 0) throw new Error("amount_invalid");
+  const u = getUserByTg(db, tg);
+  if (!u) throw new Error("not_found");
+  const now = Date.now();
+  const insert = db.prepare(
+    "INSERT INTO referral_payouts (from_user_id, to_user_id, from_deposit_id, amount_usdt_minor, created_at) VALUES (?,?,?,?,?)"
+  );
+  const tx = db.transaction(() => {
+    for (let i = 0; i < count; i++) {
+      const depId = `admin_test_ref_${crypto.randomUUID()}`;
+      // Stagger by 1 minute each so referrals appear as separate entries
+      const ts = new Date(now - (count - i) * 60_000).toISOString();
+      insert.run(u.id, u.id, depId, amountPerReferralMinor, ts);
+      addBalance(db, u.id, amountPerReferralMinor);
+    }
+  });
+  tx();
+  const totalMinor = count * amountPerReferralMinor;
+  logEvent(trace, "admin.test_referrals", { tg, count, amount_per_minor: amountPerReferralMinor, total_minor: totalMinor });
+  return { ok: true as const, count, total_minor: totalMinor };
+}
+
 export function adminUserExtendedStats(db: Database, tg: string) {
   const u = getUserByTg(db, tg);
   if (!u) return null;
