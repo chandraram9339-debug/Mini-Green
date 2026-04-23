@@ -11,7 +11,8 @@ export type UiSettings = {
 
 export async function fetchUiSettings(): Promise<UiSettings | null> {
   try {
-    const res = await apiFetch("/ui/settings");
+    /** Same nginx rule as GET /wallet — /ui/* is often not proxied on production. */
+    const res = await apiFetch("/wallet/ui-settings");
     if (!res.ok) return null;
     const json = (await res.json()) as unknown;
     if (!json || typeof json !== "object") return null;

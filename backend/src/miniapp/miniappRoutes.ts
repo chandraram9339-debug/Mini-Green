@@ -54,10 +54,16 @@ export function registerMiniappContract(app: express.Express) {
     res.json(buildWalletForUser(req.userId!));
   });
 
-  /** Admin-managed chat/support/channel URLs (no legacy initData query). */
-  app.get("/ui/settings", requireMiniappAuth, (req, res) => {
+  const sendMiniappUiLinks = (req: express.Request, res: express.Response) => {
     res.json(buildMiniappUiLinks(getDb(), config, req.userId!));
-  });
+  };
+
+  /**
+   * Admin-managed chat/support URLs (Bearer). Prefer GET /wallet/ui-settings in production:
+   * same-origin nginx often proxies only /wallet/* and not /ui/*, so /ui/settings was returning HTML.
+   */
+  app.get("/wallet/ui-settings", requireMiniappAuth, sendMiniappUiLinks);
+  app.get("/ui/settings", requireMiniappAuth, sendMiniappUiLinks);
 
   app.get("/wallet/seed", requireMiniappAuth, async (req, res) => {
     const db = getDb();
