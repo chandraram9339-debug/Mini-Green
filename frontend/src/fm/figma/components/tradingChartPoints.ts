@@ -28,24 +28,34 @@ export function buildCompoundedChartPoints(rows: TradingJournalItem[]): GraphicP
   });
 }
 
+export type ChartDot = {
+  x: number;
+  y: number;
+  /** cumulative compounded % at this deal */
+  value_pct: number;
+  /** individual deal result % — positive = profit, negative = loss, null = open */
+  deal_pct: number | null;
+};
+
 export type ChartGeom = {
   isEmpty: boolean;
   pathLine: string;
   pathArea: string;
   yLabels: string[];
+  dots: ChartDot[];
 };
 
 const STATIC_Y_LABELS = ["7.00%","6.00%","5.00%","4.00%","3.00%","2.00%","1.00%","0.00%","-1.00%","-2.00%"];
 
 /**
- * Converts GraphicPoints into SVG path strings and Y-axis labels.
+ * Converts GraphicPoints into SVG path strings, Y-axis labels and trade deal dots.
  * viewBox: "0 0 325 122"
  */
 export function buildChartGeom(points: GraphicPoint[]): ChartGeom {
   const W = 325, H = 122;
 
   if (points.length === 0) {
-    return { isEmpty: true, pathLine: "", pathArea: "", yLabels: STATIC_Y_LABELS };
+    return { isEmpty: true, pathLine: "", pathArea: "", yLabels: STATIC_Y_LABELS, dots: [] };
   }
 
   const sorted = [...points].sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at));
@@ -83,5 +93,20 @@ export function buildChartGeom(points: GraphicPoint[]): ChartGeom {
     return `${v.toFixed(2)}%`;
   });
 
-  return { isEmpty: false, pathLine, pathArea, yLabels };
+  // Dots: one per deal, colour indicates profit/loss of that individual trade
+  const dots: ChartDot[] = sorted.map((p, i) => {
+    const [x, y] = coords[i]!;
+    // Individual deal % = diff in compounded value: (c_n / c_{n-1} - 1) * 100
+    let deal_pct: number | null = null;
+    if (i === 0) {
+      deal_pct = p.value_pct; // first point: compounded = individual
+    } else {
+      const prevCpd = 1 + (sorted[i - 1]!.value_pct / 100);
+      const curCpd  = 1 + (p.value_pct / 100);
+      deal_pct = prevCpd > 0 ? (curCpd / prevCpd - 1) * 100 : null;
+    }
+    return { x, y, value_pct: p.value_pct, deal_pct };
+  });
+
+  return { isEmpty: false, pathLine, pathArea, yLabels, dots };
 }
