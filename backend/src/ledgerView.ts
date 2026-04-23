@@ -420,6 +420,7 @@ export function getReferralReceivedMinor(tg: string): number {
 export type MoneySummaryStats = {
   wallet_minor: number;
   deposit_total_gross_minor: number;
+  deposit_total_net_minor: number;
   deposit_count: number;
   withdraw_sent_amount_minor: number;
   withdraw_sent_count: number;
@@ -436,6 +437,7 @@ export function getMoneySummaryStats(tg: string): MoneySummaryStats {
     return {
       wallet_minor: 0,
       deposit_total_gross_minor: 0,
+      deposit_total_net_minor: 0,
       deposit_count: 0,
       withdraw_sent_amount_minor: 0,
       withdraw_sent_count: 0,
@@ -446,9 +448,9 @@ export function getMoneySummaryStats(tg: string): MoneySummaryStats {
   }
   const dep = db
     .prepare(
-      "SELECT count(*) as n, coalesce(sum(gross_minor), 0) as s FROM deposits WHERE user_id = ? AND status = 'completed'"
+      "SELECT count(*) as n, coalesce(sum(gross_minor), 0) as s, coalesce(sum(gross_minor - fee_minor), 0) as net FROM deposits WHERE user_id = ? AND status = 'completed'"
     )
-    .get(u.id) as { n: number; s: number };
+    .get(u.id) as { n: number; s: number; net: number };
   const wd = db
     .prepare(
       "SELECT count(*) as n, coalesce(sum(amount_minor), 0) as s FROM withdrawals WHERE user_id = ? AND status = 'sent'"
@@ -461,6 +463,7 @@ export function getMoneySummaryStats(tg: string): MoneySummaryStats {
   return {
     wallet_minor: u.balance_usdt_minor,
     deposit_total_gross_minor: dep.s,
+    deposit_total_net_minor: dep.net,
     deposit_count: dep.n,
     withdraw_sent_amount_minor: wd.s,
     withdraw_sent_count: wd.n,

@@ -151,8 +151,8 @@ export function buildWalletHistoryForUser(userId: string) {
       items: depItems,
       rows: depItems,
       count: summary.deposit_count,
-      total: minorToUsdt(summary.deposit_total_gross_minor),
-      totalAmount: minorToUsdt(summary.deposit_total_gross_minor)
+      total: minorToUsdt(summary.deposit_total_net_minor),
+      totalAmount: minorToUsdt(summary.deposit_total_net_minor)
     },
     withdraw: {
       items: witItems,

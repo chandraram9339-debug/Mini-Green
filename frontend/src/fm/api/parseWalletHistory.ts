@@ -72,11 +72,19 @@ function parseItemArray(
 function sumMainsFromRows(tab: "deposit" | "withdraw" | "referral", rows: HistoryListRowUi[]): number {
   let sum = 0;
   for (const r of rows) {
-    const n = Number.parseFloat(r.main.replace(/^[+−-]/, ""));
+    const n = Number.parseFloat(r.main.replace(/^[+−\-]/, ""));
     if (!Number.isFinite(n)) continue;
-    sum += Math.abs(n);
+    const amount = Math.abs(n);
+    if (tab === "deposit") {
+      // Show net credited amount: deposit minus commission
+      const feeRaw = r.fee === "—" ? "0" : r.fee.replace(/^[+−\-]/, "");
+      const feeN = Number.parseFloat(feeRaw);
+      const fee = Number.isFinite(feeN) ? feeN : 0;
+      sum += Math.max(0, amount - fee);
+    } else {
+      sum += amount;
+    }
   }
-  if (tab === "withdraw") return sum;
   return sum;
 }
 
