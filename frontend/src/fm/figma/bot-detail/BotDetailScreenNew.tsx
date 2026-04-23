@@ -264,7 +264,7 @@ export default function BotDetailScreenNew() {
     const load = async (showSpinner: boolean) => {
       if (showSpinner) {
         setJournalLoading(true);
-        setJournalRows([]);
+        // Keep previous rows visible while new period data loads to avoid static-chart flash
         setJournalMeta(null);
       }
       try {
