@@ -381,14 +381,12 @@ export default function FeesAndWallets() {
             <FieldNote>Необязательно если задана HD mnemonic. Hex-ключ для детерминированной генерации адресов без BIP39-фразы.</FieldNote>
           </div>
           <div className="row">
-            <label>
-              hd_wallet_mnemonic — BIP39 мнемоника (новое значение)
-              <RequiredBadge value={deterministicDeriveKey} />
-            </label>
+            <label>hd_wallet_mnemonic — BIP39 мнемоника (новое значение)</label>
             <input type="password" value={hdMnemonic} onChange={(e) => setHdMnemonic(e.target.value)} placeholder="12 или 24 слова через пробел — оставьте пустым, чтобы не менять" />
-            <FieldNote important>
-              🔴 Обязательно — из этой фразы генерируются уникальные депозитные адреса каждого пользователя.
-              Храните офлайн-копию! После сохранения фраза не отображается в интерфейсе.
+            <FieldNote>
+              Поле всегда отображается пустым из соображений безопасности — фраза не возвращается из базы.
+              Если мнемоника уже была сохранена ранее, заполнять повторно не нужно.
+              Заполняйте только при первой настройке или смене фразы.
             </FieldNote>
           </div>
           <button type="submit" className="btn btn-primary">
