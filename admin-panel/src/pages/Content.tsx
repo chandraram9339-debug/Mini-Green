@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiJson } from "../api";
 import type { ContentPayload } from "../types";
+import { FieldNote, OkBadge, RequiredBadge } from "../components/FieldHint";
 
 export default function Content() {
   const [c, setC] = useState<ContentPayload | null>(null);
@@ -65,32 +66,64 @@ export default function Content() {
       <div className="card">
         <form onSubmit={save}>
           <div className="row">
-            <label htmlFor="ch">Ссылка на канал</label>
-            <input id="ch" value={channelUrl} onChange={(e) => setChannelUrl(e.target.value)} />
+            <label htmlFor="ch">
+              Ссылка на канал
+              <RequiredBadge value={channelUrl} />
+              <OkBadge value={channelUrl} />
+            </label>
+            <input id="ch" value={channelUrl} onChange={(e) => setChannelUrl(e.target.value)} placeholder="https://t.me/yourchannel" />
+            <FieldNote>Ссылка на Telegram-канал проекта. Показывается в мини-аппе.</FieldNote>
           </div>
           <div className="row">
-            <label htmlFor="chat">Ссылка на чат</label>
-            <input id="chat" value={chatUrl} onChange={(e) => setChatUrl(e.target.value)} />
+            <label htmlFor="chat">
+              Ссылка на чат
+              <RequiredBadge value={chatUrl} />
+              <OkBadge value={chatUrl} />
+            </label>
+            <input id="chat" value={chatUrl} onChange={(e) => setChatUrl(e.target.value)} placeholder="https://t.me/yourchat" />
+            <FieldNote important={!chatUrl}>
+              🔴 Обязательно — кнопка «Chat» на главном экране мини-аппа открывает эту ссылку. Без неё кнопка не работает.
+            </FieldNote>
           </div>
           <div className="row">
-            <label htmlFor="sup">Поддержка</label>
-            <input id="sup" value={supportUrl} onChange={(e) => setSupportUrl(e.target.value)} />
+            <label htmlFor="sup">
+              Поддержка
+              <RequiredBadge value={supportUrl} />
+              <OkBadge value={supportUrl} />
+            </label>
+            <input id="sup" value={supportUrl} onChange={(e) => setSupportUrl(e.target.value)} placeholder="https://t.me/yoursupport" />
+            <FieldNote important={!supportUrl}>
+              🔴 Обязательно — ссылка открывается при нажатии «Support Chat» на экране поддержки.
+            </FieldNote>
           </div>
           <div className="row">
             <label htmlFor="yt">YouTube / видео (ссылка для мини-аппа)</label>
-            <input id="yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
+            <input id="yt" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." />
+            <FieldNote>Необязательно. Ссылка на обучающее видео или канал YouTube.</FieldNote>
           </div>
           <div className="row">
-            <label htmlFor="botu">Имя Telegram-бота (без @, для реф-ссылок t.me/…)</label>
+            <label htmlFor="botu">
+              Имя Telegram-бота (без @, для реф-ссылок t.me/…)
+              <RequiredBadge value={publicBotUsername} />
+              <OkBadge value={publicBotUsername} />
+            </label>
             <input
               id="botu"
               value={publicBotUsername}
               onChange={(e) => setPublicBotUsername(e.target.value)}
               placeholder="MyProjectBot"
             />
+            <FieldNote important={!publicBotUsername}>
+              🔴 Обязательно — username бота без @. Используется для генерации персональных реферальных ссылок
+              вида <code>t.me/MyProjectBot?start=ref12345</code>. Без этого реферальные ссылки не работают.
+            </FieldNote>
           </div>
           <div className="row">
-            <label htmlFor="mapp">Ссылка для запуска мини-аппа (Web App)</label>
+            <label htmlFor="mapp">
+              Ссылка для запуска мини-аппа (Web App)
+              <RequiredBadge value={miniappWebappUrl} />
+              <OkBadge value={miniappWebappUrl} />
+            </label>
             <input
               id="mapp"
               value={miniappWebappUrl}

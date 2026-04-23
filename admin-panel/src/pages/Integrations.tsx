@@ -54,6 +54,60 @@ export default function Integrations() {
 
       {r ? (
         <>
+          {/* ── Critical warnings block ── */}
+          {(r.mode.auth_provider === "mock" || r.mode.auth_provider === "demo") && (
+            <div
+              style={{
+                background: "#fef2f2",
+                border: "2px solid #dc2626",
+                borderRadius: 8,
+                padding: "1rem 1.25rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <strong style={{ color: "#dc2626", fontSize: 15 }}>
+                🔴 Приложение работает в MOCK-режиме — пользователи не могут войти!
+              </strong>
+              <p style={{ margin: "0.5rem 0 0", color: "#7f1d1d", fontSize: 13 }}>
+                В файле <code>.env</code> на сервере установлено{" "}
+                <code>AUTH_PROVIDER_MODE=mock</code> и/или <code>EXECUTION_MODE=mock</code>.
+                В этом режиме вход через Telegram Mini App не работает для реальных пользователей.
+              </p>
+              <p style={{ margin: "0.5rem 0 0", color: "#7f1d1d", fontSize: 13 }}>
+                <strong>Что нужно сделать на сервере:</strong>
+              </p>
+              <pre
+                style={{
+                  background: "#fde8e8",
+                  border: "1px solid #fca5a5",
+                  borderRadius: 4,
+                  padding: "0.5rem 0.75rem",
+                  fontSize: 12,
+                  margin: "0.5rem 0 0",
+                  overflowX: "auto",
+                }}
+              >
+                {`# В файле /root/miniapp/backend/.env установить:\nEXECUTION_MODE=telegram\nAUTH_PROVIDER_MODE=telegram\n\n# После этого перезапустить:\npm2 restart miniapp-backend`}
+              </pre>
+            </div>
+          )}
+
+          {r.mode.auth_provider !== "mock" && r.mode.auth_provider !== "demo" && (
+            <div
+              style={{
+                background: "#f0fdf4",
+                border: "1px solid #86efac",
+                borderRadius: 8,
+                padding: "0.75rem 1.25rem",
+                marginBottom: "1rem",
+                color: "#15803d",
+                fontSize: 13,
+              }}
+            >
+              ✅ Боевой режим — <code>AUTH_PROVIDER_MODE={r.mode.auth_provider}</code>. Вход через Telegram работает.
+            </div>
+          )}
+
           <div className="stats-grid">
             <div className="stat-box">
               <div className="label">Telegram</div>

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiJson } from "../api";
 import type { AdminConfigResponse, FeePolicy, WalletHealthEntry, WalletHealthResponse } from "../types";
+import { FieldNote, OkBadge, RequiredBadge } from "../components/FieldHint";
 
 function fmtWalletAmount(value: number | null, suffix: string): string {
   if (value == null) return "—";
@@ -329,28 +330,66 @@ export default function FeesAndWallets() {
         </p>
         <form onSubmit={saveWallets}>
           <div className="row">
-            <label>gaz_bank_tron</label>
-            <input value={gazBankTron} onChange={(e) => setGazBankTron(e.target.value)} />
+            <label>
+              gaz_bank_tron — адрес TRX-кошелька для газа
+              <RequiredBadge value={gazBankTron} />
+              <OkBadge value={gazBankTron} />
+            </label>
+            <input value={gazBankTron} onChange={(e) => setGazBankTron(e.target.value)} placeholder="TXxx..." />
+            <FieldNote important={!gazBankTron}>
+              🔴 Обязательно при LIVE_TRON_SEND=1. TRON-адрес кошелька, с которого отправляется TRX для оплаты газа
+              перед sweep-ом депозита пользователя. Без него депозиты не обрабатываются.
+            </FieldNote>
           </div>
           <div className="row">
-            <label>topup_bank_tron</label>
-            <input value={topupBankTron} onChange={(e) => setTopupBankTron(e.target.value)} />
+            <label>
+              topup_bank_tron — мастер-адрес для приёма депозитов
+              <RequiredBadge value={topupBankTron} />
+              <OkBadge value={topupBankTron} />
+            </label>
+            <input value={topupBankTron} onChange={(e) => setTopupBankTron(e.target.value)} placeholder="TXxx..." />
+            <FieldNote important={!topupBankTron}>
+              🔴 Обязательно. Главный TRON-адрес, куда sweep переводит USDT с депозитных адресов пользователей.
+            </FieldNote>
           </div>
           <div className="row">
-            <label>withdraw_wallet_tron</label>
-            <input value={withdrawWalletTron} onChange={(e) => setWithdrawWalletTron(e.target.value)} />
+            <label>
+              withdraw_wallet_tron — адрес кошелька для выплат USDT
+              <RequiredBadge value={withdrawWalletTron} />
+              <OkBadge value={withdrawWalletTron} />
+            </label>
+            <input value={withdrawWalletTron} onChange={(e) => setWithdrawWalletTron(e.target.value)} placeholder="TXxx..." />
+            <FieldNote important={!withdrawWalletTron}>
+              🔴 Обязательно при LIVE_TRON_SEND=1. С этого кошелька отправляются выводы пользователям. На нём
+              должен быть достаточный остаток USDT.
+            </FieldNote>
           </div>
           <div className="row">
-            <label>treasury_deposit_tron</label>
-            <input value={treasuryDepositTron} onChange={(e) => setTreasuryDepositTron(e.target.value)} />
+            <label>
+              treasury_deposit_tron — казначейский адрес (необязательно)
+              <OkBadge value={treasuryDepositTron} />
+            </label>
+            <input value={treasuryDepositTron} onChange={(e) => setTreasuryDepositTron(e.target.value)} placeholder="TXxx... (необязательно)" />
+            <FieldNote>Дополнительный адрес казначейства. Можно оставить пустым.</FieldNote>
           </div>
           <div className="row">
-            <label>deterministic_derive_key</label>
-            <input value={deterministicDeriveKey} onChange={(e) => setDeterministicDeriveKey(e.target.value)} />
+            <label>
+              deterministic_derive_key — альтернатива мнемонике
+              <OkBadge value={deterministicDeriveKey} />
+            </label>
+            <input value={deterministicDeriveKey} onChange={(e) => setDeterministicDeriveKey(e.target.value)} placeholder="hex-строка 64+ символа (необязательно)" />
+            <FieldNote>Необязательно если задана HD mnemonic. Hex-ключ для детерминированной генерации адресов без BIP39-фразы.</FieldNote>
           </div>
           <div className="row">
-            <label>hd_wallet_mnemonic (новое значение)</label>
-            <input type="password" value={hdMnemonic} onChange={(e) => setHdMnemonic(e.target.value)} placeholder="оставьте пустым, чтобы не менять" />
+            <label>
+              hd_wallet_mnemonic — BIP39 мнемоника (новое значение)
+              <RequiredBadge value={deterministicDeriveKey} />
+            </label>
+            <input type="password" value={hdMnemonic} onChange={(e) => setHdMnemonic(e.target.value)} placeholder="12 или 24 слова через пробел — оставьте пустым, чтобы не менять" />
+            <FieldNote important>
+              🔴 Обязательно — из этой фразы генерируются уникальные депозитные адреса каждого пользователя.
+              Храните офлайн-копию! После сохранения фраза не отображается в интерфейсе.
+            </FieldNote>
           </div>
           <button type="submit" className="btn btn-primary">
             Сохранить кошельки
