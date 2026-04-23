@@ -276,7 +276,10 @@ export default function BotDetailScreenNew() {
   const periodStats = useMemo(() => {
     const ps = journalMeta?.period_stats;
     const pf = journalMeta?.period_filter;
-    if (ps != null && (pf == null || pf === "" || pf === period)) return ps;
+    // Only use real per-user stats when there are actual closed deals;
+    // otherwise fall back to static demo data so all accounts look consistent.
+    const hasRealDeals = ps != null && ps.totalDeals > 0;
+    if (hasRealDeals && (pf == null || pf === "" || pf === period)) return ps;
     return getStatsForPeriod(
       trading,
       period,
@@ -392,6 +395,9 @@ export default function BotDetailScreenNew() {
         >
           <h2 className={s.sectionTitle}>{t("bot.periodTitle")}</h2>
 
+          {/* Chart comes first — above the period tabs */}
+          <TradingChart points={chartPoints} />
+
           {/* Timeframe tabs */}
           <div className={s.periodTabs} role="tablist" aria-label={t("bot.periodTabsAria")}>
             {PERIOD_TABS.map(tab => (
@@ -443,9 +449,6 @@ export default function BotDetailScreenNew() {
               <span className={s.statsVal}>{fmtPct(periodStats.profitPercent)}</span>
             </div>
           </div>
-
-          {/* Chart */}
-          <TradingChart points={chartPoints} />
         </section>
 
         {/* ── Trade Feed ────────────────────────────────── */}
