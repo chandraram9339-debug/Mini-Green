@@ -107,10 +107,10 @@ function TradingChart({ points }: { points: GraphicPoint[] }) {
                     key={i}
                     cx={dot.x.toFixed(2)}
                     cy={dot.y.toFixed(2)}
-                    r="3"
+                    r="1.5"
                     fill={isProfit ? "#73C1B1" : isLoss ? "#DF7F7F" : "#8494AF"}
                     stroke="#ffffff"
-                    strokeWidth="1"
+                    strokeWidth="0.5"
                   />
                 );
               })}
