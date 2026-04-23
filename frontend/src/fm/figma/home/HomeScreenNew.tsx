@@ -22,6 +22,8 @@ import {
   buildPersonalBalanceChartPoints,
   chartPointsSystemOrUserFallback,
   buildChartGeom,
+  computeDepositBalanceYDomain,
+  prependDepositTotalAnchor,
   type GraphicPoint,
 } from "../components/tradingChartPoints";
 import { useAppSession } from "../../session/useAppSession";
@@ -90,8 +92,16 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
 
 /* ─── График производительности ─────────────────────────────── */
 
-function PerformanceChart({ points, yAxis }: { points: GraphicPoint[]; yAxis: "percent" | "usdt" }) {
-  const geom = buildChartGeom(points, yAxis);
+function PerformanceChart({
+  points,
+  yAxis,
+  fixedYDomain,
+}: {
+  points: GraphicPoint[];
+  yAxis: "percent" | "usdt";
+  fixedYDomain?: [number, number];
+}) {
+  const geom = buildChartGeom(points, yAxis, fixedYDomain ? { fixedYDomain } : undefined);
   const yLabels = geom.yLabels;
 
   return (
@@ -203,7 +213,8 @@ export default function HomeScreenNew() {
   const activeTab = useActiveTab();
   const { t } = useFmLocale();
   const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
-  const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt } = useWalletDisplay();
+  const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt, cumulativeDepositsUsdt } =
+    useWalletDisplay();
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   const isBotActive = balanceUsdt > 0 && botRunning;
@@ -223,8 +234,8 @@ export default function HomeScreenNew() {
 
     let cancelled = false;
     const load = async () => {
-      /** До Старта — тот же период, что вкладка по умолчанию на 3-м экране (24h), чтобы % график совпадал. После Старта — all, чтобы собрать личные сделки для баланса. */
-      const period = isBotActive ? "all" : "24h";
+      /** Всегда «all»: на главной в ритейле — та же системная серия, что на экране бота за весь период; в личном режиме — все закрытые сделки после окна баланса. */
+      const period = "all";
       const [jr, snap] = await Promise.all([
         fetchTradingJournal(100, period),
         fetchBotTrading(period),
@@ -238,14 +249,45 @@ export default function HomeScreenNew() {
     void load();
     const id = window.setInterval(() => void load(), 5_000);
     return () => { cancelled = true; window.clearInterval(id); };
-  }, [apiSessionReady, isBotActive]);
+  }, [apiSessionReady]);
+
+  /** x: сумма всех подтверждённых пополнений (API); до выката — fallback на баланс. z: balanceUsdt. */
+  const depositTotalUsdt = useMemo(() => {
+    if (cumulativeDepositsUsdt != null && cumulativeDepositsUsdt > 0) return cumulativeDepositsUsdt;
+    return balanceUsdt;
+  }, [cumulativeDepositsUsdt, balanceUsdt]);
+
+  const personalTradePoints = useMemo(
+    () =>
+      isBotActive
+        ? buildPersonalBalanceChartPoints(chartRows, balanceUsdt, positiveBalanceStartedAt)
+        : [],
+    [isBotActive, chartRows, balanceUsdt, positiveBalanceStartedAt],
+  );
 
   const chartPoints = useMemo(() => {
-    if (isBotActive) {
-      return buildPersonalBalanceChartPoints(chartRows, balanceUsdt, positiveBalanceStartedAt);
-    }
-    return chartPointsSystemOrUserFallback(systemChartPoints, chartRows);
-  }, [isBotActive, chartRows, balanceUsdt, positiveBalanceStartedAt, systemChartPoints]);
+    if (!isBotActive) return chartPointsSystemOrUserFallback(systemChartPoints, chartRows);
+    if (personalTradePoints.length === 0) return [];
+    return prependDepositTotalAnchor(personalTradePoints, depositTotalUsdt, positiveBalanceStartedAt);
+  }, [
+    isBotActive,
+    systemChartPoints,
+    chartRows,
+    personalTradePoints,
+    depositTotalUsdt,
+    positiveBalanceStartedAt,
+  ]);
+
+  const fixedYDomain = useMemo((): [number, number] | undefined => {
+    if (!isBotActive || chartPoints.length === 0) return undefined;
+    return computeDepositBalanceYDomain(depositTotalUsdt, balanceUsdt);
+  }, [isBotActive, chartPoints.length, depositTotalUsdt, balanceUsdt]);
+
+  /**
+   * Личный режим: график скрыт, пока нет закрытых сделок после подтверждённого депозита на бэкенде
+   * (окно от positiveBalanceStartedAt; до первой точки по сделкам — пусто).
+   */
+  const showPerformanceChart = !isBotActive || chartPoints.length > 0;
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
   return (
@@ -307,7 +349,13 @@ export default function HomeScreenNew() {
 
         {/* ── Секция бота ──────────────────────────────── */}
         <section className={s.botSection}>
-          <PerformanceChart points={chartPoints} yAxis={isBotActive ? "usdt" : "percent"} />
+          {showPerformanceChart ? (
+            <PerformanceChart
+              points={chartPoints}
+              yAxis={isBotActive ? "usdt" : "percent"}
+              fixedYDomain={fixedYDomain}
+            />
+          ) : null}
 
           <div className={s.botInfoGroup}>
             <div className={s.botStatusRow}>

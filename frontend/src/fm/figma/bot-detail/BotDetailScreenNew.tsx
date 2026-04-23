@@ -2,9 +2,9 @@
  * BotDetailScreenNew — Builder.io «Third Screen / Trade Bot» design port.
  *
  * UI:    100% Builder.io visual (colors, layout, flex-based — no position:absolute).
- * Data:  real API — fetchTradingJournal, fetchBotTrading, setBotTradingState,
- *        getStatsForPeriod, chartPointsSystemOrUserFallback.
- * Logic: period tabs (24h/7d/30d/all), system-wide chart from API, trade-result filter, Start/Stop.
+ * Data:  real API — fetchTradingJournal, fetchBotTrading, setBotTradingState, getStatsForPeriod.
+ * Logic: 3-й экран — только торговая система (scope=system): вкладки 24h/7d/1m/all задают **одно**
+ *        окно для графика, панели сделок/профита и ленты. Личный журнал пользователя сюда не подмешивается.
  * Adapt: height: 100dvh + flex layout, max-width 500px, no fixed pixels.
  */
 import "../home/homeScreen.css"; /* keeps fm-bot-card-* classes for BotJournalTradeCard */
@@ -23,11 +23,7 @@ import { botTradingStaticFallback, fetchBotTrading } from "../../api/fetchBotTra
 import { getStatsForPeriod } from "../../api/parseBotTrading";
 import { setBotTradingState } from "../../api/setBotTradingState";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
-import {
-  buildChartGeom,
-  chartPointsSystemOrUserFallback,
-  type GraphicPoint,
-} from "../components/tradingChartPoints";
+import { buildChartGeom, type GraphicPoint } from "../components/tradingChartPoints";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { useAppSession } from "../../session/useAppSession";
@@ -59,7 +55,7 @@ function useActiveNav() {
   return "home";
 }
 
-/* ── Trading chart — dynamic from API or static fallback ─────── */
+/* ── График: системная серия % за выбранный период вкладки (время → X, кумулятив → Y) ─ */
 function TradingChart({ points }: { points: GraphicPoint[] }) {
   const geom = buildChartGeom(points, "percent");
 
@@ -231,6 +227,7 @@ export default function BotDetailScreenNew() {
 
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
+  /** `system_chart` с бэкенда для выбранной вкладки периода (тот же запрос, что лента и stats). */
   const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
   const [journalMeta, setJournalMeta] = useState<TradingJournalMeta | null>(null);
   const [journalLoading, setJournalLoading] = useState(false);
@@ -240,11 +237,7 @@ export default function BotDetailScreenNew() {
 
   const trading = useMemo(() => tradingFromApi ?? botTradingStaticFallback, [tradingFromApi]);
   const fromJournal = balance <= 0;
-  /** График — системная серия % (как на главной до Старта); fallback — компаунд по личному журналу за период. */
-  const chartPoints = useMemo(
-    () => chartPointsSystemOrUserFallback(systemChartPoints, journalRows),
-    [systemChartPoints, journalRows],
-  );
+  const chartPoints = useMemo(() => systemChartPoints, [systemChartPoints]);
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   const feedWaitingForSession = hasApiBase() && (phase === "idle" || phase === "bootstrapping");
@@ -269,7 +262,7 @@ export default function BotDetailScreenNew() {
       }
       try {
         const [jr, snap] = await Promise.all([
-          fetchTradingJournal(100, period),
+          fetchTradingJournal(100, period, "system"),
           fetchBotTrading(period),
         ]);
         if (cancelled) return;
@@ -293,10 +286,8 @@ export default function BotDetailScreenNew() {
   const periodStats = useMemo(() => {
     const ps = journalMeta?.period_stats;
     const pf = journalMeta?.period_filter;
-    // Only use real per-user stats when there are actual closed deals;
-    // otherwise fall back to static demo data so all accounts look consistent.
-    const hasRealDeals = ps != null && ps.totalDeals > 0;
-    if (hasRealDeals && (pf == null || pf === "" || pf === period)) return ps;
+    const statsMatchPeriod = pf == null || pf === "" || pf === period;
+    if (ps != null && statsMatchPeriod) return ps;
     return getStatsForPeriod(
       trading,
       period,

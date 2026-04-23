@@ -18,7 +18,7 @@ import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaGraphic } from "../components/FigmaGraphic";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
 import { FigmaTabBar } from "../components/FigmaTabBar";
-import { buildCompoundedChartPoints } from "../components/tradingChartPoints";
+import type { GraphicPoint } from "../components/tradingChartPoints";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { useFmLocale } from "../../i18n/useFmLocale";
@@ -63,6 +63,7 @@ export default function BotDetailScreen() {
   const { balanceUsdt: balance } = useWalletDisplay();
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
+  const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
   const [journalMeta, setJournalMeta] = useState<TradingJournalMeta | null>(null);
   const [journalLoading, setJournalLoading] = useState(false);
   const [botSwitchLoading, setBotSwitchLoading] = useState(false);
@@ -72,8 +73,6 @@ export default function BotDetailScreen() {
     return tradingFromApi;
   }, [tradingFromApi]);
 
-  /** ТЗ: при нулевом балансе данные из торгового журнала; иначе из алгоритма аккаунта. */
-  const fromJournal = balance <= 0;
   const [period, setPeriod] = useState<BotPeriod>("24h");
   const [tradeResultFilter, setTradeResultFilter] = useState<TradeResultFilter>("all");
 
@@ -86,6 +85,7 @@ export default function BotDetailScreen() {
   useEffect(() => {
     if (!hasApiBase()) {
       setJournalRows([]);
+      setSystemChartPoints([]);
       setJournalMeta(null);
       return;
     }
@@ -98,15 +98,19 @@ export default function BotDetailScreen() {
       if (showSpinner) {
         setJournalLoading(true);
         setJournalRows([]);
+        setSystemChartPoints([]);
         setJournalMeta(null);
       }
       try {
         const [jr, snap] = await Promise.all([
-          fetchTradingJournal(100, period),
+          fetchTradingJournal(100, period, "system"),
           fetchBotTrading(period),
         ]);
         if (cancelled) return;
         setJournalRows(jr.items);
+        setSystemChartPoints(
+          jr.system_chart.map((p) => ({ occurred_at: p.occurred_at, value_pct: p.value_pct })),
+        );
         setJournalMeta(jr.meta);
         if (snap) setTradingFromApi(snap);
       } finally {
@@ -144,7 +148,8 @@ export default function BotDetailScreen() {
   const periodStats = useMemo(() => {
     const ps = journalMeta?.period_stats;
     const pf = journalMeta?.period_filter;
-    if (ps != null && (pf == null || pf === "" || pf === period)) {
+    const statsMatchPeriod = pf == null || pf === "" || pf === period;
+    if (ps != null && statsMatchPeriod) {
       return ps;
     }
     return getStatsForPeriod(
@@ -157,7 +162,7 @@ export default function BotDetailScreen() {
             defaultStat),
     );
   }, [journalMeta, period, trading, tradingFromApi]);
-  const chartPoints = useMemo(() => buildCompoundedChartPoints(journalRows), [journalRows]);
+  const chartPoints = useMemo(() => systemChartPoints, [systemChartPoints]);
   const filteredJournalRows = useMemo(() => {
     if (tradeResultFilter === "all") return journalRows;
     return journalRows.filter((row) => {
@@ -250,8 +255,8 @@ export default function BotDetailScreen() {
 
       <div
         className="fm-abs fm-bot-chart-shell"
-        data-bot-chart={fromJournal ? "journal" : "algorithm"}
-        aria-label={fromJournal ? t("bot.chartAriaJournal") : t("bot.chartAriaAlgo")}
+        data-bot-chart="algorithm"
+        aria-label={t("bot.chartAriaAlgo")}
       >
         <FigmaGraphic
           chart={{
@@ -265,7 +270,7 @@ export default function BotDetailScreen() {
 
       <section
         className="fm-abs fm-bot-period-stats"
-        aria-label={fromJournal ? t("bot.statsAriaJournal") : t("bot.statsAriaAlgo")}
+        aria-label={t("bot.statsAriaAlgo")}
       >
         <h2 className="fm-bot-period-title">{t("bot.periodTitle")}</h2>
 
@@ -325,7 +330,7 @@ export default function BotDetailScreen() {
 
       <section
         className="fm-abs fm-bot-trading-feed"
-        aria-label={fromJournal ? t("bot.feedAriaJournal") : t("bot.feedAriaAlgo")}
+        aria-label={t("bot.feedAriaAlgo")}
       >
         <h2 className="fm-bot-feed-title">{t("bot.feedTitleAlgo")}</h2>
         <div className="fm-bot-feed-filters" role="tablist" aria-label={t("bot.feedFilterAria")}>

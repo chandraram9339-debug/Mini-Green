@@ -20,6 +20,8 @@ export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): Wa
     botTradingEnabled: b?.botTradingEnabled ?? a?.botTradingEnabled,
     referralLink: b?.referralLink ?? a?.referralLink,
     positiveBalanceStartedAt: b?.positiveBalanceStartedAt ?? a?.positiveBalanceStartedAt,
+    cumulativeDepositsUsdt:
+      b?.cumulativeDepositsUsdt ?? a?.cumulativeDepositsUsdt,
     chat_url: pickStr(b?.chat_url, a?.chat_url),
     support_url: pickStr(b?.support_url, a?.support_url),
     channel_url: pickStr(b?.channel_url, a?.channel_url),

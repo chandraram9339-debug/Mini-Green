@@ -17,5 +17,6 @@ export function useWalletDisplay() {
     withdrawFeeBps: wallet?.withdrawFeeBps,
     withdrawFeeFixedUsdt: wallet?.withdrawFeeFixedUsdt,
     positiveBalanceStartedAt: wallet?.positiveBalanceStartedAt ?? null,
+    cumulativeDepositsUsdt: wallet?.cumulativeDepositsUsdt,
   };
 }

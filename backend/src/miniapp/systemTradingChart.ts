@@ -67,6 +67,44 @@ function mapRowsToJournalItems(
   });
 }
 
+/**
+ * Закрытые сделки за окно **по возрастанию closed_at** — полная хронология для кумулятивного %,
+ * совпадающего с `period_stats.profitPercent` (без LIMIT: иначе отрезались бы новые сделки при ASC).
+ */
+export function queryClosedTradesForSystemChartAsc(
+  db: Database,
+  internalUserId: number,
+  fromIso: string,
+  toIso: string,
+) {
+  return db
+    .prepare(
+      `SELECT tp.id, tp.symbol, tp.side, tp.size_minor, tp.opened_at, tp.closed_at,
+              tp.entry_price, tp.exit_price, tp.close_result_percent,
+              sa.result_percent AS sib_result_percent,
+              sa.delta_minor AS sib_delta_minor
+       FROM trade_positions tp
+       LEFT JOIN sib_adjustments sa ON sa.position_id = tp.id AND sa.user_id = tp.user_id
+       WHERE tp.user_id = ?
+         AND tp.closed_at IS NOT NULL AND length(trim(tp.closed_at)) > 0
+         AND tp.closed_at >= ? AND tp.closed_at <= ?
+       ORDER BY tp.closed_at ASC, tp.id ASC`,
+    )
+    .all(internalUserId, fromIso, toIso) as Array<{
+      id: string;
+      symbol: string;
+      side: string;
+      size_minor: number;
+      opened_at: string;
+      closed_at: string | null;
+      entry_price: number | null;
+      exit_price: number | null;
+      close_result_percent: number | null;
+      sib_result_percent: number | null;
+      sib_delta_minor: number | null;
+    }>;
+}
+
 /** Закрытые сделки за окно (как журнал), для построения компаунд-кривой. */
 export function queryJournalRowsForUserWindow(
   db: Database,
@@ -140,7 +178,7 @@ export function buildSystemTradingChartPoints(
 ): Array<{ occurred_at: string; value_pct: number }> {
   const uid = resolveCanonicalTradeMirrorUserId(db, cfg);
   if (uid == null) return [];
-  const rows = queryJournalRowsForUserWindow(db, uid, fromIso, toIso, 2000);
+  const rows = queryClosedTradesForSystemChartAsc(db, uid, fromIso, toIso);
   const items = mapRowsToJournalItems(rows);
   return journalItemsToCompoundedPctPoints(items);
 }

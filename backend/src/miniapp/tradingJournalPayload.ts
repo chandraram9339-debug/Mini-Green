@@ -13,7 +13,10 @@ import {
   type DealStatsPayload,
 } from "./tradingPeriodStats.js";
 import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
-import { buildSystemTradingChartPoints } from "./systemTradingChart.js";
+import { buildSystemTradingChartPoints, resolveCanonicalTradeMirrorUserId } from "./systemTradingChart.js";
+
+/** `user` — позиции и stats залогиненного пользователя; `system` — канонический mirror AL (вся торговая система на 3-м экране). */
+export type TradingJournalFeedScope = "user" | "system";
 
 /** Элементы `items` в ответе `/trading/journal`. */
 export type TradingJournalItemPayload = {
@@ -126,25 +129,29 @@ export function buildTradingJournalPayload(
   limit: number,
   cfg: AppConfig,
   period: string,
+  feedScope: TradingJournalFeedScope = "user",
 ): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta; system_chart: TradingJournalChartPoint[] } {
   const nowMs = Date.now();
   const fromMs =
     period === "all" ? 0 : nowMs - (FIGMA_TRADING_PERIOD_SEC[period] ?? FIGMA_TRADING_PERIOD_SEC["24h"]) * 1000;
-  const positiveBalanceStartedAtMs = getCurrentPositiveBalanceStartedAtMs(db, internalUserId);
+  const isSystemFeed = feedScope === "system";
+  const feedUserId = isSystemFeed ? resolveCanonicalTradeMirrorUserId(db, cfg) : internalUserId;
+  const positiveBalanceStartedAtMs =
+    isSystemFeed ? null : getCurrentPositiveBalanceStartedAtMs(db, internalUserId);
   // Use the full period window for chart/list data so different periods always show distinct data.
   // The positiveBalanceStartedAtMs clamping is only used for stats (profit % calculation).
   const fromIso = new Date(fromMs).toISOString();
   const toIso = new Date(nowMs).toISOString();
 
-  const period_stats = aggregateDealStatsForWindow(
-    db,
-    internalUserId,
-    fromMs,
-    nowMs,
-    positiveBalanceStartedAtMs,
-  );
+  const period_stats =
+    feedUserId != null
+      ? aggregateDealStatsForWindow(db, feedUserId, fromMs, nowMs, positiveBalanceStartedAtMs)
+      : emptyDealStatsPayload();
 
-  const rows = db
+  const rows =
+    feedUserId == null
+      ? []
+      : (db
     .prepare(
       `SELECT tp.id, tp.symbol, tp.side, tp.size_minor, tp.opened_at, tp.closed_at,
               tp.entry_price, tp.exit_price, tp.close_result_percent,
@@ -160,8 +167,8 @@ export function buildTradingJournalPayload(
          )
        ORDER BY COALESCE(NULLIF(trim(tp.closed_at), ''), tp.opened_at) DESC, tp.id DESC
        LIMIT ?`,
-    )
-    .all(internalUserId, fromIso, toIso, fromIso, toIso, limit) as Array<{
+        )
+          .all(feedUserId, fromIso, toIso, fromIso, toIso, limit) as Array<{
       id: string;
       symbol: string;
       side: string;
@@ -173,12 +180,28 @@ export function buildTradingJournalPayload(
       close_result_percent: number | null;
       sib_result_percent: number | null;
       sib_delta_minor: number | null;
-    }>;
+        }>);
 
   const items = mapRowsToItems(rows);
-  const counts = positionCounts(db, internalUserId);
+  const counts =
+    feedUserId != null ? positionCounts(db, feedUserId) : { total: 0, open: 0, closed: 0 };
   const poll = getAlTradeFeedPollerStatus();
-  const system_chart = buildSystemTradingChartPoints(db, cfg, fromIso, toIso);
+  const system_chartRaw = buildSystemTradingChartPoints(db, cfg, fromIso, toIso);
+  /**
+   * Только при `scope=system`: последняя точка = `period_stats.profitPercent` (панель и конец кривой совпадают).
+   * Для `user` stats — по залогиненному юзеру, а system_chart — по mirror; не смешивать.
+   */
+  const system_chart =
+    isSystemFeed &&
+    system_chartRaw.length > 0 &&
+    Number.isFinite(period_stats.profitPercent)
+      ? (() => {
+          const i = system_chartRaw.length - 1;
+          const copy = system_chartRaw.slice();
+          copy[i] = { occurred_at: copy[i]!.occurred_at, value_pct: period_stats.profitPercent };
+          return copy;
+        })()
+      : system_chartRaw;
 
   return {
     items,

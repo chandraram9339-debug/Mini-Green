@@ -40,6 +40,9 @@ export type TradingJournalResponse = {
   system_chart: SystemChartPoint[];
 };
 
+/** `user` — по умолчанию; `system` — канонический mirror (3-й экран: вся торговая система). */
+export type TradingJournalFeedScope = "user" | "system";
+
 function parseMeta(raw: unknown): TradingJournalMeta | null {
   if (raw == null || typeof raw !== "object") return null;
   const m = raw as Record<string, unknown>;
@@ -94,10 +97,15 @@ function parseSystemChart(root: Record<string, unknown>): SystemChartPoint[] {
 }
 
 /** Журнал сделок (`trade_positions` + SIB). GET `/trading/journal` с полем `meta` для отладки связки. */
-export async function fetchTradingJournal(limit = 30, period: string = "24h"): Promise<TradingJournalResponse> {
+export async function fetchTradingJournal(
+  limit = 30,
+  period: string = "24h",
+  feedScope: TradingJournalFeedScope = "user",
+): Promise<TradingJournalResponse> {
   const pathTemplate = import.meta.env.VITE_API_TRADING_JOURNAL_PATH ?? "/trading/journal";
   const sep = pathTemplate.includes("?") ? "&" : "?";
-  const url = `${pathTemplate}${sep}limit=${encodeURIComponent(String(limit))}&period=${encodeURIComponent(period)}`;
+  let url = `${pathTemplate}${sep}limit=${encodeURIComponent(String(limit))}&period=${encodeURIComponent(period)}`;
+  if (feedScope === "system") url += `&scope=system`;
   const res = await apiFetch(url, { method: "GET" });
   if (!res.ok) return { items: [], meta: null, system_chart: [] };
   const json: unknown = await res.json();

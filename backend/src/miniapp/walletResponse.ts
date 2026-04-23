@@ -1,5 +1,5 @@
 import type { Database } from "better-sqlite3";
-import { getAccountSnapshot, getReferralReceivedMinor } from "../ledger.js";
+import { getAccountSnapshot, getMoneySummaryStats, getReferralReceivedMinor } from "../ledger.js";
 import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
 import { getFeeSnapshot, resolveDeriveConfig } from "../domain/effectiveConfig.js";
@@ -36,10 +36,16 @@ export function buildWalletForUser(userId: string) {
   const availableAfterFeeMinor = maxWithdrawAmountMinor(s.available_minor, fees);
   const posMs = u ? getCurrentPositiveBalanceStartedAtMs(db, u.id) : null;
   const ui = buildMiniappUiLinks(db, config, userId);
+  const moneyStats = getMoneySummaryStats(userId);
 
   return {
     balanceUsdt: minorToUsdt(s.wallet_minor),
     referralReceivedUsdt: minorToUsdt(refMinor),
+    /**
+     * Сумма всех подтверждённых пополнений (нетто, USDT), накопительно за всё время в ledger —
+     * опорная «x» для шкалы личного графика в миниаппе (не сброс по «окну» после депозита).
+     */
+    cumulativeDepositsUsdt: minorToUsdt(moneyStats.deposit_total_net_minor),
     depositAddress: addr,
     availableWithdrawUsdt: minorToUsdt(availableAfterFeeMinor),
     withdrawFeeBps: fees.withdrawFeeBps,

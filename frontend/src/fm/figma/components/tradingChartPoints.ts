@@ -77,6 +77,62 @@ export function buildPersonalBalanceChartPoints(
   });
 }
 
+/**
+ * Шкала Y (USDT) для личного графика на Home (личный режим).
+ *
+ * - **x** — сумма всех подтверждённых пополнений на бэкенде (нетто), за всё время; каждое новое
+ *   пополнение уже «вшито» в это число, не только первый платёж.
+ * - **z** — текущий баланс (USDT) с учётом торгов и учтённых пополнений.
+ * - Линия графика — история **фактического баланса**; **x** задаёт опору для шкалы и якорную точку.
+ *
+ * Одно согласованное правило границ (в т.ч. когда ветка «x×0.9 … z×1,1» даёт конфликт): взять
+ * min/max из опорных уровней и **x**, **z**, затем небольшой padding — шкала всегда валидна и
+ * содержит и якорь на уровне x, и актуальный z.
+ */
+export function computeDepositBalanceYDomain(x: number, z: number): [number, number] {
+  const zx = Math.max(0, z);
+  if (!(x > 0)) {
+    const hi = Math.max(zx, 1e-6) * 1.1;
+    return [0, hi];
+  }
+  const lowRaw = Math.min(zx, x * 0.9, x);
+  const highRaw = Math.max(zx * 1.1, x * 0.9, x);
+  let low = lowRaw;
+  let high = highRaw;
+  if (high <= low) {
+    const mid = (low + high) / 2;
+    low = mid - 5e-5;
+    high = mid + 5e-5;
+  } else {
+    const span = high - low;
+    const pad = span * 0.04;
+    low -= pad;
+    high += pad;
+  }
+  return [low, high];
+}
+
+/**
+ * Точка старта на уровне суммы депозитов (x) в момент positiveBalanceStartedAt — перед первой сделкой по времени.
+ */
+export function prependDepositTotalAnchor(
+  tradePoints: GraphicPoint[],
+  depositUsdt: number,
+  anchorIso: string | null | undefined,
+): GraphicPoint[] {
+  if (!anchorIso?.trim() || !(depositUsdt > 0) || tradePoints.length === 0) return tradePoints;
+  const anchorMs = Date.parse(anchorIso);
+  if (!Number.isFinite(anchorMs)) return tradePoints;
+  const sorted = [...tradePoints].sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at));
+  const firstMs = Date.parse(sorted[0]!.occurred_at);
+  if (anchorMs > firstMs) return sorted;
+  if (anchorMs === firstMs && Math.abs(sorted[0]!.value_pct - depositUsdt) < 1e-6) return sorted;
+  return [
+    { occurred_at: new Date(anchorMs).toISOString(), value_pct: depositUsdt },
+    ...sorted,
+  ];
+}
+
 export function buildCompoundedChartPoints(rows: TradingJournalItem[]): GraphicPoint[] {
   const closed = rows
     .filter(
@@ -117,14 +173,28 @@ export type ChartGeom = {
   dots: ChartDot[];
 };
 
+export type BuildChartGeomOptions = {
+  /** Фиксированный диапазон по Y (например личный график USDT: от x×0.9 до z×1.1). */
+  fixedYDomain?: [number, number];
+};
+
 const STATIC_Y_LABELS = ["7.00%","6.00%","5.00%","4.00%","3.00%","2.00%","1.00%","0.00%","-1.00%","-2.00%"];
 
 /**
  * Converts GraphicPoints into SVG path strings, Y-axis labels and trade deal dots.
  * viewBox: "0 0 325 122"
+ *
+ * Оси: **X** — время `occurred_at`, равномерно от первой точки до последней (0…325). **Y** — `value_pct`:
+ * в режиме `percent` это кумулятивный compound-% (как отдаёт API `system_chart`); масштаб min…max по
+ * данным с паддингом, верх экрана = больший %, низ = меньший.
+ *
  * @param yAxis `percent` — value_pct is %; `usdt` — value_pct holds USDT (личный баланс на Home).
  */
-export function buildChartGeom(points: GraphicPoint[], yAxis: "percent" | "usdt" = "percent"): ChartGeom {
+export function buildChartGeom(
+  points: GraphicPoint[],
+  yAxis: "percent" | "usdt" = "percent",
+  options?: BuildChartGeomOptions,
+): ChartGeom {
   const W = 325, H = 122;
 
   if (points.length === 0) {
@@ -135,12 +205,25 @@ export function buildChartGeom(points: GraphicPoint[], yAxis: "percent" | "usdt"
   const vals = sorted.map((p) => p.value_pct);
   const ts   = sorted.map((p) => Date.parse(p.occurred_at));
 
-  const minV0 = Math.min(0, ...vals);
-  const maxV0 = Math.max(0, ...vals);
-  const spanV = Math.max(0.5, maxV0 - minV0);
-  const padV  = spanV * 0.18;
-  const minV  = minV0 - padV;
-  const maxV  = maxV0 + padV;
+  let minV: number;
+  let maxV: number;
+  const fixed = options?.fixedYDomain;
+  if (fixed && Number.isFinite(fixed[0]) && Number.isFinite(fixed[1])) {
+    minV = Math.min(fixed[0], fixed[1]);
+    maxV = Math.max(fixed[0], fixed[1]);
+    if (maxV - minV < 1e-9) {
+      const mid = (minV + maxV) / 2;
+      minV = mid - 5e-5;
+      maxV = mid + 5e-5;
+    }
+  } else {
+    const minV0 = Math.min(0, ...vals);
+    const maxV0 = Math.max(0, ...vals);
+    const spanV = Math.max(0.5, maxV0 - minV0);
+    const padV  = spanV * 0.18;
+    minV = minV0 - padV;
+    maxV = maxV0 + padV;
+  }
 
   const t0    = ts[0]!;
   const t1    = ts[ts.length - 1]!;
@@ -169,10 +252,14 @@ export function buildChartGeom(points: GraphicPoint[], yAxis: "percent" | "usdt"
   // Dots: one per deal, colour indicates profit/loss of that individual trade
   const dots: ChartDot[] = sorted.map((p, i) => {
     const [x, y] = coords[i]!;
-    // Individual deal % = diff in compounded value: (c_n / c_{n-1} - 1) * 100
     let deal_pct: number | null = null;
-    if (i === 0) {
-      deal_pct = p.value_pct; // first point: compounded = individual
+    if (yAxis === "usdt") {
+      if (i > 0) {
+        const prevBal = sorted[i - 1]!.value_pct;
+        deal_pct = prevBal > 1e-9 ? (p.value_pct / prevBal - 1) * 100 : null;
+      }
+    } else if (i === 0) {
+      deal_pct = p.value_pct;
     } else {
       const prevCpd = 1 + (sorted[i - 1]!.value_pct / 100);
       const curCpd  = 1 + (p.value_pct / 100);

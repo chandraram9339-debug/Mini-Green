@@ -4,7 +4,11 @@ import { getDb } from "../db/connection.js";
 import { logEvent } from "../httpEnvelope.js";
 import { validateInitData } from "../initData.js";
 import { ensureUser, getUserByTg, touchUserLastActiveByTg } from "../repos/userRepo.js";
-import { buildTradingJournalEmptyPayload, buildTradingJournalPayload } from "./tradingJournalPayload.js";
+import {
+  buildTradingJournalEmptyPayload,
+  buildTradingJournalPayload,
+  type TradingJournalFeedScope,
+} from "./tradingJournalPayload.js";
 import { runDepositOnPaid } from "../services/depositService.js";
 import { createWithdrawal } from "../services/withdrawalService.js";
 import { buildWalletHistoryForUser } from "./historyResponse.js";
@@ -167,10 +171,12 @@ export function registerMiniappContract(app: express.Express) {
       return;
     }
     const u = getUserByTg(db, req.userId!);
+    const scopeRaw = String(req.query.scope ?? "user").toLowerCase();
+    const feedScope: TradingJournalFeedScope = scopeRaw === "system" ? "system" : "user";
     try {
       const payload = !u
         ? buildTradingJournalEmptyPayload(limit, req.userId!, config, period)
-        : buildTradingJournalPayload(db, u.id, req.userId!, limit, config, period);
+        : buildTradingJournalPayload(db, u.id, req.userId!, limit, config, period, feedScope);
       res.json(payload);
     } catch (e) {
       res.status(500).json({ message: e instanceof Error ? e.message : "journal failed" });

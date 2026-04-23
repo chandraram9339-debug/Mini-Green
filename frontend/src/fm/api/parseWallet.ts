@@ -73,6 +73,9 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
         ? o.positive_balance_started_at.trim()
         : null;
 
+  const cumulativeDepositsUsdt =
+    num(o.cumulativeDepositsUsdt) ?? num(o.cumulative_deposits_usdt);
+
   const chat_url = typeof o.chat_url === "string" ? o.chat_url : undefined;
   const support_url = typeof o.support_url === "string" ? o.support_url : undefined;
   const channel_url = typeof o.channel_url === "string" ? o.channel_url : undefined;
@@ -92,6 +95,9 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     botTradingEnabled,
     referralLink,
     positiveBalanceStartedAt,
+    ...(cumulativeDepositsUsdt !== undefined
+      ? { cumulativeDepositsUsdt: Math.max(0, cumulativeDepositsUsdt) }
+      : {}),
     ...(chat_url !== undefined ? { chat_url } : {}),
     ...(support_url !== undefined ? { support_url } : {}),
     ...(channel_url !== undefined ? { channel_url } : {}),

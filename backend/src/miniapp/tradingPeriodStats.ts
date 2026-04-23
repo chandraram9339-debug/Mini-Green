@@ -82,7 +82,8 @@ export function aggregateDealStatsForWindow(
            (tp.closed_at IS NOT NULL AND length(trim(tp.closed_at)) > 0 AND tp.closed_at >= ? AND tp.closed_at <= ?)
            OR
            ((tp.closed_at IS NULL OR length(trim(tp.closed_at)) = 0) AND tp.opened_at >= ? AND tp.opened_at <= ?)
-         )`,
+         )
+       ORDER BY COALESCE(NULLIF(trim(tp.closed_at), ''), tp.opened_at) ASC, tp.id ASC`,
     )
     .all(internalUserId, fromIso, toIso, fromIso, toIso) as Array<{
       closed_at: string | null;

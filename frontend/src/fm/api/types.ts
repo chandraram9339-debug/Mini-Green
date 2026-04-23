@@ -27,4 +27,6 @@ export type WalletSnapshot = {
   referralLink?: string | null;
   /** ISO: начало текущего интервала положительного баланса (после пополнения). */
   positiveBalanceStartedAt?: string | null;
+  /** Сумма подтверждённых депозитов (нетто), USDT — для шкалы графика «x». */
+  cumulativeDepositsUsdt?: number;
 } & WalletMiniappUiFields;
