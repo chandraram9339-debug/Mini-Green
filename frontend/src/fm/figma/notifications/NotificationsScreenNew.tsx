@@ -238,7 +238,7 @@ export default function NotificationsScreenNew() {
       <div className={s.body}>
         {/* While loading from API — show nothing to avoid fake-data flash */}
         {!loading && items.length === 0 && (
-          <p className={s.emptyText}>{t("notifications.empty") || "No notifications"}</p>
+          <p className={s.emptyText}>No notifications</p>
         )}
 
         {/* Group 1 */}
