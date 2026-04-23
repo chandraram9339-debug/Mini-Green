@@ -326,3 +326,10 @@
 .tabItemIconActive {
   background-color: #2d6e93;
 }
+
+.emptyText {
+  padding: 32px 16px;
+  text-align: center;
+  color: #8494af;
+  font-size: 14px;
+}

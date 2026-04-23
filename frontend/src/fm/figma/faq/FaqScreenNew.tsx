@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useFmLocale } from "../../i18n/useFmLocale";
+import { useAppSession } from "../../session/useAppSession";
 import type { MessageKey } from "../../i18n/messages";
 import { routes } from "../routes";
 
@@ -116,7 +117,7 @@ function ChevronExpanded() {
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
-function AppBar({ title }: { title: string }) {
+function AppBar({ title, bellCount }: { title: string; bellCount: number }) {
   const navigate = useNavigate();
   return (
     <header className={s.appBar}>
@@ -141,7 +142,9 @@ function AppBar({ title }: { title: string }) {
               <path d="M0 15H18" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
               <path d="M7 19H11" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
             </svg>
-            <span className={s.appBarBellBadge}><span>25</span></span>
+            {bellCount > 0 && (
+              <span className={s.appBarBellBadge}><span>{bellCount > 99 ? "99+" : bellCount}</span></span>
+            )}
           </Link>
           <Link to={routes.settings} className={s.appBarGear} aria-label="Settings">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -226,6 +229,7 @@ function BottomTabBar({ active }: { active: string }) {
 export default function FaqScreenNew() {
   const { t } = useFmLocale();
   const activeNav = useActiveNav();
+  const { notificationUnreadCount } = useAppSession();
 
   /* Single-open accordion — same state shape as old FaqScreen */
   const [openId, setOpenId] = useState<string>("withdraw");
@@ -234,7 +238,7 @@ export default function FaqScreenNew() {
 
   return (
     <div className={s.screen} aria-label={t("faq.title")}>
-      <AppBar title={t("faq.title")} />
+      <AppBar title={t("faq.title")} bellCount={notificationUnreadCount} />
 
       <div className={s.body}>
         <div className={s.list}>

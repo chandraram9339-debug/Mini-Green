@@ -193,12 +193,18 @@ export default function NotificationsScreenNew() {
   const { t } = useFmLocale();
   const activeNav = useActiveNav();
   const { phase, refreshNotifications } = useAppSession();
-  const [items, setItems] = useState<AppNotificationItem[]>(notificationMockItems);
+
+  // Start empty (not mock) so there's no flash of fake data while API loads
+  const [items, setItems] = useState<AppNotificationItem[]>(
+    hasApiBase() ? [] : notificationMockItems,
+  );
+  const [loading, setLoading] = useState(hasApiBase());
 
   /* Same fetch logic as old NotificationsScreen */
   useEffect(() => {
     if (!hasApiBase()) {
       setItems(notificationMockItems);
+      setLoading(false);
       return;
     }
     if (phase !== "ready") return;
@@ -206,8 +212,9 @@ export default function NotificationsScreenNew() {
     let cancelled = false;
     const load = async () => {
       const payload = await fetchNotifications(50);
-      if (!cancelled && payload) {
-        setItems(payload.items);
+      if (!cancelled) {
+        setItems(payload ? payload.items : []);
+        setLoading(false);
       }
     };
 
@@ -229,8 +236,13 @@ export default function NotificationsScreenNew() {
       <AppBar title={t("notifications.appBarTitle")} />
 
       <div className={s.body}>
+        {/* While loading from API — show nothing to avoid fake-data flash */}
+        {!loading && items.length === 0 && (
+          <p className={s.emptyText}>{t("notifications.empty") || "No notifications"}</p>
+        )}
+
         {/* Group 1 */}
-        {group1.length > 0 && (
+        {!loading && group1.length > 0 && (
           <div className={s.group}>
             {group1.map((item) => (
               <NotificationCard
@@ -244,12 +256,12 @@ export default function NotificationsScreenNew() {
         )}
 
         {/* Divider between groups */}
-        {group1.length > 0 && group2.length > 0 && (
+        {!loading && group1.length > 0 && group2.length > 0 && (
           <div className={s.divider} aria-hidden="true" />
         )}
 
         {/* Group 2 */}
-        {group2.length > 0 && (
+        {!loading && group2.length > 0 && (
           <div className={s.group}>
             {group2.map((item) => (
               <NotificationCard
