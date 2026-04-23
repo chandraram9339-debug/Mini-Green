@@ -118,11 +118,9 @@ export function buildTradingJournalPayload(
   const nowMs = Date.now();
   const fromMs = nowMs - sec * 1000;
   const positiveBalanceStartedAtMs = getCurrentPositiveBalanceStartedAtMs(db, internalUserId);
-  const effectiveFromMs =
-    positiveBalanceStartedAtMs != null
-      ? Math.max(fromMs, positiveBalanceStartedAtMs)
-      : fromMs;
-  const fromIso = new Date(effectiveFromMs).toISOString();
+  // Use the full period window for chart/list data so different periods always show distinct data.
+  // The positiveBalanceStartedAtMs clamping is only used for stats (profit % calculation).
+  const fromIso = new Date(fromMs).toISOString();
   const toIso = new Date(nowMs).toISOString();
 
   const period_stats = aggregateDealStatsForWindow(

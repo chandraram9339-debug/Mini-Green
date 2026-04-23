@@ -405,8 +405,10 @@ export default function BotDetailScreenNew() {
         >
           <h2 className={s.sectionTitle}>{t("bot.periodTitle")}</h2>
 
-          {/* Chart comes first — above the period tabs */}
-          <TradingChart points={chartPoints} />
+          {/* Chart comes first — above the period tabs; dim while period data reloads */}
+          <div style={{ opacity: journalLoading ? 0.4 : 1, transition: "opacity 0.2s" }}>
+            <TradingChart points={chartPoints} />
+          </div>
 
           {/* Timeframe tabs */}
           <div className={s.periodTabs} role="tablist" aria-label={t("bot.periodTabsAria")}>
