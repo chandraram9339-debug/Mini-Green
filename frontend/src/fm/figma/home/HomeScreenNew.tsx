@@ -27,6 +27,7 @@ import { useWalletDisplay } from "../useWalletDisplay";
 import { routes } from "../routes";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 import { appBarLogoUrl } from "../assets/appBarShared";
+import { TELEGRAM_CHAT_URL, openTelegramOrExternal } from "../../config/links";
 
 import s from "./homeScreenNew.module.css";
 
@@ -94,7 +95,7 @@ function PerformanceChart({ points }: { points: GraphicPoint[] }) {
 
   return (
     <div className={s.chartWrap}>
-      {/* Сетка Y-меток + горизонтальные линии */}
+      {/* Шкала Y + горизонтальные линии — занимает полную ширину */}
       <div className={s.chartGrid}>
         {yLabels.map((label, i) => (
           <div key={i} className={s.chartRow}>
@@ -104,7 +105,7 @@ function PerformanceChart({ points }: { points: GraphicPoint[] }) {
         ))}
       </div>
 
-      {/* SVG поверх сетки — начинается после меток (44 px) */}
+      {/* SVG поверх шкалы — margin-left 24px, margin-top отрицательный */}
       <div className={s.chartSvgOverlay}>
         <svg
           viewBox="0 0 325 122"
@@ -332,15 +333,20 @@ export default function HomeScreenNew() {
 
         {/* ── Кнопки Social + Support ───────────────────── */}
         <div className={s.actionRow}>
-          <Link to={routes.social} className={s.btnSocial} aria-label="Social Media">
+          <button
+            type="button"
+            className={s.btnSocial}
+            aria-label="Chat"
+            onClick={() => openTelegramOrExternal(TELEGRAM_CHAT_URL)}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
               <path d="M12 8H3V14H12L18 19V4L12 8Z" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M10 8V14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M7 14V20H10V14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M18 14C18.394 14 18.7841 13.9224 19.1481 13.7716C19.512 13.6209 19.8427 13.3999 20.1213 13.1213C20.3999 12.8427 20.6209 12.512 20.7716 12.1481C20.9224 11.7841 21 11.394 21 11C21 10.606 20.9224 10.2159 20.7716 9.85195C20.6209 9.48797 20.3999 9.15726 20.1213 8.87868C19.8427 8.6001 19.512 8.37913 19.1481 8.22836C18.7841 8.0776 18.394 8 18 8" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className={s.actionLabel}>Social Media</span>
-          </Link>
+            <span className={s.actionLabel}>Chat</span>
+          </button>
 
           <Link to={routes.support} className={s.btnSupport} aria-label="Support">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>

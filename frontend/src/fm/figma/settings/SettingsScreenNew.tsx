@@ -260,7 +260,7 @@ function BottomTabBar({ active }: { active: string }) {
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function SettingsScreenNew() {
   const { locale, setLocale, t } = useFmLocale();
-  const { notificationUnreadCount } = useAppSession();
+  const { notificationUnreadCount, wallet } = useAppSession();
   const activeNav = useActiveNav();
 
   /* Language dropdown */
@@ -388,7 +388,7 @@ export default function SettingsScreenNew() {
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </Link>
 
-          <button type="button" className={s.row} onClick={openTelegramReferralShare}>
+          <button type="button" className={s.row} onClick={() => openTelegramReferralShare(wallet?.referralLink)}>
             <span className={s.rowIcon}><UserPlusIcon /></span>
             <span className={s.rowLabel}>{t("settings.referralLink")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>

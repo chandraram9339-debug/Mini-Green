@@ -85,6 +85,7 @@ export default function SeedCodeScreenNew() {
   const { phase } = useAppSession();
   const [words, setWords] = useState<readonly string[]>(() => getSeedWords());
   const [seedMode, setSeedMode] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
     if (!hasApiBase()) return;
@@ -130,14 +131,32 @@ export default function SeedCodeScreenNew() {
               : "Seed phrase is not available for this account."}
           </p>
         ) : (
-          <ul className={s.grid} aria-label={t("seed.title")}>
-            {words.map((w, i) => (
-              <li key={`${i}-${w}`} className={s.word}>
-                <span className={s.wordIdx}>{i + 1}</span>
-                <span>{w}</span>
-              </li>
-            ))}
-          </ul>
+          <div className={s.gridWrap}>
+            <ul className={s.grid} aria-label={t("seed.title")}>
+              {words.map((w, i) => (
+                <li key={`${i}-${w}`} className={s.word}>
+                  <span className={s.wordIdx}>{i + 1}</span>
+                  <span>{w}</span>
+                </li>
+              ))}
+            </ul>
+            {!revealed && (
+              <button
+                type="button"
+                className={s.gridBlurOverlay}
+                onClick={() => setRevealed(true)}
+                aria-label="Показать фразу"
+              >
+                <div className={s.revealIcon}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5Z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="12" r="3" stroke="white" strokeWidth="1.6"/>
+                  </svg>
+                </div>
+                <span className={s.revealHint}>Нажмите, чтобы показать</span>
+              </button>
+            )}
+          </div>
         )}
 
         {!showDisabledNotice && (

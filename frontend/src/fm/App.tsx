@@ -42,7 +42,7 @@ export default function App() {
           <div className={`app-shell${showSplash ? " app-shell--splash-hidden" : ""}`}>
             <SessionBanner />
             <Routes>
-              <Route path="/" element={<Navigate to={routes.bot} replace />} />
+              <Route path="/" element={<Navigate to={routes.home} replace />} />
               <Route path={routes.home} element={<HomeScreenNew />} />
               <Route path={routes.balanceDeposit} element={<BalanceDepositScreenNew />} />
               <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />

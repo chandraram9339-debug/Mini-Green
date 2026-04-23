@@ -13,4 +13,6 @@ export type WalletSnapshot = {
   withdrawFeeFixedUsdt?: number;
   /** Участвует ли пользователь в начислении результата сделок. */
   botTradingEnabled?: boolean;
+  /** Персональная реферальная ссылка пользователя (https://t.me/BOT?start=refID). */
+  referralLink?: string | null;
 };

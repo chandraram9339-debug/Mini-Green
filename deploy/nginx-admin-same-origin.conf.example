@@ -1,20 +1,29 @@
-# Пример: админка как статика + API того же домена через прокси (без VITE_API_BASE на клиенте).
-# Положите dist админки в root, бэкенд слушает 127.0.0.1:4000.
+# Шаблон: админ-панель как статика на отдельном субдомене (admin.example.com).
+# API-запросы (/admin, /health) проксируются на backend (127.0.0.1:4000).
+# Замените admin.example.com на ваш реальный домен.
+# Сертификат Let's Encrypt: certbot --nginx -d admin.example.com
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name admin.example.com;
+  return 301 https://$host$request_uri;
+}
 
 server {
   listen 443 ssl http2;
+  listen [::]:443 ssl http2;
   server_name admin.example.com;
 
-  ssl_certificate     /path/to/fullchain.pem;
-  ssl_certificate_key /path/to/privkey.pem;
+  ssl_certificate     /etc/letsencrypt/live/admin.example.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/admin.example.com/privkey.pem;
 
-  root /var/www/miniapp-admin/dist;
+  root /var/www/miniapp-admin;
   index index.html;
 
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
+  client_max_body_size 10m;
 
+  # API backend
   location /admin {
     proxy_pass http://127.0.0.1:4000;
     proxy_http_version 1.1;
@@ -31,5 +40,23 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
-  # Если мини-апп и другие роуты бэкенда на этом же домене — добавьте их по необходимости.
+  # Статика: бандлы с хешем в имени кешируются агрессивно
+  location /assets/ {
+    access_log off;
+    expires 7d;
+    add_header Cache-Control "public, max-age=604800, immutable";
+    try_files $uri =404;
+  }
+
+  # index.html никогда не кешируем — чтобы после деплоя сразу видна новая версия
+  location = /index.html {
+    expires -1;
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+    try_files /index.html =404;
+  }
+
+  # SPA fallback
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
 }

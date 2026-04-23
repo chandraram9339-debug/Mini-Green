@@ -16,12 +16,25 @@ function pickToken(json: Record<string, unknown>): string | undefined {
  * POST сырого initData на бэкенд. Путь задаётся VITE_API_AUTH_PATH (по умолчанию /auth/telegram).
  * Ожидаем JSON: { accessToken, wallet? } или { access_token, user: { wallet } } — см. разбор ниже.
  */
+/** Извлечь tg_id реферера из start_param вида "ref<id>" или "ref_<id>". */
+function parseReferralFromStartParam(startParam: unknown): string | null {
+  if (typeof startParam !== "string" || !startParam) return null;
+  const m = startParam.match(/^ref_?(\d+)$/i);
+  return m ? m[1] : null;
+}
+
 export async function authTelegramWithInitData(initData: string): Promise<AuthTelegramResult> {
   const path = import.meta.env.VITE_API_AUTH_PATH ?? "/auth/telegram";
+  const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+  const referralInviterTgId = parseReferralFromStartParam(startParam);
+
   const res = await fetch(apiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ initData }),
+    body: JSON.stringify({
+      initData,
+      ...(referralInviterTgId ? { referralInviterTgId } : {}),
+    }),
   });
 
   if (!res.ok) {

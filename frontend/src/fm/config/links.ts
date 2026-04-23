@@ -15,9 +15,31 @@ export const SUPPORT_TELEGRAM_URL =
 
 export const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? "support@example.com";
 
-export function openTelegramReferralShare(): void {
-  const url = TELEGRAM_REFERRAL_LINK;
+/**
+ * Открыть реферальную ссылку. Приоритет:
+ * 1. Ссылка из wallet (personalLink), сгенерированная бэкендом
+ * 2. Собрать из publicTelegramBotUsername + tg user id (если есть в WebApp)
+ * 3. Статический VITE_TELEGRAM_REFERRAL_LINK
+ */
+export function openTelegramReferralShare(personalLink?: string | null): void {
   const tg = window.Telegram?.WebApp;
+
+  let url = personalLink ?? null;
+
+  if (!url) {
+    const userId = tg?.initDataUnsafe?.user?.id;
+    const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME?.trim();
+    if (botUsername && userId) {
+      url = `https://t.me/${botUsername}?start=ref${userId}`;
+    }
+  }
+
+  if (!url) {
+    url = TELEGRAM_REFERRAL_LINK;
+  }
+
+  if (!url || url === "https://t.me/") return;
+
   if (tg?.openTelegramLink) tg.openTelegramLink(url);
   else window.open(url, "_blank", "noopener,noreferrer");
 }

@@ -6,6 +6,9 @@ BACKEND_ENV="$PROJECT_ROOT/backend/.env"
 FRONTEND_ENV="$PROJECT_ROOT/frontend/.env.production"
 BACKEND_DIST="$PROJECT_ROOT/backend/dist/index.js"
 FRONTEND_DIST="$PROJECT_ROOT/frontend/dist/index.html"
+ADMIN_DIST="$PROJECT_ROOT/admin-panel/dist/index.html"
+FRONTEND_PUBLISH_DIR="${FRONTEND_PUBLISH_DIR:-/var/www/palladium-miniapp}"
+ADMIN_PUBLISH_DIR="${ADMIN_PUBLISH_DIR:-/var/www/miniapp-admin}"
 BACKEND_PORT="${BACKEND_PORT:-4000}"
 
 echo "== Project root =="
@@ -13,11 +16,21 @@ echo "$PROJECT_ROOT"
 
 echo
 echo "== Required files =="
-for path in "$BACKEND_ENV" "$FRONTEND_ENV" "$BACKEND_DIST" "$FRONTEND_DIST"; do
+for path in "$BACKEND_ENV" "$FRONTEND_ENV" "$BACKEND_DIST" "$FRONTEND_DIST" "$ADMIN_DIST"; do
   if [[ -f "$path" ]]; then
     echo "OK  $path"
   else
     echo "MISS $path"
+  fi
+done
+
+echo
+echo "== Published dirs =="
+for dir in "$FRONTEND_PUBLISH_DIR" "$ADMIN_PUBLISH_DIR"; do
+  if [[ -f "$dir/index.html" ]]; then
+    echo "OK  $dir/index.html"
+  else
+    echo "MISS $dir/index.html  (запусти update-server.sh)"
   fi
 done
 
@@ -62,5 +75,13 @@ echo "== Backend health =="
 curl -fsS "http://127.0.0.1:${BACKEND_PORT}/health" || echo "health check failed"
 
 echo
+echo "== Nginx admin site =="
+if ls /etc/nginx/sites-enabled/ 2>/dev/null | grep -qi "admin"; then
+  echo "OK  admin nginx site enabled"
+else
+  echo "MISS admin nginx site not found in sites-enabled (нужно настроить)"
+fi
+
+echo
 echo "== Nginx references to vite dev ports =="
-rg -n "5173|5174" /etc/nginx/sites-available /etc/nginx/sites-enabled || true
+rg -n "5173|5174|5180" /etc/nginx/sites-available /etc/nginx/sites-enabled 2>/dev/null || true

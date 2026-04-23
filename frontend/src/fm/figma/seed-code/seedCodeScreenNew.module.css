@@ -110,6 +110,55 @@
   color: #55647b;
 }
 
+/* ── Seed word grid wrapper (blur overlay) ───────────────────── */
+.gridWrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gridBlurOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  cursor: pointer;
+  z-index: 2;
+  transition: opacity 0.25s;
+}
+
+.gridBlurOverlay:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.revealHint {
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d6e93;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.revealIcon {
+  width: 40px;
+  height: 40px;
+  background-color: #2d6e93;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* ── Seed word grid card ─────────────────────────────────────── */
 .grid {
   list-style: none;

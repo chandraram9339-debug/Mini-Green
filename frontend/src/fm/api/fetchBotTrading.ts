@@ -2,46 +2,24 @@ import { apiFetch } from "./http";
 import { parseBotTradingPayload } from "./parseBotTrading";
 import type { BotTradingSnapshot } from "./typesBotTrading";
 
+const EMPTY_PERIOD = {
+  totalDeals: 0,
+  successful: 0,
+  unsuccessful: 0,
+  profitPercent: 0,
+  neutral: 0,
+  openInPeriod: 0,
+  closedWithoutResult: 0,
+};
+
 const STATIC_FALLBACK: BotTradingSnapshot = {
-  displayPrice: "69 425.22",
-  pricePair: "USDT/BTC",
+  displayPrice: "—",
+  pricePair: "—",
   byPeriod: {
-    "24h": {
-      totalDeals: 78,
-      successful: 39,
-      unsuccessful: 39,
-      profitPercent: -0.72,
-      neutral: 0,
-      openInPeriod: 0,
-      closedWithoutResult: 0,
-    },
-    "3d": {
-      totalDeals: 78,
-      successful: 39,
-      unsuccessful: 39,
-      profitPercent: -0.72,
-      neutral: 0,
-      openInPeriod: 0,
-      closedWithoutResult: 0,
-    },
-    "7d": {
-      totalDeals: 78,
-      successful: 39,
-      unsuccessful: 39,
-      profitPercent: -0.72,
-      neutral: 0,
-      openInPeriod: 0,
-      closedWithoutResult: 0,
-    },
-    "1m": {
-      totalDeals: 78,
-      successful: 39,
-      unsuccessful: 39,
-      profitPercent: -0.72,
-      neutral: 0,
-      openInPeriod: 0,
-      closedWithoutResult: 0,
-    },
+    "24h": { ...EMPTY_PERIOD },
+    "3d":  { ...EMPTY_PERIOD },
+    "7d":  { ...EMPTY_PERIOD },
+    "1m":  { ...EMPTY_PERIOD },
   },
 };
 

@@ -1,3 +1,4 @@
+import type { Database } from "better-sqlite3";
 import { getAccountSnapshot, getReferralReceivedMinor } from "../ledger.js";
 import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
@@ -10,6 +11,16 @@ const MINOR_PER_USDT = 100;
 /** 100 minor = 1.00 USDT (aligned with minWithdrawMinor 500 = 5.00) */
 function minorToUsdt(minor: number) {
   return Math.round((minor / MINOR_PER_USDT) * 1e4) / 1e4;
+}
+
+export function buildReferralLink(userId: string, db?: Database): string | null {
+  // Приоритет: app_config (заполняется из админки) → env (.env файл)
+  const fromDb = db
+    ? (db.prepare("SELECT value FROM app_config WHERE key=?").get("public_telegram_bot_username") as { value: string } | undefined)?.value?.replace(/^@/, "").trim()
+    : undefined;
+  const botUsername = (fromDb || config.publicTelegramBotUsername?.trim()) ?? "";
+  if (!botUsername) return null;
+  return `https://t.me/${botUsername}?start=ref${userId}`;
 }
 
 export function buildWalletForUser(userId: string) {
@@ -30,5 +41,6 @@ export function buildWalletForUser(userId: string) {
     withdrawFeeBps: fees.withdrawFeeBps,
     withdrawFeeFixedUsdt: fees.withdrawFeeFixedUsdt,
     botTradingEnabled: getBotTradingEnabled(db, userId),
+    referralLink: buildReferralLink(userId, db),
   };
 }

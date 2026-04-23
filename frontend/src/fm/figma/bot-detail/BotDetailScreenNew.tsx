@@ -270,7 +270,7 @@ export default function BotDetailScreenNew() {
     return () => { cancelled = true; window.clearInterval(intervalId); };
   }, [apiSessionReady, period]);
 
-  const defaultStat = { totalDeals: 78, successful: 39, unsuccessful: 39, profitPercent: -0.72, neutral: 0, openInPeriod: 0, closedWithoutResult: 0 };
+  const defaultStat = { totalDeals: 0, successful: 0, unsuccessful: 0, profitPercent: 0, neutral: 0, openInPeriod: 0, closedWithoutResult: 0 };
   const zeroStat    = { totalDeals: 0,  successful: 0,  unsuccessful: 0,  profitPercent: 0,     neutral: 0, openInPeriod: 0, closedWithoutResult: 0 };
 
   const periodStats = useMemo(() => {

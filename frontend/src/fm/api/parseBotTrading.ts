@@ -109,10 +109,10 @@ export function parseBotTradingPayload(root: unknown): BotTradingSnapshot | null
       ? byPeriod
       : {
           "24h": {
-            totalDeals: 78,
-            successful: 39,
-            unsuccessful: 39,
-            profitPercent: -0.72,
+            totalDeals: 0,
+            successful: 0,
+            unsuccessful: 0,
+            profitPercent: 0,
             neutral: 0,
             openInPeriod: 0,
             closedWithoutResult: 0,

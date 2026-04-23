@@ -3,10 +3,9 @@
 Этот проект нужно запускать на сервере так:
 
 - `backend` работает как Node.js сервис через `pm2`
-- `frontend` собирается в статику `frontend/dist`
-- собранный фронт публикуется в `/var/www/palladium-miniapp`
-- `nginx` отдаёт `/var/www/palladium-miniapp`
-- API-запросы miniapp nginx проксирует на `127.0.0.1:4000`
+- `frontend` собирается в статику `frontend/dist`, публикуется в `/var/www/palladium-miniapp`
+- `admin-panel` собирается в статику `admin-panel/dist`, публикуется в `/var/www/miniapp-admin`
+- `nginx` отдаёт оба фронта и проксирует `/admin`, `/health` на `127.0.0.1:4000`
 - реальные секреты лежат только в `backend/.env` на сервере
 
 ## Local vs Server
@@ -219,13 +218,15 @@ chmod +x ~/miniapp/deploy/server-preflight.sh
 
 - наличие `backend/.env`
 - наличие `frontend/.env.production`
-- собранные `backend/dist` и `frontend/dist`
+- собранные `backend/dist`, `frontend/dist` и `admin-panel/dist`
 - публикацию фронта в `/var/www/palladium-miniapp`
+- публикацию админки в `/var/www/miniapp-admin`
 - ключевые env-переменные
 - список сертификатов Let's Encrypt
 - статус `pm2`
+- наличие nginx-сайта для admin
 - `curl http://127.0.0.1:4000/health`
-- остались ли в `nginx` ссылки на `5173/5174`
+- остались ли в `nginx` ссылки на `5173/5174/5180`
 
 ## 9. Что у тебя сломано сейчас
 
@@ -239,3 +240,67 @@ chmod +x ~/miniapp/deploy/server-preflight.sh
 4. backend держать через `pm2`
 
 После этого Telegram Mini App должен открываться нормально.
+
+## 10. Деплой Admin Panel
+
+Админ-панель — отдельный React/Vite SPA на субдомене `admin.ваш-домен.com`.
+
+### Первый деплой
+
+**1. Сертификат для субдомена:**
+
+```bash
+certbot --nginx -d admin.example.com
+```
+
+**2. Nginx-конфиг (генератор):**
+
+```bash
+chmod +x ~/miniapp/deploy/render-nginx-admin-conf.sh
+~/miniapp/deploy/render-nginx-admin-conf.sh admin.example.com > /etc/nginx/sites-available/miniapp-admin
+ln -sf /etc/nginx/sites-available/miniapp-admin /etc/nginx/sites-enabled/miniapp-admin
+nginx -t
+systemctl reload nginx
+```
+
+Если имя сертификата отличается от домена:
+
+```bash
+~/miniapp/deploy/render-nginx-admin-conf.sh admin.example.com cert-name.example.com > /etc/nginx/sites-available/miniapp-admin
+```
+
+**3. Собрать и опубликовать:**
+
+```bash
+cd ~/miniapp
+pnpm --filter miniapp-admin-panel build
+mkdir -p /var/www/miniapp-admin
+rsync -a --delete ~/miniapp/admin-panel/dist/ /var/www/miniapp-admin/
+```
+
+Или одной командой через `update-server.sh` (собирает всё и публикует):
+
+```bash
+~/miniapp/deploy/update-server.sh
+```
+
+### Последующие обновления
+
+Обновление Admin Panel происходит автоматически вместе с `update-server.sh` — скрипт теперь собирает `miniapp-admin-panel` и синхронизирует в `/var/www/miniapp-admin`.
+
+### VITE_API_BASE (если нужно)
+
+По умолчанию `admin-panel` делает запросы на тот же домен, что и сама страница (`admin.example.com/admin/...`). Это работает без `.env.production`.
+
+Если API на другом домене — создайте файл перед сборкой:
+
+```bash
+echo "VITE_API_BASE=https://api.example.com" > ~/miniapp/admin-panel/.env.production
+```
+
+### Проверка
+
+```bash
+curl -I https://admin.example.com
+curl -fsS https://admin.example.com/health
+```

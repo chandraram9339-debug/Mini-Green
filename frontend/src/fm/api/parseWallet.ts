@@ -59,6 +59,13 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
           ? ((o.wallet as Record<string, unknown>).botTradingEnabled as boolean)
           : undefined;
 
+  const referralLink =
+    typeof o.referralLink === "string" && o.referralLink
+      ? o.referralLink
+      : typeof o.referral_link === "string" && o.referral_link
+        ? o.referral_link
+        : null;
+
   return {
     balanceUsdt: Math.max(0, balanceUsdt ?? 0),
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
@@ -68,5 +75,6 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     withdrawFeeFixedUsdt:
       withdrawFeeFixedUsdt !== undefined ? Math.max(0, withdrawFeeFixedUsdt) : undefined,
     botTradingEnabled,
+    referralLink,
   };
 }

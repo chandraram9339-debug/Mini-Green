@@ -25,10 +25,10 @@
 }
 
 .appBarRow {
-  display: grid;
-  /* три колонки: [кнопка-назад] [лого по центру] [иконки] */
-  grid-template-columns: auto 1fr auto;
+  position: relative;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 16px;
   height: 56px;
 }
@@ -48,13 +48,65 @@
 .appBarBack:hover { background: rgba(0,0,0,0.05); }
 
 .appBarLogo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  isolation: isolate;
 }
+
 .appBarLogo img {
-  height: 28px;
   display: block;
+  width: 168px;
+  height: 20px;
+  object-fit: contain;
+  max-width: calc(100vw - 96px);
+}
+
+/* Shimmer animation on logo — mirrors homeScreen.css .fm-appbar-brand::after */
+.appBarLogo::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 168px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 18%,
+    rgba(255, 255, 255, 0.1) 34%,
+    rgba(255, 255, 255, 0.75) 48%,
+    rgba(181, 214, 255, 0.55) 54%,
+    rgba(255, 255, 255, 0.08) 66%,
+    rgba(255, 255, 255, 0) 82%
+  );
+  background-size: 168px 100%;
+  background-repeat: no-repeat;
+  animation: homeLogoShimmer 5.9s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.95;
+  -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 168px 20px;
+  mask-image: url("/assets/app-bar/palladium-logo.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 168px 20px;
+}
+
+@keyframes homeLogoShimmer {
+  0% { background-position: -240px 50%; }
+  100% { background-position: 240px 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appBarLogo::after {
+    animation: none;
+    opacity: 0.3;
+  }
 }
 
 .appBarIcons {
@@ -256,14 +308,14 @@
   padding: 20px 16px 0;
 }
 
-/* ── График ────────────────────────────────────────────────── */
+/* ── График (структура как на 3-м экране) ───────────────────── */
 .chartWrap {
-  position: relative;
   width: 100%;
+  overflow: hidden;
   margin-bottom: 24px;
 }
 
-/* Y-метки + горизонтальные линии — нормальный поток (задают высоту) */
+/* Y-метки + горизонтальные линии — задают высоту блока */
 .chartGrid {
   display: flex;
   flex-direction: column;
@@ -274,11 +326,11 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 17px;
+  padding-bottom: 14px;
 }
 
 .chartLabel {
-  width: 40px;           /* фиксированная ширина меток */
+  width: 20px;
   flex-shrink: 0;
   text-align: right;
   font-size: 6px;
@@ -293,21 +345,18 @@
   background: #D3DAE5;
 }
 
-/* SVG-оверлей начинается после меток (40px + 4px gap = 44px) */
+/* SVG поверх шкалы через отрицательный margin-top (10 строк × 17px ≈ 170px) */
 .chartSvgOverlay {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 44px;            /* ровно ширина .chartLabel + gap */
-  right: 0;
-  display: flex;
-  align-items: stretch;
+  position: relative;
+  margin-left: 24px;
+  margin-right: 0;
+  margin-top: -170px;
   pointer-events: none;
 }
 
 .chartSvg {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
 }
 

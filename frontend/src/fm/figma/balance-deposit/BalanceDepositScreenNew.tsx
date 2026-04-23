@@ -58,6 +58,15 @@ function staticBundle(): WalletHistoryBundle {
   };
 }
 
+/* Empty bundle — shown while the API request is in flight */
+function emptyBundle(): WalletHistoryBundle {
+  return {
+    deposit:  { rows: [], totalAmount: 0, count: 0 },
+    withdraw: { rows: [], totalAmount: 0, count: 0 },
+    referral: { rows: [], totalAmount: 0, count: 0 },
+  };
+}
+
 /* ── Tab routing helper ──────────────────────────────────────── */
 function useActiveTab() {
   const { pathname } = useLocation();
@@ -156,13 +165,12 @@ type TabConfig = {
   totalLabel: string;
   countLabel: string;
   countUnit: string;
-  chevronTo: string;
 };
 
 const TAB_META: TabConfig[] = [
-  { id: "deposit",  title: "Deposit",  totalLabel: "Total deposited amount:",   countLabel: "Number of deposits made:",       countUnit: "Times",  chevronTo: routes.depositTopUp },
-  { id: "withdraw", title: "Withdraw", totalLabel: "Total withdrawal amount:",  countLabel: "Number of withdrawals:",          countUnit: "Times",  chevronTo: routes.withdraw },
-  { id: "referral", title: "Referral", totalLabel: "Bonuses received from:",   countLabel: "Total number of invited users:",  countUnit: "People", chevronTo: routes.balanceReferral },
+  { id: "deposit",  title: "Deposit",  totalLabel: "Total deposited amount:",   countLabel: "Number of deposits made:",       countUnit: "Times" },
+  { id: "withdraw", title: "Withdraw", totalLabel: "Total withdrawal amount:",  countLabel: "Number of withdrawals:",          countUnit: "Times" },
+  { id: "referral", title: "Referral", totalLabel: "Bonuses received from:",   countLabel: "Total number of invited users:",  countUnit: "People" },
 ];
 
 interface TabCardProps {
@@ -202,14 +210,12 @@ function TabCard({ meta, totalAmount, count, isActive, onSelect }: TabCardProps)
           </div>
         </div>
 
-        <Link
-          to={meta.chevronTo}
+        <span
           className={`${s.tabCardArrow} ${isActive ? s.tabCardArrowActive : s.tabCardArrowInactive}`}
-          aria-label={`Go to ${meta.title}`}
-          onClick={(e) => e.stopPropagation()}
+          aria-hidden="true"
         >
           {isActive ? <ArrowUpIcon /> : <ArrowRightIcon />}
-        </Link>
+        </span>
       </div>
     </button>
   );
@@ -331,7 +337,8 @@ export default function BalanceDepositScreenNew() {
 
   const [tab, setTab] = useState<HistoryTab>("deposit");
   const [apiHistory, setApiHistory] = useState<WalletHistoryBundle | null>(null);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  // Start in loading state when API is available — prevents flash of fake data
+  const [historyLoading, setHistoryLoading] = useState(() => hasApiBase());
 
   useEffect(() => {
     if (!hasApiBase()) return;
@@ -341,13 +348,20 @@ export default function BalanceDepositScreenNew() {
       try {
         const h = await fetchWalletHistory();
         if (!cancelled && h) setApiHistory(h);
-      } catch { /* keep static */ }
+      } catch { /* keep empty */ }
       finally { if (!cancelled) setHistoryLoading(false); }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const bundle = useMemo(() => apiHistory ?? staticBundle(), [apiHistory]);
+  const bundle = useMemo(() => {
+    // While API request is in flight → show zeros (no fake mockup flash)
+    if (historyLoading && apiHistory === null) return emptyBundle();
+    // API returned data → use it
+    if (apiHistory) return apiHistory;
+    // No API (dev/mock mode) → show static demo data
+    return staticBundle();
+  }, [apiHistory, historyLoading]);
   const tabBundle = useMemo(() => {
     if (tab === "withdraw") return bundle.withdraw;
     if (tab === "referral") return bundle.referral;
