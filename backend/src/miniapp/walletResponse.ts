@@ -6,6 +6,7 @@ import { getFeeSnapshot, resolveDeriveConfig } from "../domain/effectiveConfig.j
 import { getBotTradingEnabled, getUserByTg } from "../repos/userRepo.js";
 import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 import { maxWithdrawAmountMinor } from "../services/withdrawalService.js";
+import { buildMiniappUiLinks } from "./uiSettings.js";
 
 const MINOR_PER_USDT = 100;
 
@@ -34,6 +35,7 @@ export function buildWalletForUser(userId: string) {
   const addr = u?.deposit_tron_address?.trim() || c2.depositAddress || undefined;
   const availableAfterFeeMinor = maxWithdrawAmountMinor(s.available_minor, fees);
   const posMs = u ? getCurrentPositiveBalanceStartedAtMs(db, u.id) : null;
+  const ui = buildMiniappUiLinks(db, config, userId);
 
   return {
     balanceUsdt: minorToUsdt(s.wallet_minor),
@@ -45,5 +47,12 @@ export function buildWalletForUser(userId: string) {
     botTradingEnabled: getBotTradingEnabled(db, userId),
     referralLink: buildReferralLink(userId, db),
     positiveBalanceStartedAt: posMs != null ? new Date(posMs).toISOString() : null,
+    /** Дублируем ссылки из админки: тот же путь, что /wallet/ui-settings (на части деплоев отдельный URL не проксируется). */
+    chat_url: ui.chat_url,
+    support_url: ui.support_url,
+    channel_url: ui.channel_url,
+    youtube_url: ui.youtube_url,
+    public_telegram_bot_username: ui.public_telegram_bot_username,
+    miniapp_webapp_url: ui.miniapp_webapp_url,
   };
 }

@@ -15,6 +15,8 @@ import { homeAssets } from "../home/homeAssets";
 import { routes } from "../routes";
 import { settingsAssets as s } from "./settingsAssets";
 import { openTelegramReferralShare } from "../../config/links";
+import { useAppSession } from "../../session/useAppSession";
+import { showMiniAppAlert } from "../../telegram/uiFeedback";
 import { logGreySurfaces } from "../../debug/logGreySurfaces";
 import {
   isPushEnabled,
@@ -64,6 +66,7 @@ function SettingsToggle({
 /** Экран «1 | Settings» — node 1:3783 + нижний Tab Bar. */
 export default function SettingsScreen() {
   const { locale, setLocale, t } = useFmLocale();
+  const { wallet, uiSettings } = useAppSession();
   const [langOpen, setLangOpen] = useState(false);
   const langWrapRef = useRef<HTMLDivElement>(null);
   const [pushOn, setPushOn] = useState(() => isPushEnabled());
@@ -242,7 +245,13 @@ export default function SettingsScreen() {
           <button
             type="button"
             className="fm-settings-row fm-settings-row--simple fm-settings-row--link fm-settings-row--button"
-            onClick={() => openTelegramReferralShare()}
+            onClick={() => {
+              const ok = openTelegramReferralShare(
+                wallet?.referralLink,
+                uiSettings?.public_telegram_bot_username,
+              );
+              if (!ok) showMiniAppAlert(t("settings.referralLinkMissing"), { force: true });
+            }}
           >
             <span className="fm-settings-lead-icon fm-settings-lead-icon--referral">
               <img alt="" src={s.userPlus} />

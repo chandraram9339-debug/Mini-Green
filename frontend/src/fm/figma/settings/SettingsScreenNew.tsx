@@ -5,6 +5,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
 import { routes } from "../routes";
 import { openTelegramReferralShare } from "../../config/links";
+import { showMiniAppAlert } from "../../telegram/uiFeedback";
 import {
   isPushEnabled,
   isVibrationEnabled,
@@ -260,7 +261,7 @@ function BottomTabBar({ active }: { active: string }) {
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function SettingsScreenNew() {
   const { locale, setLocale, t } = useFmLocale();
-  const { notificationUnreadCount, wallet } = useAppSession();
+  const { notificationUnreadCount, wallet, uiSettings } = useAppSession();
   const activeNav = useActiveNav();
 
   /* Language dropdown */
@@ -388,7 +389,17 @@ export default function SettingsScreenNew() {
             <span className={s.rowChevron}><ChevronRightIcon /></span>
           </Link>
 
-          <button type="button" className={s.row} onClick={() => openTelegramReferralShare(wallet?.referralLink)}>
+          <button
+            type="button"
+            className={s.row}
+            onClick={() => {
+              const ok = openTelegramReferralShare(
+                wallet?.referralLink,
+                uiSettings?.public_telegram_bot_username,
+              );
+              if (!ok) showMiniAppAlert(t("settings.referralLinkMissing"), { force: true });
+            }}
+          >
             <span className={s.rowIcon}><UserPlusIcon /></span>
             <span className={s.rowLabel}>{t("settings.referralLink")}</span>
             <span className={s.rowChevron}><ChevronRightIcon /></span>

@@ -1,5 +1,15 @@
 /** Контракт минимально нужный миниаппу; бэкенд может расширять поля — парсим только нужное. */
 
+/** Ссылки из админки; дублируются в GET /wallet рядом с /wallet/ui-settings. */
+export type WalletMiniappUiFields = {
+  chat_url?: string;
+  support_url?: string;
+  channel_url?: string;
+  youtube_url?: string;
+  public_telegram_bot_username?: string;
+  miniapp_webapp_url?: string;
+};
+
 export type WalletSnapshot = {
   balanceUsdt: number;
   referralReceivedUsdt: number;
@@ -17,4 +27,4 @@ export type WalletSnapshot = {
   referralLink?: string | null;
   /** ISO: начало текущего интервала положительного баланса (после пополнения). */
   positiveBalanceStartedAt?: string | null;
-};
+} & WalletMiniappUiFields;

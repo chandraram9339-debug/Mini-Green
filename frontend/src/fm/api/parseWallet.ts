@@ -73,6 +73,14 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
         ? o.positive_balance_started_at.trim()
         : null;
 
+  const chat_url = typeof o.chat_url === "string" ? o.chat_url : undefined;
+  const support_url = typeof o.support_url === "string" ? o.support_url : undefined;
+  const channel_url = typeof o.channel_url === "string" ? o.channel_url : undefined;
+  const youtube_url = typeof o.youtube_url === "string" ? o.youtube_url : undefined;
+  const public_telegram_bot_username =
+    typeof o.public_telegram_bot_username === "string" ? o.public_telegram_bot_username : undefined;
+  const miniapp_webapp_url = typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : undefined;
+
   return {
     balanceUsdt: Math.max(0, balanceUsdt ?? 0),
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
@@ -84,5 +92,11 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     botTradingEnabled,
     referralLink,
     positiveBalanceStartedAt,
+    ...(chat_url !== undefined ? { chat_url } : {}),
+    ...(support_url !== undefined ? { support_url } : {}),
+    ...(channel_url !== undefined ? { channel_url } : {}),
+    ...(youtube_url !== undefined ? { youtube_url } : {}),
+    ...(public_telegram_bot_username !== undefined ? { public_telegram_bot_username } : {}),
+    ...(miniapp_webapp_url !== undefined ? { miniapp_webapp_url } : {}),
   };
 }

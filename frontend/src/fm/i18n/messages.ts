@@ -16,6 +16,8 @@ export const messagesEn = {
   "settings.support": "Support",
   "settings.faq": "FAQ",
   "settings.referralLink": "Referral link",
+  "settings.referralLinkMissing":
+    "Cannot build referral link: set the bot username in Admin → Content, or VITE_TELEGRAM_BOT_USERNAME, and open the app from Telegram.",
   "settings.seedCode": "Seed code",
   "settings.userAgreement": "User Agreement",
 
@@ -54,6 +56,9 @@ export const messagesEn = {
   "seed.title": "Seed code",
   "seed.storeHint":
     "Store these 12 words safely. Anyone with this phrase can access funds.",
+  "seed.fetchError": "Could not load seed from the server. Check your connection and try again.",
+  "seed.legacyHint":
+    "This account has no stored recovery phrase (created before per-user seed or without WALLET_SEED_PER_USER on the server). New accounts get a phrase when the operator enables WALLET_SEED_PER_USER and USER_WALLET_ENCRYPTION_KEY.",
 
   "agreement.title": "User Agreement",
 
@@ -244,6 +249,8 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "settings.support": "Soporte",
   "settings.faq": "FAQ",
   "settings.referralLink": "Enlace de referido",
+  "settings.referralLinkMissing":
+    "No se puede crear el enlace: configura el nombre del bot en Admin → Contenido, o VITE_TELEGRAM_BOT_USERNAME, y abre la app desde Telegram.",
   "settings.seedCode": "Frase semilla",
   "settings.userAgreement": "Acuerdo de usuario",
 
@@ -282,6 +289,9 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "seed.title": "Frase semilla",
   "seed.storeHint":
     "Guarda estas 12 palabras de forma segura. Quien tenga esta frase puede acceder a los fondos.",
+  "seed.fetchError": "No se pudo cargar la frase desde el servidor. Revisa la conexión e inténtalo de nuevo.",
+  "seed.legacyHint":
+    "Esta cuenta no tiene frase guardada (creada antes del modo por usuario o sin WALLET_SEED_PER_USER en el servidor). Las cuentas nuevas reciben frase si el operador activa WALLET_SEED_PER_USER y USER_WALLET_ENCRYPTION_KEY.",
 
   "agreement.title": "Acuerdo de usuario",
 

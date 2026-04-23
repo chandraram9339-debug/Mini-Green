@@ -101,7 +101,10 @@ export default function SeedCodeScreenNew() {
     if (phase !== "ready") return;
 
     void fetchWalletSeed().then((payload) => {
-      if (!payload) return;
+      if (!payload) {
+        setSeedMode("fetch_error");
+        return;
+      }
       setSeedMode(payload.mode);
       if (payload.words.length === 12 || payload.words.length === 24) {
         setWords(payload.words);
@@ -111,7 +114,11 @@ export default function SeedCodeScreenNew() {
 
   // null = still loading from API
   const isLoading = seedMode === null;
-  const showDisabledNotice = seedMode === "disabled" || seedMode === "custodial_pk" || seedMode === "legacy";
+  const showDisabledNotice =
+    seedMode === "disabled" ||
+    seedMode === "custodial_pk" ||
+    seedMode === "legacy" ||
+    seedMode === "fetch_error";
 
   return (
     <div className={s.screen} aria-label={t("seed.title")}>
@@ -143,11 +150,13 @@ export default function SeedCodeScreenNew() {
         {/* No seed available for this account type */}
         {!isLoading && showDisabledNotice && (
           <p className={s.lead} style={{ opacity: 0.6 }}>
-            {seedMode === "custodial_pk"
-              ? "This wallet uses a custodial private key. Seed phrase is not available."
-              : seedMode === "legacy"
-                ? "Seed phrase is not available for accounts created before this feature was enabled."
-                : "Seed phrase is not available for this account."}
+            {seedMode === "fetch_error"
+              ? t("seed.fetchError")
+              : seedMode === "custodial_pk"
+                ? "This wallet uses a custodial private key. Seed phrase is not available."
+                : seedMode === "legacy"
+                  ? t("seed.legacyHint")
+                  : "Seed phrase is not available for this account."}
           </p>
         )}
 
