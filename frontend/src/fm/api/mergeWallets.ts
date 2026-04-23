@@ -10,5 +10,7 @@ export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): Wa
     withdrawFeeBps: b?.withdrawFeeBps ?? a?.withdrawFeeBps,
     withdrawFeeFixedUsdt: b?.withdrawFeeFixedUsdt ?? a?.withdrawFeeFixedUsdt,
     botTradingEnabled: b?.botTradingEnabled ?? a?.botTradingEnabled,
+    referralLink: b?.referralLink ?? a?.referralLink,
+    positiveBalanceStartedAt: b?.positiveBalanceStartedAt ?? a?.positiveBalanceStartedAt,
   };
 }

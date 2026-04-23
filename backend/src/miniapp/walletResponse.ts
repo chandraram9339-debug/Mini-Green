@@ -4,6 +4,7 @@ import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
 import { getFeeSnapshot, resolveDeriveConfig } from "../domain/effectiveConfig.js";
 import { getBotTradingEnabled, getUserByTg } from "../repos/userRepo.js";
+import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 import { maxWithdrawAmountMinor } from "../services/withdrawalService.js";
 
 const MINOR_PER_USDT = 100;
@@ -32,6 +33,7 @@ export function buildWalletForUser(userId: string) {
   const fees = getFeeSnapshot(db, config);
   const addr = u?.deposit_tron_address?.trim() || c2.depositAddress || undefined;
   const availableAfterFeeMinor = maxWithdrawAmountMinor(s.available_minor, fees);
+  const posMs = u ? getCurrentPositiveBalanceStartedAtMs(db, u.id) : null;
 
   return {
     balanceUsdt: minorToUsdt(s.wallet_minor),
@@ -42,5 +44,6 @@ export function buildWalletForUser(userId: string) {
     withdrawFeeFixedUsdt: fees.withdrawFeeFixedUsdt,
     botTradingEnabled: getBotTradingEnabled(db, userId),
     referralLink: buildReferralLink(userId, db),
+    positiveBalanceStartedAt: posMs != null ? new Date(posMs).toISOString() : null,
   };
 }

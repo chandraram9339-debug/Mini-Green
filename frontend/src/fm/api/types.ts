@@ -15,4 +15,6 @@ export type WalletSnapshot = {
   botTradingEnabled?: boolean;
   /** Персональная реферальная ссылка пользователя (https://t.me/BOT?start=refID). */
   referralLink?: string | null;
+  /** ISO: начало текущего интервала положительного баланса (после пополнения). */
+  positiveBalanceStartedAt?: string | null;
 };

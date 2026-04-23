@@ -4,7 +4,7 @@
  * UI:    100% Builder.io visual (colors, layout, flex-based — no position:absolute).
  * Data:  real API — fetchTradingJournal, fetchBotTrading, setBotTradingState,
  *        getStatsForPeriod, buildCompoundedChartPoints.
- * Logic: period tabs (24h/3d/7d/1m), trade-result filter, bot Start/Stop — unchanged.
+ * Logic: period tabs (24h/7d/30d/all), system-wide chart from API, trade-result filter, Start/Stop.
  * Adapt: height: 100dvh + flex layout, max-width 500px, no fixed pixels.
  */
 import "../home/homeScreen.css"; /* keeps fm-bot-card-* classes for BotJournalTradeCard */
@@ -39,7 +39,7 @@ import type { MessageKey } from "../../i18n/messages";
 import s from "./botDetailScreenNew.module.css";
 
 /* ── Types ──────────────────────────────────────────────────── */
-type BotPeriod = "24h" | "3d" | "7d" | "1m";
+type BotPeriod = "24h" | "7d" | "1m" | "all";
 type TradeResultFilter = "all" | "positive" | "negative";
 
 /* ── Refresh interval ────────────────────────────────────────── */
@@ -61,7 +61,7 @@ function useActiveNav() {
 
 /* ── Trading chart — dynamic from API or static fallback ─────── */
 function TradingChart({ points }: { points: GraphicPoint[] }) {
-  const geom = buildChartGeom(points);
+  const geom = buildChartGeom(points, "percent");
 
   return (
     <div className={s.chartShell}>
@@ -231,6 +231,7 @@ export default function BotDetailScreenNew() {
 
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
+  const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
   const [journalMeta, setJournalMeta] = useState<TradingJournalMeta | null>(null);
   const [journalLoading, setJournalLoading] = useState(false);
   const [botSwitchLoading, setBotSwitchLoading] = useState(false);
@@ -239,7 +240,11 @@ export default function BotDetailScreenNew() {
 
   const trading = useMemo(() => tradingFromApi ?? botTradingStaticFallback, [tradingFromApi]);
   const fromJournal = balance <= 0;
-  const chartPoints = useMemo(() => buildCompoundedChartPoints(journalRows), [journalRows]);
+  /** График торгов — всегда серия «системы» (канонический зеркальный пользователь), не личный компаунд. */
+  const chartPoints = useMemo(() => {
+    if (systemChartPoints.length > 0) return systemChartPoints;
+    return buildCompoundedChartPoints(journalRows);
+  }, [systemChartPoints, journalRows]);
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   const feedWaitingForSession = hasApiBase() && (phase === "idle" || phase === "bootstrapping");
@@ -247,6 +252,7 @@ export default function BotDetailScreenNew() {
   useEffect(() => {
     if (!hasApiBase()) {
       setJournalRows([]);
+      setSystemChartPoints([]);
       setJournalMeta(null);
       return;
     }
@@ -268,6 +274,7 @@ export default function BotDetailScreenNew() {
         ]);
         if (cancelled) return;
         setJournalRows(jr.items);
+        setSystemChartPoints(jr.system_chart.map((p) => ({ occurred_at: p.occurred_at, value_pct: p.value_pct })));
         setJournalMeta(jr.meta);
         if (snap) setTradingFromApi(snap);
       } finally {
@@ -295,7 +302,9 @@ export default function BotDetailScreenNew() {
       period,
       tradingFromApi
         ? zeroStat
-        : (botTradingStaticFallback.byPeriod[period] ?? botTradingStaticFallback.byPeriod["24h"] ?? defaultStat),
+        : (botTradingStaticFallback.byPeriod[period] ??
+            botTradingStaticFallback.byPeriod["24h"] ??
+            defaultStat),
     );
   }, [journalMeta, period, trading, tradingFromApi]);
 
@@ -334,7 +343,14 @@ export default function BotDetailScreenNew() {
     }
   }
 
-  const PERIOD_TABS: BotPeriod[] = ["24h", "3d", "7d", "1m"];
+  const PERIOD_TABS: BotPeriod[] = ["24h", "7d", "1m", "all"];
+
+  function periodTabLabel(tab: BotPeriod): string {
+    if (tab === "24h") return t("bot.period24h");
+    if (tab === "7d") return t("bot.period7d");
+    if (tab === "1m") return t("bot.period1m");
+    return t("bot.periodAll");
+  }
 
   const FEED_FILTERS: Array<{ key: TradeResultFilter; label: string }> = [
     { key: "all",      label: t("bot.feedFilterAll") },
@@ -420,7 +436,7 @@ export default function BotDetailScreenNew() {
                 className={`${s.periodTab} ${period === tab ? s.periodTabActive : s.periodTabInactive}`}
                 onClick={() => setPeriod(tab)}
               >
-                {tab}
+                {periodTabLabel(tab)}
               </button>
             ))}
           </div>

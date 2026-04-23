@@ -9,7 +9,7 @@ function num(v: unknown): number | undefined {
   return undefined;
 }
 
-const PERIODS = ["24h", "3d", "7d", "1m"] as const;
+const PERIODS = ["24h", "3d", "7d", "1m", "all"] as const;
 
 type PeriodKey = (typeof PERIODS)[number];
 

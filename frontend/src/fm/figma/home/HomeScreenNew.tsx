@@ -20,6 +20,7 @@ import { fetchTradingJournal, type TradingJournalItem } from "../../api/fetchTra
 import { fetchBotTrading } from "../../api/fetchBotTrading";
 import {
   buildCompoundedChartPoints,
+  buildPersonalBalanceChartPoints,
   buildChartGeom,
   type GraphicPoint,
 } from "../components/tradingChartPoints";
@@ -89,8 +90,8 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
 
 /* ─── График производительности ─────────────────────────────── */
 
-function PerformanceChart({ points }: { points: GraphicPoint[] }) {
-  const geom = buildChartGeom(points);
+function PerformanceChart({ points, yAxis }: { points: GraphicPoint[]; yAxis: "percent" | "usdt" }) {
+  const geom = buildChartGeom(points, yAxis);
   const yLabels = geom.yLabels;
 
   return (
@@ -202,25 +203,32 @@ export default function HomeScreenNew() {
   const activeTab = useActiveTab();
   const { t } = useFmLocale();
   const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
-  const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
+  const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt } = useWalletDisplay();
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
 
   const [chartRows, setChartRows] = useState<TradingJournalItem[]>([]);
+  const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
 
   useEffect(() => {
-    if (!hasApiBase()) { setChartRows([]); setTradingFromApi(null); return; }
+    if (!hasApiBase()) {
+      setChartRows([]);
+      setSystemChartPoints([]);
+      setTradingFromApi(null);
+      return;
+    }
     if (!apiSessionReady) return;
 
     let cancelled = false;
     const load = async () => {
       const [jr, snap] = await Promise.all([
-        fetchTradingJournal(100, "1m"),
-        fetchBotTrading("1m"),
+        fetchTradingJournal(100, "all"),
+        fetchBotTrading("all"),
       ]);
       if (cancelled) return;
       setChartRows(jr.items);
+      setSystemChartPoints(jr.system_chart.map((p) => ({ occurred_at: p.occurred_at, value_pct: p.value_pct })));
       if (snap) setTradingFromApi(snap);
     };
 
@@ -229,11 +237,16 @@ export default function HomeScreenNew() {
     return () => { cancelled = true; window.clearInterval(id); };
   }, [apiSessionReady]);
 
-  const chartPoints = useMemo(() => buildCompoundedChartPoints(chartRows), [chartRows]);
+  const isBotActive = balanceUsdt > 0 && botRunning;
+  const chartPoints = useMemo(() => {
+    if (isBotActive) {
+      return buildPersonalBalanceChartPoints(chartRows, balanceUsdt, positiveBalanceStartedAt);
+    }
+    if (systemChartPoints.length > 0) return systemChartPoints;
+    return buildCompoundedChartPoints(chartRows);
+  }, [isBotActive, chartRows, balanceUsdt, positiveBalanceStartedAt, systemChartPoints]);
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
-  const isBotActive = balanceUsdt > 0 && botRunning;
-
   return (
     <div className={s.screen}>
       <AppBar bellBadge={notificationUnreadCount} />
@@ -293,7 +306,7 @@ export default function HomeScreenNew() {
 
         {/* ── Секция бота ──────────────────────────────── */}
         <section className={s.botSection}>
-          <PerformanceChart points={chartPoints} />
+          <PerformanceChart points={chartPoints} yAxis={isBotActive ? "usdt" : "percent"} />
 
           <div className={s.botInfoGroup}>
             <div className={s.botStatusRow}>

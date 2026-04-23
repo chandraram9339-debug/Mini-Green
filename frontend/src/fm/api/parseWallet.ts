@@ -66,6 +66,13 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
         ? o.referral_link
         : null;
 
+  const positiveBalanceStartedAt =
+    typeof o.positiveBalanceStartedAt === "string" && o.positiveBalanceStartedAt.trim()
+      ? o.positiveBalanceStartedAt.trim()
+      : typeof o.positive_balance_started_at === "string" && o.positive_balance_started_at.trim()
+        ? o.positive_balance_started_at.trim()
+        : null;
+
   return {
     balanceUsdt: Math.max(0, balanceUsdt ?? 0),
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
@@ -76,5 +83,6 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
       withdrawFeeFixedUsdt !== undefined ? Math.max(0, withdrawFeeFixedUsdt) : undefined,
     botTradingEnabled,
     referralLink,
+    positiveBalanceStartedAt,
   };
 }

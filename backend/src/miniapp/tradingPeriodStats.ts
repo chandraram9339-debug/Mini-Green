@@ -1,11 +1,12 @@
 import type { Database } from "better-sqlite3";
 
-/** Периоды вкладок Figma (1m → 30 суток, как в ledger). */
+/** Периоды вкладок Figma (1m → 30 суток; all → полное окно ~50 лет для «всё время»). */
 export const FIGMA_TRADING_PERIOD_SEC: Record<string, number> = {
   "24h": 86400,
   "3d": 3 * 86400,
   "7d": 7 * 86400,
   "1m": 30 * 86400,
+  all: 50 * 365 * 86400,
 };
 
 export type DealStatsPayload = {
@@ -137,7 +138,7 @@ export function tradingStatsForAllFigmaPeriods(
   nowMs = Date.now(),
   minStartedAtMs?: number | null,
 ): Record<string, DealStatsPayload> {
-  const periods = ["24h", "3d", "7d", "1m"] as const;
+  const periods = ["24h", "3d", "7d", "1m", "all"] as const;
   const out: Record<string, DealStatsPayload> = {};
   for (const p of periods) {
     const sec = FIGMA_TRADING_PERIOD_SEC[p] ?? FIGMA_TRADING_PERIOD_SEC["24h"];

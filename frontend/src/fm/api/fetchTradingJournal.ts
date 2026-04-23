@@ -32,9 +32,12 @@ export type TradingJournalItem = {
   delta_minor: number | null;
 };
 
+export type SystemChartPoint = { occurred_at: string; value_pct: number };
+
 export type TradingJournalResponse = {
   items: TradingJournalItem[];
   meta: TradingJournalMeta | null;
+  system_chart: SystemChartPoint[];
 };
 
 function parseMeta(raw: unknown): TradingJournalMeta | null {
@@ -75,19 +78,35 @@ function parseMeta(raw: unknown): TradingJournalMeta | null {
   };
 }
 
+function parseSystemChart(root: Record<string, unknown>): SystemChartPoint[] {
+  const raw = root.system_chart;
+  if (!Array.isArray(raw)) return [];
+  const out: SystemChartPoint[] = [];
+  for (const x of raw) {
+    if (!x || typeof x !== "object") continue;
+    const o = x as Record<string, unknown>;
+    const at = typeof o.occurred_at === "string" ? o.occurred_at : "";
+    const vp = o.value_pct;
+    const n = typeof vp === "number" && Number.isFinite(vp) ? vp : Number.parseFloat(String(vp));
+    if (at && Number.isFinite(n)) out.push({ occurred_at: at, value_pct: n });
+  }
+  return out;
+}
+
 /** Журнал сделок (`trade_positions` + SIB). GET `/trading/journal` с полем `meta` для отладки связки. */
 export async function fetchTradingJournal(limit = 30, period: string = "24h"): Promise<TradingJournalResponse> {
   const pathTemplate = import.meta.env.VITE_API_TRADING_JOURNAL_PATH ?? "/trading/journal";
   const sep = pathTemplate.includes("?") ? "&" : "?";
   const url = `${pathTemplate}${sep}limit=${encodeURIComponent(String(limit))}&period=${encodeURIComponent(period)}`;
   const res = await apiFetch(url, { method: "GET" });
-  if (!res.ok) return { items: [], meta: null };
+  if (!res.ok) return { items: [], meta: null, system_chart: [] };
   const json: unknown = await res.json();
-  if (!json || typeof json !== "object") return { items: [], meta: null };
+  if (!json || typeof json !== "object") return { items: [], meta: null, system_chart: [] };
   const root = json as Record<string, unknown>;
   const items = root.items;
   const meta = parseMeta(root.meta);
-  if (!Array.isArray(items)) return { items: [], meta };
+  const system_chart = parseSystemChart(root);
+  if (!Array.isArray(items)) return { items: [], meta, system_chart };
   const out: TradingJournalItem[] = [];
   for (const x of items) {
     if (!x || typeof x !== "object") continue;
@@ -115,5 +134,5 @@ export async function fetchTradingJournal(limit = 30, period: string = "24h"): P
       delta_minor: dmNum,
     });
   }
-  return { items: out, meta };
+  return { items: out, meta, system_chart };
 }

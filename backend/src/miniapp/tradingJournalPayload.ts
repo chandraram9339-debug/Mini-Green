@@ -1,5 +1,6 @@
 import type { Database } from "better-sqlite3";
 import type { AppConfig } from "../config.js";
+import { getDb } from "../db/connection.js";
 import {
   getAlTradeFeedPollerStatus,
   isAlTradeFeedConfigured,
@@ -12,6 +13,7 @@ import {
   type DealStatsPayload,
 } from "./tradingPeriodStats.js";
 import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
+import { buildSystemTradingChartPoints } from "./systemTradingChart.js";
 
 /** Элементы `items` в ответе `/trading/journal`. */
 export type TradingJournalItemPayload = {
@@ -76,13 +78,23 @@ function positionCounts(db: Database, internalUserId: number): {
 }
 
 /** Ответ без пользователя в БД — только мета для отладки связки. */
+export type TradingJournalChartPoint = { occurred_at: string; value_pct: number };
+
 export function buildTradingJournalEmptyPayload(
   limit: number,
   tgUserId: string,
   cfg: AppConfig,
   period: string | null,
-): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta } {
+): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta; system_chart: TradingJournalChartPoint[] } {
   const poll = getAlTradeFeedPollerStatus();
+  const db = getDb();
+  const nowMs = Date.now();
+  const p = period ?? "24h";
+  const fromMs = p === "all" ? 0 : nowMs - (FIGMA_TRADING_PERIOD_SEC[p] ?? FIGMA_TRADING_PERIOD_SEC["24h"]) * 1000;
+  const fromIso = new Date(fromMs).toISOString();
+  const toIso = new Date(nowMs).toISOString();
+  const system_chart = buildSystemTradingChartPoints(db, cfg, fromIso, toIso);
+
   return {
     items: [],
     meta: {
@@ -99,6 +111,7 @@ export function buildTradingJournalEmptyPayload(
       al_last_error: poll.last_error ? String(poll.last_error).slice(0, 300) : null,
       al_poller_runs: poll.runs,
     },
+    system_chart,
   };
 }
 
@@ -113,10 +126,10 @@ export function buildTradingJournalPayload(
   limit: number,
   cfg: AppConfig,
   period: string,
-): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta } {
-  const sec = FIGMA_TRADING_PERIOD_SEC[period] ?? FIGMA_TRADING_PERIOD_SEC["24h"];
+): { items: TradingJournalItemPayload[]; meta: TradingJournalMeta; system_chart: TradingJournalChartPoint[] } {
   const nowMs = Date.now();
-  const fromMs = nowMs - sec * 1000;
+  const fromMs =
+    period === "all" ? 0 : nowMs - (FIGMA_TRADING_PERIOD_SEC[period] ?? FIGMA_TRADING_PERIOD_SEC["24h"]) * 1000;
   const positiveBalanceStartedAtMs = getCurrentPositiveBalanceStartedAtMs(db, internalUserId);
   // Use the full period window for chart/list data so different periods always show distinct data.
   // The positiveBalanceStartedAtMs clamping is only used for stats (profit % calculation).
@@ -165,6 +178,7 @@ export function buildTradingJournalPayload(
   const items = mapRowsToItems(rows);
   const counts = positionCounts(db, internalUserId);
   const poll = getAlTradeFeedPollerStatus();
+  const system_chart = buildSystemTradingChartPoints(db, cfg, fromIso, toIso);
 
   return {
     items,
@@ -182,6 +196,7 @@ export function buildTradingJournalPayload(
       al_last_error: poll.last_error ? String(poll.last_error).slice(0, 300) : null,
       al_poller_runs: poll.runs,
     },
+    system_chart,
   };
 }
 

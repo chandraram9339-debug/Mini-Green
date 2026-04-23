@@ -5,6 +5,48 @@ export type GraphicPoint = {
   value_pct: number;
 };
 
+/**
+ * Баланс в USDT по закрытиям: последняя точка = текущий баланс; кривая — компаунд % сделок
+ * после `positiveBalanceStartedAt`, масштабированный к конечному балансу.
+ * Поле `value_pct` здесь хранит **USDT**; используйте buildChartGeom(..., "usdt").
+ */
+export function buildPersonalBalanceChartPoints(
+  rows: TradingJournalItem[],
+  endBalanceUsdt: number,
+  positiveBalanceStartedAt: string | null | undefined,
+): GraphicPoint[] {
+  const closed = rows
+    .filter(
+      (row) =>
+        row.status === "closed" &&
+        row.closed_at &&
+        row.result_percent != null &&
+        Number.isFinite(row.result_percent),
+    )
+    .sort((a, b) => Date.parse(String(a.closed_at)) - Date.parse(String(b.closed_at)));
+
+  const startMs =
+    positiveBalanceStartedAt != null && String(positiveBalanceStartedAt).trim() !== ""
+      ? Date.parse(positiveBalanceStartedAt)
+      : NaN;
+  const filtered =
+    Number.isFinite(startMs) ? closed.filter((r) => Date.parse(String(r.closed_at)) >= startMs) : closed;
+
+  if (filtered.length === 0) return [];
+
+  let totalC = 1;
+  for (const r of filtered) {
+    totalC *= 1 + Number(r.result_percent) / 100;
+  }
+
+  let running = 1;
+  return filtered.map((r) => {
+    running *= 1 + Number(r.result_percent) / 100;
+    const balanceUsdt = (endBalanceUsdt * running) / totalC;
+    return { occurred_at: String(r.closed_at), value_pct: balanceUsdt };
+  });
+}
+
 export function buildCompoundedChartPoints(rows: TradingJournalItem[]): GraphicPoint[] {
   const closed = rows
     .filter(
@@ -50,8 +92,9 @@ const STATIC_Y_LABELS = ["7.00%","6.00%","5.00%","4.00%","3.00%","2.00%","1.00%"
 /**
  * Converts GraphicPoints into SVG path strings, Y-axis labels and trade deal dots.
  * viewBox: "0 0 325 122"
+ * @param yAxis `percent` — value_pct is %; `usdt` — value_pct holds USDT (личный баланс на Home).
  */
-export function buildChartGeom(points: GraphicPoint[]): ChartGeom {
+export function buildChartGeom(points: GraphicPoint[], yAxis: "percent" | "usdt" = "percent"): ChartGeom {
   const W = 325, H = 122;
 
   if (points.length === 0) {
@@ -90,7 +133,7 @@ export function buildChartGeom(points: GraphicPoint[]): ChartGeom {
 
   const yLabels = Array.from({ length: 10 }, (_, i) => {
     const v = maxV - (i * (maxV - minV)) / 9;
-    return `${v.toFixed(2)}%`;
+    return yAxis === "usdt" ? `${v.toFixed(2)}` : `${v.toFixed(2)}%`;
   });
 
   // Dots: one per deal, colour indicates profit/loss of that individual trade

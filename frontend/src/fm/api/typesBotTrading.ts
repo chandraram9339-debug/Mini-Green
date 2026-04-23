@@ -14,5 +14,5 @@ export type BotTradingSnapshot = {
   /** Отображаемая цена (как в макете, с пробелами или без) */
   displayPrice: string;
   pricePair: string;
-  byPeriod: Partial<Record<"24h" | "3d" | "7d" | "1m", BotTradingPeriodStats>>;
+  byPeriod: Partial<Record<"24h" | "3d" | "7d" | "1m" | "all", BotTradingPeriodStats>>;
 };

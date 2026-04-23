@@ -6,7 +6,7 @@ import { emptyDealStatsPayload, tradingStatsForAllFigmaPeriods } from "./trading
 import { fetchAlLiveTradingPrice, hasAlStateHttpConfig } from "../services/alStatePrice.js";
 import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 
-const PERIODS = ["24h", "3d", "7d", "1m"] as const;
+const PERIODS = ["24h", "3d", "7d", "1m", "all"] as const;
 
 /**
  * Shapes a payload compatible with `parseBotTrading` in the Figma app.

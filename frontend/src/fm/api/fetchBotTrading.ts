@@ -20,6 +20,7 @@ const STATIC_FALLBACK: BotTradingSnapshot = {
     "3d":  { ...EMPTY_PERIOD },
     "7d":  { ...EMPTY_PERIOD },
     "1m":  { ...EMPTY_PERIOD },
+    all: { ...EMPTY_PERIOD },
   },
 };
 
