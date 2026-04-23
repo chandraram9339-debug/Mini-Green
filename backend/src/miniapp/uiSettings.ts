@@ -47,3 +47,18 @@ export function buildMiniappSettings(db: Database, c: AppConfig, tgUserId: strin
     referral_link: referral
   };
 }
+
+/** Links for Figma mini-app (Bearer auth); same DB keys as admin «Контент». */
+export function buildMiniappUiLinks(db: Database, c: AppConfig, tgUserId: string) {
+  const p = buildMiniappSettings(db, c, tgUserId);
+  const bot = (cfg(db, "public_telegram_bot_username") || c.publicTelegramBotUsername).replace(/^@/, "").trim();
+  return {
+    chat_url: p.chat_url,
+    support_url: p.support_url,
+    channel_url: p.channel_url,
+    youtube_url: p.youtube_url,
+    public_telegram_bot_username: bot,
+    miniapp_webapp_url: cfg(db, "content_miniapp_webapp_url"),
+    referral_link: p.referral_link
+  };
+}

@@ -12,6 +12,7 @@ import { buildNotificationsPayload } from "./notificationsPayload.js";
 import { signAccessToken, requireMiniappAuth } from "./jwtAuth.js";
 import { buildTradingSummaryForUser, isAllowedTradingPeriod } from "./tradingResponse.js";
 import { buildWalletSeedPayload } from "./walletSeedPayload.js";
+import { buildMiniappUiLinks } from "./uiSettings.js";
 import { buildWalletForUser } from "./walletResponse.js";
 import { markAllUserNotificationsRead } from "../repos/notificationRepo.js";
 import { getBotTradingEnabled, setBotTradingEnabled } from "../repos/userRepo.js";
@@ -51,6 +52,11 @@ export function registerMiniappContract(app: express.Express) {
 
   app.get("/wallet", requireMiniappAuth, (req, res) => {
     res.json(buildWalletForUser(req.userId!));
+  });
+
+  /** Admin-managed chat/support/channel URLs (no legacy initData query). */
+  app.get("/ui/settings", requireMiniappAuth, (req, res) => {
+    res.json(buildMiniappUiLinks(getDb(), config, req.userId!));
   });
 
   app.get("/wallet/seed", requireMiniappAuth, async (req, res) => {
