@@ -74,6 +74,16 @@ pm2 restart "$PM2_APP_NAME"
 pm2 save
 
 echo
+echo "== Patch nginx: ensure index.html is never cached =="
+NGINX_CONF="/etc/nginx/sites-enabled/miniapp"
+if [[ -f "$NGINX_CONF" ]] && ! grep -q 'location = /index.html' "$NGINX_CONF"; then
+  sed -i 's|  location / {|  location = /index.html {\n    expires -1;\n    add_header Cache-Control "no-store, no-cache, must-revalidate";\n    try_files /index.html =404;\n  }\n\n  location / {|' "$NGINX_CONF"
+  echo "nginx: index.html no-cache block added"
+else
+  echo "nginx: index.html no-cache already present"
+fi
+
+echo
 echo "== Reload nginx =="
 nginx -t
 systemctl reload nginx
