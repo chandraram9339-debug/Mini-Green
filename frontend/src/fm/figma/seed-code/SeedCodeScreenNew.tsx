@@ -83,12 +83,21 @@ function BottomTabBar() {
 export default function SeedCodeScreenNew() {
   const { t } = useFmLocale();
   const { phase } = useAppSession();
-  const [words, setWords] = useState<readonly string[]>(() => getSeedWords());
-  const [seedMode, setSeedMode] = useState<string | null>(null);
+  // Start with empty words so we never flash fake default seed behind the blur overlay
+  const [words, setWords] = useState<readonly string[]>([]);
+  const [seedMode, setSeedMode] = useState<string | null>(
+    // When no API is available, fall back to static env seed words
+    hasApiBase() ? null : "legacy_env",
+  );
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    if (!hasApiBase()) return;
+    if (!hasApiBase()) {
+      // No API — show env-based seed words as fallback
+      setWords(getSeedWords());
+      setSeedMode("legacy_env");
+      return;
+    }
     if (phase !== "ready") return;
 
     void fetchWalletSeed().then((payload) => {
@@ -100,6 +109,8 @@ export default function SeedCodeScreenNew() {
     });
   }, [phase]);
 
+  // null = still loading from API
+  const isLoading = seedMode === null;
   const showDisabledNotice = seedMode === "disabled" || seedMode === "custodial_pk";
 
   return (
@@ -124,13 +135,22 @@ export default function SeedCodeScreenNew() {
       <div className={s.body}>
         <p className={s.lead}>{t("seed.storeHint")}</p>
 
-        {showDisabledNotice ? (
+        {/* Loading state — show nothing until API responds */}
+        {isLoading && (
+          <p className={s.lead} style={{ opacity: 0.4 }}>Loading…</p>
+        )}
+
+        {/* No seed available for this account type */}
+        {!isLoading && showDisabledNotice && (
           <p className={s.lead} style={{ opacity: 0.6 }}>
             {seedMode === "custodial_pk"
               ? "This wallet uses a custodial private key. Seed phrase is not available."
               : "Seed phrase is not available for this account."}
           </p>
-        ) : (
+        )}
+
+        {/* Real seed words — only shown after API confirms they exist */}
+        {!isLoading && !showDisabledNotice && words.length > 0 && (
           <div className={s.gridWrap}>
             <ul className={s.grid} aria-label={t("seed.title")}>
               {words.map((w, i) => (
@@ -159,7 +179,7 @@ export default function SeedCodeScreenNew() {
           </div>
         )}
 
-        {!showDisabledNotice && (
+        {!isLoading && !showDisabledNotice && words.length > 0 && (
           <button
             type="button"
             className={s.copyBtn}
