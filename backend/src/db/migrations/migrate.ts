@@ -120,6 +120,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration017UserNotifications(db);
   runMigration018SibSkippedCloses(db);
   runMigration019WithdrawalIdempotency(db);
+  runMigration020TradePositionsClosedAtIndex(db);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -447,4 +448,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_withdrawals_idempotency_key
   ON withdrawals (idempotency_key);
 `);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (19, '019_withdrawal_idempotency')").run();
+}
+
+function runMigration020TradePositionsClosedAtIndex(db: Database) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=20").get() as { ok: number } | undefined;
+  if (m) return;
+  db.exec(`
+CREATE INDEX IF NOT EXISTS idx_trade_positions_user_closed
+  ON trade_positions (user_id, closed_at);
+`);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (20, '020_trade_positions_closed_at_index')").run();
 }
