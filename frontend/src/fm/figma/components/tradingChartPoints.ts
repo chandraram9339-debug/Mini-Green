@@ -185,15 +185,30 @@ const STATIC_Y_LABELS = ["7.00%","6.00%","5.00%","4.00%","3.00%","2.00%","1.00%"
 /** Высота по Y в `viewBox="0 0 325 …"` — для позиционирования подписей рядом с SVG. */
 export const CHART_VIEWBOX_HEIGHT = 122;
 
+/**
+ * Внутренний plot по Y (user space): крайние тики не в y=0 / y=H, чтобы подписи с `translateY(-50%)`
+ * не обрезались. Низ больше — по запросу «лучше вниз» (нижний край комфортнее уходит в поле).
+ */
+export const CHART_PLOT_INSET_TOP = 5;
+export const CHART_PLOT_INSET_BOTTOM = 14;
+
+function chartPlotVerticalRange(): { plotTop: number; plotBottom: number; plotH: number } {
+  const H = CHART_VIEWBOX_HEIGHT;
+  const plotTop = CHART_PLOT_INSET_TOP;
+  const plotBottom = H - CHART_PLOT_INSET_BOTTOM;
+  const plotH = Math.max(plotBottom - plotTop, 1);
+  return { plotTop, plotBottom, plotH };
+}
+
 function buildStaticYTicks(): Array<{ label: string; ySvg: number }> {
   const emptyMin = -2;
   const emptyMax = 7;
-  const H = CHART_VIEWBOX_HEIGHT;
   const range = emptyMax - emptyMin;
+  const { plotBottom, plotH } = chartPlotVerticalRange();
   return Array.from({ length: 10 }, (_, i) => {
     const v = emptyMax - (i * range) / 9;
     const norm = (v - emptyMin) / range;
-    const ySvg = H - norm * H;
+    const ySvg = plotBottom - norm * plotH;
     return { label: STATIC_Y_LABELS[i]!, ySvg };
   });
 }
@@ -204,7 +219,8 @@ function buildStaticYTicks(): Array<{ label: string; ySvg: number }> {
  *
  * Оси: **X** — время `occurred_at`, равномерно от первой точки до последней (0…325). **Y** — `value_pct`:
  * в режиме `percent` это кумулятивный compound-% (как отдаёт API `system_chart`); масштаб min…max по
- * данным с паддингом, верх экрана = больший %, низ = меньший.
+ * данным с паддингом, верх экрана = больший %, низ = меньший. По **Y** линия и тики внутри
+ * `[CHART_PLOT_INSET_TOP, H − CHART_PLOT_INSET_BOTTOM]`, чтобы подписи не резались краями viewBox.
  *
  * @param yAxis `percent` — value_pct is %; `usdt` — value_pct holds USDT (личный баланс на Home).
  */
@@ -214,7 +230,7 @@ export function buildChartGeom(
   options?: BuildChartGeomOptions,
 ): ChartGeom {
   const W = 325;
-  const H = CHART_VIEWBOX_HEIGHT;
+  const { plotBottom, plotH } = chartPlotVerticalRange();
 
   if (points.length === 0) {
     return {
@@ -258,7 +274,7 @@ export function buildChartGeom(
   const coords: Array<[number, number]> = sorted.map((p, i) => {
     const x   = ((ts[i]! - t0) / spanT) * W;
     const norm = (p.value_pct - minV) / Math.max(maxV - minV, 0.0001);
-    const y   = H - norm * H;
+    const y   = plotBottom - norm * plotH;
     return [x, y];
   });
 
@@ -268,13 +284,13 @@ export function buildChartGeom(
   const pathLine = `M ${pts[0]}` + pts.slice(1).map((p) => ` L ${p}`).join("");
   const first = coords[0]!;
   const last  = coords[coords.length - 1]!;
-  const pathArea = `${pathLine} L ${last[0].toFixed(2)} ${H} L ${first[0].toFixed(2)} ${H} Z`;
+  const pathArea = `${pathLine} L ${last[0].toFixed(2)} ${plotBottom} L ${first[0].toFixed(2)} ${plotBottom} Z`;
 
   const rangeV = Math.max(maxV - minV, 0.0001);
   const yTicks = Array.from({ length: 10 }, (_, i) => {
     const v = maxV - (i * (maxV - minV)) / 9;
     const norm = (v - minV) / rangeV;
-    const ySvg = H - norm * H;
+    const ySvg = plotBottom - norm * plotH;
     const label = yAxis === "usdt" ? `${v.toFixed(2)}` : `${v.toFixed(2)}%`;
     return { label, ySvg };
   });
