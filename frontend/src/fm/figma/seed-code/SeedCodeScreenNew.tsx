@@ -111,7 +111,7 @@ export default function SeedCodeScreenNew() {
 
   // null = still loading from API
   const isLoading = seedMode === null;
-  const showDisabledNotice = seedMode === "disabled" || seedMode === "custodial_pk";
+  const showDisabledNotice = seedMode === "disabled" || seedMode === "custodial_pk" || seedMode === "legacy";
 
   return (
     <div className={s.screen} aria-label={t("seed.title")}>
@@ -145,7 +145,9 @@ export default function SeedCodeScreenNew() {
           <p className={s.lead} style={{ opacity: 0.6 }}>
             {seedMode === "custodial_pk"
               ? "This wallet uses a custodial private key. Seed phrase is not available."
-              : "Seed phrase is not available for this account."}
+              : seedMode === "legacy"
+                ? "Seed phrase is not available for accounts created before this feature was enabled."
+                : "Seed phrase is not available for this account."}
           </p>
         )}
 

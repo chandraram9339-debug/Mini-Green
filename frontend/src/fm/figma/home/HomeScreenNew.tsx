@@ -13,6 +13,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useFmLocale } from "../../i18n/useFmLocale";
 
 import { hasApiBase } from "../../api/env";
 import { fetchTradingJournal, type TradingJournalItem } from "../../api/fetchTradingJournal";
@@ -206,6 +207,7 @@ function TabBar({ active }: { active: string }) {
 /* ─── Главный экран ──────────────────────────────────────────── */
 export default function HomeScreenNew() {
   const activeTab = useActiveTab();
+  const { t } = useFmLocale();
   const { phase, botRunning, notificationUnreadCount } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
 
@@ -249,7 +251,7 @@ export default function HomeScreenNew() {
           <div className={s.balanceRow}>
             {/* Левая колонка: баланс + рефералы */}
             <div className={s.balanceLeft}>
-              <span className={s.balanceTitle}>Total Balance</span>
+              <span className={s.balanceTitle}>{t("home.totalBalance")}</span>
 
               <div className={s.balanceAmount}>
                 <span className={s.balanceValue}>{balanceUsdt.toFixed(2)}</span>
@@ -263,7 +265,7 @@ export default function HomeScreenNew() {
                   <span className={s.referralValue}>{referralReceivedUsdt.toFixed(2)}</span>
                   <span className={s.referralCurrency}>USDT</span>
                 </div>
-                <span className={s.referralCaption}>Received by referrals</span>
+                <span className={s.referralCaption}>{t("home.referralsCaption")}</span>
               </div>
             </div>
 
@@ -274,14 +276,14 @@ export default function HomeScreenNew() {
                   <path d="M10 5V15" stroke="white" strokeWidth="1.3" strokeLinecap="square" />
                   <path d="M5 10H15" stroke="white" strokeWidth="1.3" strokeLinecap="square" />
                 </svg>
-                <span>Top up</span>
+                <span>{t("home.topUp")}</span>
               </Link>
               <Link to={routes.withdraw} className={s.btnWithdraw}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M9.35 15V15.65H10.65V15H10H9.35ZM10 15H10.65V5H10H9.35V15H10Z" fill="white" />
                   <path d="M6.25 8.75L10 5L13.75 8.75" stroke="white" strokeWidth="1.3" strokeLinecap="square" />
                 </svg>
-                <span>Withdraw</span>
+                <span>{t("home.withdraw")}</span>
               </Link>
             </div>
           </div>
@@ -292,7 +294,7 @@ export default function HomeScreenNew() {
               <path d="M3 8V4H17V8" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M16 14H17" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span>Details</span>
+            <span>{t("home.details")}</span>
           </Link>
         </section>
 
@@ -302,19 +304,19 @@ export default function HomeScreenNew() {
 
           <div className={s.botInfoGroup}>
             <div className={s.botStatusRow}>
-              <span className={s.botInfoLabel}>Bot status</span>
+              <span className={s.botInfoLabel}>{t("home.botStatus")}</span>
               <div className={s.botStatusValue}>
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                   <circle cx="5" cy="5" r="5" fill={isBotActive ? "#73C1B1" : "#8494AF"} />
                 </svg>
                 <span className={isBotActive ? s.botStatusActive : s.botStatusInactive}>
-                  {isBotActive ? "Active" : "Inactive"}
+                  {isBotActive ? t("home.active") : t("home.inactive")}
                 </span>
               </div>
             </div>
 
             <div className={s.priceRow}>
-              <span className={s.botInfoLabel}>Actual price</span>
+              <span className={s.botInfoLabel}>{t("home.actualPrice")}</span>
               <div className={s.priceValueBlock}>
                 <span className={s.priceValue}>{priceDisplay}</span>
                 <span className={s.priceCurrency}>{pricePair}</span>
@@ -327,7 +329,7 @@ export default function HomeScreenNew() {
               <path d="M4 4V20H20" stroke="white" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
               <path d="M9 13L13 9L16 12L20 8" stroke="white" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
             </svg>
-            <span>Details</span>
+            <span>{t("home.details")}</span>
           </Link>
         </section>
 
@@ -345,15 +347,15 @@ export default function HomeScreenNew() {
               <path d="M7 14V20H10V14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M18 14C18.394 14 18.7841 13.9224 19.1481 13.7716C19.512 13.6209 19.8427 13.3999 20.1213 13.1213C20.3999 12.8427 20.6209 12.512 20.7716 12.1481C20.9224 11.7841 21 11.394 21 11C21 10.606 20.9224 10.2159 20.7716 9.85195C20.6209 9.48797 20.3999 9.15726 20.1213 8.87868C19.8427 8.6001 19.512 8.37913 19.1481 8.22836C18.7841 8.0776 18.394 8 18 8" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className={s.actionLabel}>Chat</span>
+            <span className={s.actionLabel}>{t("home.chat")}</span>
           </button>
 
-          <Link to={routes.support} className={s.btnSupport} aria-label="Support">
+          <Link to={routes.support} className={s.btnSupport} aria-label={t("home.supportAria")}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
               <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="#192B48" />
               <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className={s.actionLabel}>Support</span>
+            <span className={s.actionLabel}>{t("support.title")}</span>
           </Link>
         </div>
       </main>

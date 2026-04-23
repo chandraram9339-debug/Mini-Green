@@ -1,0 +1,77 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   */
+  :root {
+    --background: 203 27% 94%;
+    --foreground: 217 48% 19%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 217 48% 19%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 48% 19%;
+
+    --primary: 168 39% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 218 17% 91%;
+    --secondary-foreground: 217 48% 19%;
+
+    --muted: 216 26% 86%;
+    --muted-foreground: 216 18% 41%;
+
+    --accent: 202 53% 38%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 216 26% 86%;
+    --input: 216 26% 86%;
+    --ring: 168 39% 60%;
+
+    --radius: 0.75rem;
+
+    /* Figma design tokens */
+    --tg-black: 217 48% 19%;
+    --tg-grey: 216 18% 41%;
+    --tg-green: 168 39% 60%;
+    --tg-line: 216 26% 86%;
+    --tg-light: 218 17% 91%;
+    --tg-bg: 203 27% 94%;
+    --tg-blue: 202 53% 38%;
+    --tg-white: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Outfit', -apple-system, sans-serif;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-family: 'Outfit', -apple-system, sans-serif;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}

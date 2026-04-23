@@ -1,0 +1,81 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   */
+  :root {
+    --background: 207 23% 94%;
+    --foreground: 218 48% 19%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 218 48% 19%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 48% 19%;
+
+    --primary: 204 53% 37%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 216 35% 86%;
+    --secondary-foreground: 218 48% 19%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 218 20% 60%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 218 48% 19%;
+
+    --destructive: 0 59% 69%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 216 28% 86%;
+    --input: 216 28% 86%;
+    --ring: 204 53% 37%;
+
+    --radius: 0.75rem;
+
+    /* Trade Bot Custom Colors */
+    --bot-bg: 207 23% 94%;
+    --bot-white: 0 0% 100%;
+    --bot-blue-dark: 204 53% 37%;
+    --bot-grey-light: 216 35% 86%;
+    --bot-black: 218 48% 19%;
+    --bot-grey-dark: 218 17% 41%;
+    --bot-green: 170 35% 60%;
+    --bot-red: 0 59% 69%;
+    --bot-grey-medium: 218 20% 60%;
+    --bot-grey-line: 216 28% 86%;
+    --bot-blue-mid: 214 47% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Outfit', -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-family: 'Outfit', -apple-system, sans-serif;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}

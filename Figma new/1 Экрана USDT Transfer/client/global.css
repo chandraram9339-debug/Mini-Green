@@ -1,0 +1,71 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Design tokens from Figma */
+    --bg: 210 25% 94%;          /* #ECF1F4 */
+    --blue-dark: 204 53% 37%;   /* #2D6E93 */
+    --grey-line: 215 26% 86%;   /* #D3DAE5 */
+    --grey-dark: 218 18% 41%;   /* #55647B */
+    --black: 217 49% 19%;       /* #192B48 */
+    --grey-medium: 218 20% 60%; /* #8494AF */
+
+    --background: 210 25% 94%;
+    --foreground: 217 49% 19%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 217 49% 19%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 49% 19%;
+
+    --primary: 204 53% 37%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 26% 86%;
+    --secondary-foreground: 217 49% 19%;
+
+    --muted: 210 25% 94%;
+    --muted-foreground: 218 20% 60%;
+
+    --accent: 210 25% 94%;
+    --accent-foreground: 217 49% 19%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 215 26% 86%;
+    --input: 215 26% 86%;
+    --ring: 204 53% 37%;
+
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}

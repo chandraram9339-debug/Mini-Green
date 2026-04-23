@@ -1,0 +1,90 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Telegram Mini App theme variables (with fallbacks) */
+    --tg-theme-bg-color: #ecf1f4;
+    --tg-theme-text-color: #192b48;
+    --tg-theme-hint-color: #8494af;
+    --tg-theme-link-color: #2d6e93;
+    --tg-theme-button-color: #2d6e93;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-secondary-bg-color: #ffffff;
+
+    /* Shadcn/Tailwind tokens */
+    --background: 204 26% 94%;
+    --foreground: 219 47% 19%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 219 47% 19%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 219 47% 19%;
+
+    --primary: 204 53% 37%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 166 40% 78%;
+    --secondary-foreground: 219 47% 19%;
+
+    --muted: 213 26% 86%;
+    --muted-foreground: 215 20% 61%;
+
+    --accent: 170 40% 60%;
+    --accent-foreground: 219 47% 19%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 26% 86%;
+    --input: 213 26% 86%;
+    --ring: 204 53% 37%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    @apply bg-brand-bg text-brand-black;
+    font-family: "Outfit", sans-serif;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: var(--tg-theme-bg-color, #ecf1f4);
+    color: var(--tg-theme-text-color, #192b48);
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}
+
+@layer utilities {
+  .tg-bg {
+    background-color: var(--tg-theme-bg-color, #ecf1f4);
+  }
+  .tg-text {
+    color: var(--tg-theme-text-color, #192b48);
+  }
+  .tg-secondary-bg {
+    background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+  }
+}
