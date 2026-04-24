@@ -134,6 +134,8 @@ export type ContentPayload = {
   public_telegram_bot_username: string;
   /** Direct link to open the Telegram Web App (e.g. https://t.me/BotName/shortName from BotFather). */
   miniapp_webapp_url: string;
+  /** Plain text: ответ бота на /start (кнопки канал/чат/апп добавляются отдельно). */
+  telegram_welcome_text: string;
   faq_markdown: string;
   user_agreement_markdown: string;
 };

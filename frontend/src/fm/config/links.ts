@@ -84,7 +84,7 @@ export function openTelegramReferralShare(
 
   const shareText =
     (import.meta.env.VITE_REFERRAL_SHARE_MESSAGE as string | undefined)?.trim() ||
-    "Запусти приложение по моей ссылке:";
+    "💰 Palladium trade bot!";
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`;
   openTelegramOrExternal(shareUrl);
   return true;

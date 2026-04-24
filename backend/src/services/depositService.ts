@@ -17,8 +17,16 @@ import { notifyUserDeposit } from "../integrations/telegramBot.js";
 import { sendPurchaseCapi } from "../integrations/metaCapi.js";
 import { readChainGrossDelta, updateChainSnapshot } from "../integrations/tronUsdt.js";
 import { insertUserNotification } from "../repos/notificationRepo.js";
-import { addBalance, bumpDepositCount, getInviterId, getUserByTg } from "../repos/userRepo.js";
+import {
+  addBalance,
+  bumpDepositCount,
+  getInviterId,
+  getUserById,
+  getUserByTg,
+  setBotTradingEnabled,
+} from "../repos/userRepo.js";
 import { fireSibJournalSyncHook, sibReevaluateAfterDeposit } from "./sibBalance.js";
+import { fireTradingEngineNotify } from "./tradingEngineNotify.js";
 
 function refBps(fees: FeeSnapshot) {
   return Math.min(100_000, fees.referralPercentBps);
@@ -124,6 +132,11 @@ export function applyDepositNet(
     source_id: id,
     created_at: now,
   });
+  const uAfter = getUserById(db, userId);
+  if (uAfter && uAfter.balance_usdt_minor > 0) {
+    const flipped = setBotTradingEnabled(db, tgUserId, true);
+    if (flipped) fireTradingEngineNotify(tgUserId, "start", trace);
+  }
   sibReevaluateAfterDeposit(db, userId);
   fireSibJournalSyncHook(c, tgUserId, trace);
   const netUsdt = Number(us);

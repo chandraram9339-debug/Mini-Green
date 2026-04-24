@@ -504,6 +504,7 @@ export function registerAdminApi(app: express.Express) {
       youtube_url: g("content_youtube_url"),
       public_telegram_bot_username: g("public_telegram_bot_username"),
       miniapp_webapp_url: g("content_miniapp_webapp_url"),
+      telegram_welcome_text: g("content_telegram_welcome_text"),
       faq_markdown: g("content_faq_markdown"),
       user_agreement_markdown: g("content_user_agreement_markdown")
     });
@@ -523,6 +524,8 @@ export function registerAdminApi(app: express.Express) {
     if (b.public_telegram_bot_username != null)
       ins.run("public_telegram_bot_username", String(b.public_telegram_bot_username).replace(/^@/, "").trim(), now);
     if (b.miniapp_webapp_url != null) ins.run("content_miniapp_webapp_url", String(b.miniapp_webapp_url).trim(), now);
+    if (b.telegram_welcome_text != null)
+      ins.run("content_telegram_welcome_text", String(b.telegram_welcome_text), now);
     if (b.faq_markdown != null) ins.run("content_faq_markdown", String(b.faq_markdown), now);
     if (b.user_agreement_markdown != null)
       ins.run("content_user_agreement_markdown", String(b.user_agreement_markdown), now);
@@ -536,6 +539,7 @@ export function registerAdminApi(app: express.Express) {
       youtube_url: g("content_youtube_url"),
       public_telegram_bot_username: g("public_telegram_bot_username"),
       miniapp_webapp_url: g("content_miniapp_webapp_url"),
+      telegram_welcome_text: g("content_telegram_welcome_text"),
       faq_markdown: g("content_faq_markdown"),
       user_agreement_markdown: g("content_user_agreement_markdown")
     });

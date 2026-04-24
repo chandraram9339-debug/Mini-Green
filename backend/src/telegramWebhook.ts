@@ -54,15 +54,21 @@ export function registerTelegramWebhook(app: express.Express) {
         }
         const cfg = db
           .prepare(
-            `SELECT key, value FROM app_config WHERE key IN ('content_miniapp_webapp_url','content_channel_url','content_chat_url')`
+            `SELECT key, value FROM app_config WHERE key IN ('content_miniapp_webapp_url','content_channel_url','content_chat_url','content_telegram_welcome_text')`
           )
           .all() as { key: string; value: string }[];
         const map = Object.fromEntries(cfg.map((r) => [r.key, r.value]));
         const webAppUrl = String(map["content_miniapp_webapp_url"] ?? "").trim() || null;
         const channelUrl = String(map["content_channel_url"] ?? "").trim() || null;
         const chatUrl = String(map["content_chat_url"] ?? "").trim() || null;
+        const welcomeText = String(map["content_telegram_welcome_text"] ?? "").trim() || null;
         const chatId = j.message!.from!.id!;
-        sendTelegramStartWelcome(config, chatId, { webAppHttpsUrl: webAppUrl, channelUrl, chatUrl }, tr);
+        sendTelegramStartWelcome(config, chatId, {
+          webAppHttpsUrl: webAppUrl,
+          channelUrl,
+          chatUrl,
+          welcomeText
+        }, tr);
       } else {
         touchUserLastActiveByTg(db, uid);
       }

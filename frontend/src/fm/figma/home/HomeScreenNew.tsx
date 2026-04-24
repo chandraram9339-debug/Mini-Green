@@ -6,7 +6,7 @@
  *   AppBar (back + logo + bell/gear)
  *   BalanceSection (баланс, Top Up, Withdraw, Details)
  *   BotStatusSection (chart, статус бота, цена, Details)
- *   ActionButtons (Social Media, Support)
+ *   ActionButtons (Chat, Channel)
  *   TabBar
  *
  * Данные: fetchTradingJournal, fetchBotTrading, useAppSession, useWalletDisplay
@@ -32,7 +32,7 @@ import { useWalletDisplay } from "../useWalletDisplay";
 import { routes } from "../routes";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 import { appBarLogoUrl } from "../assets/appBarShared";
-import { TELEGRAM_CHAT_URL, openTelegramOrExternal } from "../../config/links";
+import { TELEGRAM_CHANNEL_URL, TELEGRAM_CHAT_URL, openTelegramOrExternal } from "../../config/links";
 
 import s from "./homeScreenNew.module.css";
 
@@ -408,12 +408,12 @@ export default function HomeScreenNew() {
           </Link>
         </section>
 
-        {/* ── Кнопки Social + Support ───────────────────── */}
+        {/* ── Chat (слева) + Channel (справа) ───────────────────── */}
         <div className={s.actionRow}>
           <button
             type="button"
             className={s.btnSocial}
-            aria-label="Chat"
+            aria-label={t("home.chatAria")}
             onClick={() =>
               openTelegramOrExternal((uiSettings?.chat_url ?? "").trim() || TELEGRAM_CHAT_URL)
             }
@@ -427,28 +427,22 @@ export default function HomeScreenNew() {
             <span className={s.actionLabel}>{t("home.chat")}</span>
           </button>
 
-          {(uiSettings?.support_url ?? "").trim() ? (
-            <button
-              type="button"
-              className={s.btnSupport}
-              aria-label={t("home.supportAria")}
-              onClick={() => openTelegramOrExternal((uiSettings?.support_url ?? "").trim())}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="#192B48" />
-                <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className={s.actionLabel}>{t("support.title")}</span>
-            </button>
-          ) : (
-            <Link to={routes.support} className={s.btnSupport} aria-label={t("home.supportAria")}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="#192B48" />
-                <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className={s.actionLabel}>{t("support.title")}</span>
-            </Link>
-          )}
+          <button
+            type="button"
+            className={s.btnChannel}
+            aria-label={t("home.channelAria")}
+            onClick={() =>
+              openTelegramOrExternal((uiSettings?.channel_url ?? "").trim() || TELEGRAM_CHANNEL_URL)
+            }
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+              <path d="M4 11C4 9.34315 5.34315 8 7 8H10" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M17 8L20 11L17 14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7 16H10C11.6569 16 13 14.6569 13 13V11C13 9.34315 11.6569 8 10 8" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M14 8H17C18.6569 8 20 9.34315 20 11V13C20 14.6569 18.6569 16 17 16H14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <span className={s.actionLabel}>{t("home.channel")}</span>
+          </button>
         </div>
       </main>
 

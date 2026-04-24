@@ -11,6 +11,7 @@ export default function Content() {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [publicBotUsername, setPublicBotUsername] = useState("");
   const [miniappWebappUrl, setMiniappWebappUrl] = useState("");
+  const [telegramWelcomeText, setTelegramWelcomeText] = useState("");
   const [faq, setFaq] = useState("");
   const [userAgreement, setUserAgreement] = useState("");
   const [msg, setMsg] = useState("");
@@ -26,6 +27,7 @@ export default function Content() {
         setYoutubeUrl(x.youtube_url ?? "");
         setPublicBotUsername(x.public_telegram_bot_username ?? "");
         setMiniappWebappUrl(x.miniapp_webapp_url ?? "");
+        setTelegramWelcomeText(x.telegram_welcome_text ?? "");
         setFaq(x.faq_markdown);
         setUserAgreement(x.user_agreement_markdown ?? "");
       })
@@ -46,6 +48,7 @@ export default function Content() {
           youtube_url: youtubeUrl,
           public_telegram_bot_username: publicBotUsername,
           miniapp_webapp_url: miniappWebappUrl,
+          telegram_welcome_text: telegramWelcomeText,
           faq_markdown: faq,
           user_agreement_markdown: userAgreement
         })
@@ -72,7 +75,7 @@ export default function Content() {
               <OkBadge value={channelUrl} />
             </label>
             <input id="ch" value={channelUrl} onChange={(e) => setChannelUrl(e.target.value)} placeholder="https://t.me/yourchannel" />
-            <FieldNote>Ссылка на Telegram-канал проекта. Показывается в мини-аппе.</FieldNote>
+            <FieldNote>Ссылка на канал. Кнопка «Channel» внизу главного экрана и кнопка в приветствии /start.</FieldNote>
           </div>
           <div className="row">
             <label htmlFor="chat">
@@ -82,7 +85,7 @@ export default function Content() {
             </label>
             <input id="chat" value={chatUrl} onChange={(e) => setChatUrl(e.target.value)} placeholder="https://t.me/yourchat" />
             <FieldNote important={!chatUrl}>
-              🔴 Обязательно — кнопка «Chat» на главном экране мини-аппа открывает эту ссылку. Без неё кнопка не работает.
+              🔴 Кнопка «Chat» внизу главного экрана открывает эту ссылку.
             </FieldNote>
           </div>
           <div className="row">
@@ -148,6 +151,20 @@ export default function Content() {
                 Открыть мини-апп в новой вкладке
               </button>
             </div>
+          </div>
+          <div className="row">
+            <label htmlFor="tgwelcome">Текст приветствия в Telegram (/start)</label>
+            <textarea
+              id="tgwelcome"
+              value={telegramWelcomeText}
+              onChange={(e) => setTelegramWelcomeText(e.target.value)}
+              style={{ minHeight: 120 }}
+              placeholder="Обычный текст. Ниже к сообщению автоматически добавятся кнопки: открыть мини-апп, канал и чат (если ссылки заданы). Если поле пустое — используется стандартный текст."
+            />
+            <FieldNote>
+              Отправляется пользователю после нажатия Start в боте. Техподсказки (если нет HTTPS апп-ссылки и т.д.)
+              дописываются к вашему тексту автоматически.
+            </FieldNote>
           </div>
           <div className="row">
             <label htmlFor="faq">Частые вопросы (Markdown)</label>

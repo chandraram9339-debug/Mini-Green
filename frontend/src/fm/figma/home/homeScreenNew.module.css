@@ -402,7 +402,7 @@
   margin-top: 4px;
 }
 
-/* ── Кнопки Social + Support ───────────────────────────────── */
+/* ── Chat (слева) + Channel (справа) ───────────────────────── */
 .actionRow {
   display: flex;
   gap: 12px;
@@ -410,7 +410,7 @@
 }
 
 .btnSocial,
-.btnSupport {
+.btnChannel {
   flex: 1;
   display: flex;
   align-items: center;
@@ -427,10 +427,10 @@
   transition: opacity 0.15s;
 }
 .btnSocial:hover,
-.btnSupport:hover { opacity: 0.9; }
+.btnChannel:hover { opacity: 0.9; }
 
 .btnSocial  { background: #B5DDD5; }
-.btnSupport { background: #73C1B1; }
+.btnChannel { background: #73C1B1; }
 
 .actionLabel {
   font-size: 16px;

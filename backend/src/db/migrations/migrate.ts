@@ -121,6 +121,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration018SibSkippedCloses(db);
   runMigration019WithdrawalIdempotency(db);
   runMigration020TradePositionsClosedAtIndex(db);
+  runMigration021TelegramWelcomeText(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -458,4 +459,11 @@ CREATE INDEX IF NOT EXISTS idx_trade_positions_user_closed
   ON trade_positions (user_id, closed_at);
 `);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (20, '020_trade_positions_closed_at_index')").run();
+}
+
+function runMigration021TelegramWelcomeText(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=21").get() as { ok: number } | undefined;
+  if (m) return;
+  setConfigIfMissing(db, "content_telegram_welcome_text", "", now);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (21, '021_telegram_welcome_text')").run();
 }

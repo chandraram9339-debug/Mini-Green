@@ -20,6 +20,8 @@ export type TelegramStartWelcomeLinks = {
   webAppHttpsUrl: string | null;
   channelUrl: string | null;
   chatUrl: string | null;
+  /** Текст из Admin → Контент (`content_telegram_welcome_text`), plain text */
+  welcomeText: string | null;
 };
 
 export function notifyUserDeposit(c: AppConfig, tgUserId: string, amountText: string, trace: string) {
@@ -76,14 +78,16 @@ export function sendTelegramStartWelcome(
   const channelU = normalizeExternalUrl(links.channelUrl);
   const chatU = normalizeExternalUrl(links.chatUrl);
 
-  const lines = [
+  const customWelcome = String(links.welcomeText ?? "").trim();
+  const defaultLines = [
     "Добро пожаловать!",
     "",
     "Аккаунт создан — можно пользоваться приложением и получать уведомления.",
     "Ниже: запуск мини-аппа, канал и чат сообщества."
   ];
+  const hints: string[] = [];
   if (!urlOk) {
-    lines.push(
+    hints.push(
       "",
       "Чтобы кнопка «Открыть приложение» появилась:",
       "• в @BotFather задайте Menu Button / Mini App на HTTPS-URL фронта,",
@@ -91,9 +95,14 @@ export function sendTelegramStartWelcome(
     );
   }
   if (!channelU && !chatU) {
-    lines.push("", "Ссылки на канал и чат можно задать в админке → Контент.");
+    hints.push("", "Ссылки на канал и чат можно задать в админке → Контент.");
   }
-  const text = lines.join("\n");
+  let text: string;
+  if (customWelcome) {
+    text = customWelcome + (hints.length ? `\n${hints.join("\n")}` : "");
+  } else {
+    text = [...defaultLines, ...hints].join("\n");
+  }
 
   type IkBtn =
     | { text: string; url: string }
