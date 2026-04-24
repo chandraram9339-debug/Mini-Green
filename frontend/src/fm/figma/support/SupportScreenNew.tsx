@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
-import { SUPPORT_TELEGRAM_URL } from "../../config/links";
+import { SUPPORT_TELEGRAM_URL, openTelegramOrExternal } from "../../config/links";
 import { appBarLogoUrl } from "../assets/appBarShared";
 import { routes } from "../routes";
 
@@ -154,7 +154,9 @@ function FAQIcon() {
 export default function SupportScreenNew() {
   const { t } = useFmLocale();
   const activeNav = useActiveNav();
-  const { notificationUnreadCount } = useAppSession();
+  const { notificationUnreadCount, uiSettings, wallet } = useAppSession();
+  const supportHref =
+    (uiSettings?.support_url ?? wallet?.support_url ?? "").trim() || SUPPORT_TELEGRAM_URL;
 
   return (
     <div className={s.screen} aria-label={t("support.title")}>
@@ -164,10 +166,12 @@ export default function SupportScreenNew() {
         <div className={s.listSection}>
           {/* Support Chat */}
           <a
-            href={SUPPORT_TELEGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={supportHref}
             className={s.listItem}
+            onClick={(e) => {
+              e.preventDefault();
+              openTelegramOrExternal(supportHref);
+            }}
           >
             <SupportChatIcon />
             <span className={s.listItemLabel}>{t("support.chat")}</span>

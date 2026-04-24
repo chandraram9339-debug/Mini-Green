@@ -9,9 +9,9 @@ export const TELEGRAM_CHANNEL_URL =
 export const TELEGRAM_CHAT_URL =
   import.meta.env.VITE_TELEGRAM_CHAT_URL ?? "https://t.me/telegram";
 
-/** FAQ и Support — контакты саппорта */
+/** FAQ и Support — контакты саппорта (fallback, если в админке / wallet пусто) */
 export const SUPPORT_TELEGRAM_URL =
-  import.meta.env.VITE_SUPPORT_TELEGRAM_URL ?? "https://t.me/";
+  import.meta.env.VITE_SUPPORT_TELEGRAM_URL ?? "https://t.me/palladium_trade_support";
 
 export const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL ?? "support@example.com";
 
