@@ -148,7 +148,14 @@ function PerformanceChart({
             {geom.isEmpty ? null : (
               <>
                 <path d={geom.pathArea} fill="url(#hnGrad)" />
-                <path d={geom.pathLine} stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d={geom.pathLine}
+                  stroke="#55647B"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
               </>
             )}
           </svg>
@@ -292,15 +299,15 @@ export default function HomeScreenNew() {
   ]);
 
   const fixedYDomain = useMemo((): [number, number] | undefined => {
-    if (!isBotActive || chartPoints.length === 0) return undefined;
+    if (!isBotActive || chartPoints.length < 2) return undefined;
     return computeDepositBalanceYDomain(depositTotalUsdt, balanceUsdt);
   }, [isBotActive, chartPoints.length, depositTotalUsdt, balanceUsdt]);
 
   /**
-   * Личный режим: график скрыт, пока нет закрытых сделок после подтверждённого депозита на бэкенде
-   * (окно от positiveBalanceStartedAt; до первой точки по сделкам — пусто).
+   * Личный режим: после пополнения график скрыт, пока нет минимум одной закрытой сделки в окне
+   * positiveBalanceStartedAt — нужны **две** точки (якорь x и баланс после сделки z). Системный режим: как раньше.
    */
-  const showPerformanceChart = !isBotActive || chartPoints.length > 0;
+  const showPerformanceChart = !isBotActive ? chartPoints.length > 0 : chartPoints.length >= 2;
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
   return (

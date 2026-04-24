@@ -1,6 +1,27 @@
 import type { AppConfig } from "../config.js";
 import { logEvent } from "../httpEnvelope.js";
 
+function normalizeExternalUrl(raw: string | null | undefined): string | null {
+  let u = String(raw ?? "").trim();
+  if (!u) return null;
+  if (u.startsWith("//")) u = `https:${u}`;
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) {
+    if (/^(?:www\.)?t\.me\//i.test(u)) u = `https://${u.replace(/^\/*/, "")}`;
+    else if (/^(?:www\.)?telegram\.me\//i.test(u)) u = `https://${u.replace(/^\/*/, "")}`;
+    else return null;
+  }
+  u = u.replace(/^http:\/\/(www\.)?t\.me\//i, "https://t.me/");
+  u = u.replace(/^http:\/\/(www\.)?telegram\.me\//i, "https://telegram.me/");
+  if (!/^https:\/\//i.test(u)) return null;
+  return u;
+}
+
+export type TelegramStartWelcomeLinks = {
+  webAppHttpsUrl: string | null;
+  channelUrl: string | null;
+  chatUrl: string | null;
+};
+
 export function notifyUserDeposit(c: AppConfig, tgUserId: string, amountText: string, trace: string) {
   if (!c.telegramBotToken) {
     return;
@@ -39,41 +60,60 @@ export function sendTelegramText(c: AppConfig, chatId: number, text: string, tra
 }
 
 /**
- * Reply to /start with a visible message. If `webAppHttpsUrl` is set (HTTPS), adds a keyboard button that opens the Web App.
- * URL usually comes from Admin → Content (`content_miniapp_webapp_url`) — same HTTPS URL as in BotFather Mini App settings.
+ * Ответ на /start: пользователь уже в БД (`ensureUser` из webhook), текст + inline-кнопки:
+ * мини-апп (web_app), канал и чат из Admin → Контент.
  */
 export function sendTelegramStartWelcome(
   c: AppConfig,
   chatId: number,
-  webAppHttpsUrl: string | null,
+  links: TelegramStartWelcomeLinks,
   trace: string
 ) {
   if (!c.telegramBotToken) return;
 
-  const urlOk = Boolean(webAppHttpsUrl && /^https:\/\//i.test(webAppHttpsUrl.trim()));
-  const text = urlOk
-    ? "Добро пожаловать! Нажмите кнопку ниже, чтобы открыть приложение."
-    : [
-        "Добро пожаловать!",
-        "",
-        "Чтобы открыть мини-приложение:",
-        "• в @BotFather задайте Menu Button / Mini App на HTTPS-URL вашего фронта, или",
-        "• в админке → Контент укажите ту же HTTPS-ссылку в поле «Ссылка для запуска мини-аппа».",
-        "",
-        "Если после /start тишина — на сервере должен быть настроен webhook: POST /hooks/telegram с TELEGRAM_WEBHOOK_SECRET."
-      ].join("\n");
+  const webRaw = String(links.webAppHttpsUrl ?? "").trim();
+  const urlOk = Boolean(webRaw && /^https:\/\//i.test(webRaw));
+  const channelU = normalizeExternalUrl(links.channelUrl);
+  const chatU = normalizeExternalUrl(links.chatUrl);
+
+  const lines = [
+    "Добро пожаловать!",
+    "",
+    "Аккаунт создан — можно пользоваться приложением и получать уведомления.",
+    "Ниже: запуск мини-аппа, канал и чат сообщества."
+  ];
+  if (!urlOk) {
+    lines.push(
+      "",
+      "Чтобы кнопка «Открыть приложение» появилась:",
+      "• в @BotFather задайте Menu Button / Mini App на HTTPS-URL фронта,",
+      "• в админке → Контент укажите «Ссылка для запуска мини-аппа» (тот же HTTPS)."
+    );
+  }
+  if (!channelU && !chatU) {
+    lines.push("", "Ссылки на канал и чат можно задать в админке → Контент.");
+  }
+  const text = lines.join("\n");
+
+  type IkBtn =
+    | { text: string; url: string }
+    | { text: string; web_app: { url: string } };
+  const rows: IkBtn[][] = [];
+  if (urlOk) {
+    rows.push([{ text: "Открыть приложение", web_app: { url: webRaw } }]);
+  }
+  const secondRow: IkBtn[] = [];
+  if (channelU) secondRow.push({ text: "Канал", url: channelU });
+  if (chatU) secondRow.push({ text: "Чат", url: chatU });
+  if (secondRow.length) rows.push(secondRow);
 
   const payload: Record<string, unknown> = {
     chat_id: chatId,
     text,
     disable_web_page_preview: true
   };
-
-  if (urlOk && webAppHttpsUrl) {
-    payload.reply_markup = {
-      keyboard: [[{ text: "Открыть приложение", web_app: { url: webAppHttpsUrl.trim() } }]],
-      resize_keyboard: true
-    };
+  if (rows.length) {
+    payload.reply_markup = { inline_keyboard: rows };
   }
 
   const apiUrl = `https://api.telegram.org/bot${c.telegramBotToken}/sendMessage`;

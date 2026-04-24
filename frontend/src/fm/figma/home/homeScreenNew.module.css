@@ -311,8 +311,10 @@
 /* ── График (структура как на 3-м экране) ───────────────────── */
 .chartWrap {
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 24px;
+  padding-top: 2px;
+  padding-bottom: 6px;
 }
 
 .chartPlotRow {

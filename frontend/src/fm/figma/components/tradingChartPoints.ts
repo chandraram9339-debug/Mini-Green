@@ -78,37 +78,33 @@ export function buildPersonalBalanceChartPoints(
 }
 
 /**
- * Шкала Y (USDT) для личного графика на Home (личный режим).
+ * Шкала Y (USDT) для личного графика на Home: только две опоры — **x×0.97** и **z×1.03**.
  *
- * - **x** — сумма всех подтверждённых пополнений на бэкенде (нетто), за всё время; каждое новое
- *   пополнение уже «вшито» в это число, не только первый платёж.
- * - **z** — текущий баланс (USDT) с учётом торгов и учтённых пополнений.
- * - Линия графика — история **фактического баланса**; **x** задаёт опору для шкалы и якорную точку.
- *
- * Одно согласованное правило границ (в т.ч. когда ветка «x×0.9 … z×1,1» даёт конфликт): взять
- * min/max из опорных уровней и **x**, **z**, затем небольшой padding — шкала всегда валидна и
- * содержит и якорь на уровне x, и актуальный z.
+ * - **x** — сумма подтверждённых пополнений (стартовый депозит для шкалы).
+ * - **z** — текущий баланс USDT с учётом торгов.
+ * Если z ≪ x, границы переставляются через min/max, чтобы интервал оставался валидным.
  */
 export function computeDepositBalanceYDomain(x: number, z: number): [number, number] {
   const zx = Math.max(0, z);
   if (!(x > 0)) {
-    const hi = Math.max(zx, 1e-6) * 1.1;
-    return [0, hi];
+    const hi = Math.max(zx, 1e-6) * 1.03;
+    const pad = Math.max(hi * 0.06, 1e-6);
+    return [0 - pad * 0.5, hi + pad];
   }
-  const lowRaw = Math.min(zx, x * 0.9, x);
-  const highRaw = Math.max(zx * 1.1, x * 0.9, x);
-  let low = lowRaw;
-  let high = highRaw;
+  const bandLow = x * 0.97;
+  const bandHigh = zx * 1.03;
+  let low = Math.min(bandLow, bandHigh);
+  let high = Math.max(bandLow, bandHigh);
   if (high <= low) {
     const mid = (low + high) / 2;
     low = mid - 5e-5;
     high = mid + 5e-5;
-  } else {
-    const span = high - low;
-    const pad = span * 0.04;
-    low -= pad;
-    high += pad;
   }
+  /* Небольшой воздух по Y — линия и stroke не прижаты к краю шкалы и не режутся контейнером */
+  const span = high - low;
+  const pad = Math.max(span * 0.06, 1e-6);
+  low -= pad;
+  high += pad;
   return [low, high];
 }
 
@@ -187,10 +183,10 @@ export const CHART_VIEWBOX_HEIGHT = 122;
 
 /**
  * Внутренний plot по Y (user space): крайние тики не в y=0 / y=H, чтобы подписи с `translateY(-50%)`
- * не обрезались. Низ больше — по запросу «лучше вниз» (нижний край комфортнее уходит в поле).
+ * не обрезались. Низ не слишком большой — иначе линия визуально «уезжает вниз» и пустая полоса под графиком.
  */
-export const CHART_PLOT_INSET_TOP = 5;
-export const CHART_PLOT_INSET_BOTTOM = 14;
+export const CHART_PLOT_INSET_TOP = 4;
+export const CHART_PLOT_INSET_BOTTOM = 8;
 
 function chartPlotVerticalRange(): { plotTop: number; plotBottom: number; plotH: number } {
   const H = CHART_VIEWBOX_HEIGHT;

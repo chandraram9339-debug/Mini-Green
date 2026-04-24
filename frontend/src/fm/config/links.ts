@@ -82,7 +82,11 @@ export function openTelegramReferralShare(
     return false;
   }
 
-  openTelegramOrExternal(url);
+  const shareText =
+    (import.meta.env.VITE_REFERRAL_SHARE_MESSAGE as string | undefined)?.trim() ||
+    "Запусти приложение по моей ссылке:";
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`;
+  openTelegramOrExternal(shareUrl);
   return true;
 }
 

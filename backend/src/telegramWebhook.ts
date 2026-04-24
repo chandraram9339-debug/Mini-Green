@@ -1,17 +1,18 @@
 import type express from "express";
 import { config } from "./config.js";
 import { tryClaimIdempotency } from "./domain/idempotency.js";
+import { parseInviterTgFromStartMessage } from "./domain/telegramStartPayload.js";
 import { getDb } from "./db/connection.js";
 import { logEvent } from "./httpEnvelope.js";
 import { sendSubscribeCapi } from "./integrations/metaCapi.js";
 import { sendTelegramStartWelcome } from "./integrations/telegramBot.js";
-import { setUserBotBlockedByTg, touchUserLastActiveByTg } from "./repos/userRepo.js";
+import { ensureUser, setUserBotBlockedByTg, touchUserLastActiveByTg } from "./repos/userRepo.js";
 
 /**
  * Telegram bot updates: `my_chat_member` (user blocked / re-opened private chat) and any `message` for DAU/MAU touch.
  */
 export function registerTelegramWebhook(app: express.Express) {
-  app.post("/hooks/telegram", (req, res) => {
+  app.post("/hooks/telegram", async (req, res) => {
     if (!config.telegramWebhookSecret) {
       res.status(503).json({ error: "TELEGRAM_WEBHOOK_SECRET not set" });
       return;
@@ -33,19 +34,37 @@ export function registerTelegramWebhook(app: express.Express) {
     };
     if (j?.message?.from?.id != null) {
       const uid = String(j.message.from.id);
-      touchUserLastActiveByTg(db, uid);
       const t = (j.message.text ?? "").trim();
-      if (t === "/start" || t.startsWith("/start ")) {
+      const isStart = t === "/start" || t.toLowerCase().startsWith("/start ");
+      if (isStart) {
+        const inviter = parseInviterTgFromStartMessage(t);
+        try {
+          await ensureUser(db, config, uid, inviter);
+          logEvent(tr, "telegram.start.user_ensured", { tg: uid, ref: inviter ?? "" });
+        } catch (e) {
+          logEvent(tr, "telegram.start.ensure_user_fail", {
+            tg: uid,
+            err: e instanceof Error ? e.message : String(e)
+          });
+        }
+        touchUserLastActiveByTg(db, uid);
         const subscribeKey = `capi_subscribe:${uid}`;
         if (tryClaimIdempotency(db, subscribeKey)) {
           sendSubscribeCapi(db, config, uid, tr, subscribeKey);
         }
-        const webAppRow = db
-          .prepare("SELECT value FROM app_config WHERE key = ?")
-          .get("content_miniapp_webapp_url") as { value: string } | undefined;
-        const webAppUrl = String(webAppRow?.value ?? "").trim() || null;
+        const cfg = db
+          .prepare(
+            `SELECT key, value FROM app_config WHERE key IN ('content_miniapp_webapp_url','content_channel_url','content_chat_url')`
+          )
+          .all() as { key: string; value: string }[];
+        const map = Object.fromEntries(cfg.map((r) => [r.key, r.value]));
+        const webAppUrl = String(map["content_miniapp_webapp_url"] ?? "").trim() || null;
+        const channelUrl = String(map["content_channel_url"] ?? "").trim() || null;
+        const chatUrl = String(map["content_chat_url"] ?? "").trim() || null;
         const chatId = j.message!.from!.id!;
-        sendTelegramStartWelcome(config, chatId, webAppUrl, tr);
+        sendTelegramStartWelcome(config, chatId, { webAppHttpsUrl: webAppUrl, channelUrl, chatUrl }, tr);
+      } else {
+        touchUserLastActiveByTg(db, uid);
       }
     }
     const m = j?.my_chat_member;
