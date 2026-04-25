@@ -159,11 +159,11 @@ export default function Content() {
               value={telegramWelcomeText}
               onChange={(e) => setTelegramWelcomeText(e.target.value)}
               style={{ minHeight: 120 }}
-              placeholder="Обычный текст. Ниже к сообщению автоматически добавятся кнопки: открыть мини-апп, канал и чат (если ссылки заданы). Если поле пустое — используется стандартный текст."
+              placeholder="Оставьте пустым для дефолта (PALLADIUM welcome + кнопки), или вставьте свой plain text. Кнопки App / Channel / Chat — по ссылкам из полей выше."
             />
             <FieldNote>
-              Отправляется пользователю после нажатия Start в боте. Техподсказки (если нет HTTPS апп-ссылки и т.д.)
-              дописываются к вашему тексту автоматически.
+              Отправляется после /start. Если пусто — английский текст по умолчанию (Welcome to PALLADIUM AI + кнопки App /
+              Channel / Chat). Техподсказки при незаполненных ссылках дописываются автоматически.
             </FieldNote>
           </div>
           <div className="row">

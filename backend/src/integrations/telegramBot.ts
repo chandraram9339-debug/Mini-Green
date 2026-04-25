@@ -79,23 +79,32 @@ export function sendTelegramStartWelcome(
   const chatU = normalizeExternalUrl(links.chatUrl);
 
   const customWelcome = String(links.welcomeText ?? "").trim();
+  /** Дефолт, если в Admin → Контент пусто (`content_telegram_welcome_text`). Кнопки: App (Web App) + Channel + Chat. */
   const defaultLines = [
-    "Добро пожаловать!",
+    "🔥 Welcome to PALLADIUM AI",
     "",
-    "Аккаунт создан — можно пользоваться приложением и получать уведомления.",
-    "Ниже: запуск мини-аппа, канал и чат сообщества."
+    "The next generation of AI-powered trading.",
+    "",
+    "Autonomous. Secure. AI-powered.",
+    "",
+    "Jump in here:",
+    "📲 App",
+    "📢 Channel",
+    "💬 Chat",
+    "",
+    "Tap Launch and join the community"
   ];
   const hints: string[] = [];
   if (!urlOk) {
     hints.push(
       "",
-      "Чтобы кнопка «Открыть приложение» появилась:",
-      "• в @BotFather задайте Menu Button / Mini App на HTTPS-URL фронта,",
-      "• в админке → Контент укажите «Ссылка для запуска мини-аппа» (тот же HTTPS)."
+      "To show the App button:",
+      "• In @BotFather set Menu Button / Mini App to your mini app HTTPS URL,",
+      "• In Admin → Content set the mini app launch URL (same HTTPS)."
     );
   }
   if (!channelU && !chatU) {
-    hints.push("", "Ссылки на канал и чат можно задать в админке → Контент.");
+    hints.push("", "Set Channel and Chat links in Admin → Content.");
   }
   let text: string;
   if (customWelcome) {
@@ -109,12 +118,12 @@ export function sendTelegramStartWelcome(
     | { text: string; web_app: { url: string } };
   const rows: IkBtn[][] = [];
   if (urlOk) {
-    rows.push([{ text: "Открыть приложение", web_app: { url: webRaw } }]);
+    rows.push([{ text: "App", web_app: { url: webRaw } }]);
   }
-  // Порядок как на главном экране мини-аппа: слева чат, справа канал
+  // Как в тексте: Channel, затем Chat (ссылки из Admin / миграции)
   const secondRow: IkBtn[] = [];
-  if (chatU) secondRow.push({ text: "Чат", url: chatU });
-  if (channelU) secondRow.push({ text: "Канал", url: channelU });
+  if (channelU) secondRow.push({ text: "Channel", url: channelU });
+  if (chatU) secondRow.push({ text: "Chat", url: chatU });
   if (secondRow.length) rows.push(secondRow);
 
   const payload: Record<string, unknown> = {
