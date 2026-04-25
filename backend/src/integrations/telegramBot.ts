@@ -20,9 +20,14 @@ export type TelegramStartWelcomeLinks = {
   webAppHttpsUrl: string | null;
   channelUrl: string | null;
   chatUrl: string | null;
+  supportUrl: string | null;
   /** Текст из Admin → Контент (`content_telegram_welcome_text`), plain text */
   welcomeText: string | null;
 };
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 export function notifyUserDeposit(c: AppConfig, tgUserId: string, amountText: string, trace: string) {
   if (!c.telegramBotToken) {
@@ -62,8 +67,9 @@ export function sendTelegramText(c: AppConfig, chatId: number, text: string, tra
 }
 
 /**
- * Ответ на /start: пользователь уже в БД (`ensureUser` из webhook), текст + inline-кнопки:
- * мини-апп (web_app), канал и чат из Admin → Контент.
+ * Ответ на /start: пользователь уже в БД (`ensureUser` из webhook).
+ * Текст: кликабельные ссылки в теле сообщения (HTML).
+ * Кнопки: одна `LAUNCH APP` (web_app) — без отдельных invite-кнопок Channel/Chat.
  */
 export function sendTelegramStartWelcome(
   c: AppConfig,
@@ -80,10 +86,11 @@ export function sendTelegramStartWelcome(
   const urlOk = Boolean(webRaw && /^https:\/\//i.test(webRaw));
   const channelU = normalizeExternalUrl(links.channelUrl);
   const chatU = normalizeExternalUrl(links.chatUrl);
+  const supportU = normalizeExternalUrl(links.supportUrl);
 
   const customWelcome = String(links.welcomeText ?? "").trim();
-  /** Дефолт, если в Admin → Контент пусто (`content_telegram_welcome_text`). Кнопки: App (Web App) + Channel + Chat. */
-  const defaultLines = [
+  /** Дефолт, если в Admin → Контент пусто (`content_telegram_welcome_text`). */
+  const defaultTextHtml = [
     "🔥 Welcome to PALLADIUM AI",
     "",
     "The next generation of AI-powered trading.",
@@ -91,47 +98,75 @@ export function sendTelegramStartWelcome(
     "Autonomous. Secure. AI-powered.",
     "",
     "Jump in here:",
-    "📲 App",
-    "📢 Channel",
-    "💬 Chat",
+    urlOk ? `<a href="${escapeHtml(webRaw)}">📲 App</a>` : "📲 App",
+    channelU ? `<a href="${escapeHtml(channelU)}">📢 Channel</a>` : "📢 Channel",
+    chatU ? `<a href="${escapeHtml(chatU)}">💬 Chat</a>` : "💬 Chat",
+    supportU ? `<a href="${escapeHtml(supportU)}">🛟 Support</a>` : "",
     "",
     "Tap Launch and join the community"
-  ];
-  const hints: string[] = [];
-  if (!urlOk) {
-    hints.push(
-      "",
-      "To show the App button:",
-      "• In @BotFather set Menu Button / Mini App to your mini app HTTPS URL,",
-      "• In Admin → Content set the mini app launch URL (same HTTPS)."
-    );
-  }
-  if (!channelU && !chatU) {
-    hints.push("", "Set Channel and Chat links in Admin → Content.");
-  }
-  let text: string;
-  if (customWelcome) {
-    text = customWelcome + (hints.length ? `\n${hints.join("\n")}` : "");
+  ]
+    .filter((l) => l !== "")
+    .join("\n");
+
+  let textHtml: string;
+  if (!customWelcome) {
+    textHtml = defaultTextHtml;
   } else {
-    text = [...defaultLines, ...hints].join("\n");
+    // Admin stores plain text. If it already contains the standard lines, convert them to HTML links in-place.
+    const hasAppLine = /(^|\n)\s*📲\s*App\s*(\n|$)/.test(customWelcome);
+    const hasChannelLine = /(^|\n)\s*📢\s*Channel\s*(\n|$)/.test(customWelcome);
+    const hasChatLine = /(^|\n)\s*💬\s*Chat\s*(\n|$)/.test(customWelcome);
+    const hasSupportLine = /(^|\n)\s*🛟\s*Support\s*(\n|$)/.test(customWelcome);
+
+    let body = escapeHtml(customWelcome);
+    if (hasAppLine && urlOk) {
+      body = body.replace(/(^|\n)(\s*)📲\s*App(\s*)(?=\n|$)/g, (_m, p1, p2, p3) => {
+        return `${p1}${p2}<a href="${escapeHtml(webRaw)}">📲 App</a>${p3}`;
+      });
+    }
+    if (hasChannelLine && channelU) {
+      body = body.replace(/(^|\n)(\s*)📢\s*Channel(\s*)(?=\n|$)/g, (_m, p1, p2, p3) => {
+        return `${p1}${p2}<a href="${escapeHtml(channelU)}">📢 Channel</a>${p3}`;
+      });
+    }
+    if (hasChatLine && chatU) {
+      body = body.replace(/(^|\n)(\s*)💬\s*Chat(\s*)(?=\n|$)/g, (_m, p1, p2, p3) => {
+        return `${p1}${p2}<a href="${escapeHtml(chatU)}">💬 Chat</a>${p3}`;
+      });
+    }
+    if (hasSupportLine && supportU) {
+      body = body.replace(/(^|\n)(\s*)🛟\s*Support(\s*)(?=\n|$)/g, (_m, p1, p2, p3) => {
+        return `${p1}${p2}<a href="${escapeHtml(supportU)}">🛟 Support</a>${p3}`;
+      });
+    }
+
+    const needAppend =
+      (!hasAppLine && urlOk) ||
+      (!hasChannelLine && Boolean(channelU)) ||
+      (!hasChatLine && Boolean(chatU)) ||
+      (!hasSupportLine && Boolean(supportU));
+
+    const linkLines: string[] = [];
+    if (needAppend) {
+      if (!hasAppLine && urlOk) linkLines.push(`<a href="${escapeHtml(webRaw)}">📲 App</a>`);
+      if (!hasChannelLine && channelU) linkLines.push(`<a href="${escapeHtml(channelU)}">📢 Channel</a>`);
+      if (!hasChatLine && chatU) linkLines.push(`<a href="${escapeHtml(chatU)}">💬 Chat</a>`);
+      if (!hasSupportLine && supportU) linkLines.push(`<a href="${escapeHtml(supportU)}">🛟 Support</a>`);
+    }
+
+    textHtml = body + (linkLines.length ? `\n${linkLines.join("\n")}` : "");
   }
 
   type IkBtn =
     | { text: string; url: string }
     | { text: string; web_app: { url: string } };
-  const rows: IkBtn[][] = [];
-  if (urlOk) {
-    rows.push([{ text: "App", web_app: { url: webRaw } }]);
-  }
-  // Как в тексте: Channel, затем Chat (ссылки из Admin / миграции)
-  const secondRow: IkBtn[] = [];
-  if (channelU) secondRow.push({ text: "Channel", url: channelU });
-  if (chatU) secondRow.push({ text: "Chat", url: chatU });
-  if (secondRow.length) rows.push(secondRow);
+  // Only one "launch pad" button (web_app). Channel/Chat are clickable in text.
+  const rows: IkBtn[][] = urlOk ? [[{ text: "LAUNCH APP", web_app: { url: webRaw } }]] : [];
 
   const payload: Record<string, unknown> = {
     chat_id: chatId,
-    text,
+    text: textHtml,
+    parse_mode: "HTML",
     disable_web_page_preview: true
   };
   if (rows.length) {

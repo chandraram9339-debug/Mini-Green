@@ -86,13 +86,14 @@ export function registerTelegramWebhook(app: express.Express) {
         }
         const cfg = db
           .prepare(
-            `SELECT key, value FROM app_config WHERE key IN ('content_miniapp_webapp_url','content_channel_url','content_chat_url','content_telegram_welcome_text')`
+            `SELECT key, value FROM app_config WHERE key IN ('content_miniapp_webapp_url','content_channel_url','content_chat_url','content_support_url','content_telegram_welcome_text')`
           )
           .all() as { key: string; value: string }[];
         const map = Object.fromEntries(cfg.map((r) => [r.key, r.value]));
         const webAppUrl = String(map["content_miniapp_webapp_url"] ?? "").trim() || null;
         const channelUrl = String(map["content_channel_url"] ?? "").trim() || null;
         const chatUrl = String(map["content_chat_url"] ?? "").trim() || null;
+        const supportUrl = String(map["content_support_url"] ?? "").trim() || null;
         const welcomeText = String(map["content_telegram_welcome_text"] ?? "").trim() || null;
         const fromId = j.message!.from!.id!;
         const chatRaw = j.message?.chat?.id;
@@ -102,6 +103,7 @@ export function registerTelegramWebhook(app: express.Express) {
           webAppHttpsUrl: webAppUrl,
           channelUrl,
           chatUrl,
+          supportUrl,
           welcomeText
         }, tr);
       } else {
