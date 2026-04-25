@@ -19,6 +19,10 @@ export type WalletSnapshot = {
   depositAddress?: string;
   /** Доступно к выводу; если нет — считаем от баланса как раньше. */
   availableWithdrawUsdt?: number;
+  minDepositUsdt?: number;
+  depositFeeBps?: number;
+  depositFeeFixedUsdt?: number;
+  minWithdrawUsdt?: number;
   /** Процент комиссии на вывод в basis points (1000 = 10%). */
   withdrawFeeBps?: number;
   /** Фиксированная комиссия на вывод в USDT. */

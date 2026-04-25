@@ -1,7 +1,7 @@
 import { getEffectiveAvailableWithdrawUsdt, getEffectiveBalanceUsdt } from "../mockBalances";
 
-export const WITHDRAW_FEE_RATE = 0.1;
-export const WITHDRAW_MIN_USDT = 5;
+export const WITHDRAW_FEE_RATE = 0.19;
+export const WITHDRAW_MIN_USDT = 7;
 
 const STORAGE_KEY = "fm_withdraw_draft_v1";
 const DONE_STORAGE_KEY = "fm_withdraw_done_v1";
@@ -78,6 +78,7 @@ export function formatShortAddress(addr: string, head = 4, tail = 4): string {
 export type WithdrawBalanceSnapshot = {
   balanceUsdt: number;
   availableWithdrawUsdt: number;
+  minWithdrawUsdt?: number;
   withdrawFeeBps?: number;
   withdrawFeeFixedUsdt?: number;
 };
@@ -92,6 +93,12 @@ function resolveWithdrawFeeFixed(snapshot?: WithdrawBalanceSnapshot): number {
   const fixed = snapshot?.withdrawFeeFixedUsdt;
   if (typeof fixed === "number" && Number.isFinite(fixed) && fixed >= 0) return fixed;
   return 0;
+}
+
+function resolveMinWithdrawUsdt(snapshot?: WithdrawBalanceSnapshot): number {
+  const m = snapshot?.minWithdrawUsdt;
+  if (typeof m === "number" && Number.isFinite(m) && m > 0) return m;
+  return WITHDRAW_MIN_USDT;
 }
 
 function humanUsdtToMinor(amount: number): number {
@@ -131,10 +138,43 @@ export function formatWithdrawFeeFootnote(snapshot?: WithdrawBalanceSnapshot): s
   return "*No withdrawal fee is charged.";
 }
 
+function formatPercentFromBps(bps: number): string {
+  const pct = bps / 100;
+  return Number.isInteger(pct) ? `${pct}%` : `${(bps / 100).toFixed(2).replace(/0+$/, "").replace(/\.$/, "")}%`;
+}
+
+/** Подпись под адресом пополнения — совпадает с политикой бэкенда (getFeeSnapshot). */
+export function formatDepositFeeFootnote(snapshot?: {
+  minDepositUsdt?: number;
+  depositFeeFixedUsdt?: number;
+  depositFeeBps?: number;
+}): string {
+  const minD = snapshot?.minDepositUsdt;
+  const fixed = snapshot?.depositFeeFixedUsdt;
+  const bps = snapshot?.depositFeeBps;
+  const hasMin = typeof minD === "number" && Number.isFinite(minD) && minD > 0;
+  const hasFixed = typeof fixed === "number" && Number.isFinite(fixed) && fixed > 0;
+  const hasBps = typeof bps === "number" && Number.isFinite(bps) && bps > 0;
+  if (!hasMin && !hasFixed && !hasBps) {
+    return "Deposit fees and minimums are set by the server; see the FAQ for the current policy.";
+  }
+  let s = "";
+  if (hasMin) s += `Minimum deposit ${minD} USDT`;
+  if (hasFixed && hasBps) {
+    s += (s ? ". " : "") + `Fee on credit: ${fixed} USDT + ${formatPercentFromBps(bps)} of the incoming amount`;
+  } else if (hasBps) {
+    s += (s ? ". " : "") + `Fee on credit: ${formatPercentFromBps(bps)}`;
+  } else if (hasFixed) {
+    s += (s ? ". " : "") + `Fixed fee: ${fixed} USDT`;
+  }
+  return `${s} (server policy).`;
+}
+
 /** Сумма + комиссия не превышают доступный вывод и баланс. */
 export function validateWithdrawAmount(amount: number, snapshot?: WithdrawBalanceSnapshot): string | null {
   if (!Number.isFinite(amount) || amount <= 0) return "Enter a valid amount.";
-  if (amount < WITHDRAW_MIN_USDT) return `Minimum withdrawal is ${WITHDRAW_MIN_USDT} USDT.`;
+  const minWd = resolveMinWithdrawUsdt(snapshot);
+  if (amount < minWd) return `Minimum withdrawal is ${minWd} USDT.`;
   const fee = commissionUsdt(amount, snapshot);
   const bal = snapshot?.balanceUsdt ?? getEffectiveBalanceUsdt();
   const avail = snapshot?.availableWithdrawUsdt ?? getEffectiveAvailableWithdrawUsdt();

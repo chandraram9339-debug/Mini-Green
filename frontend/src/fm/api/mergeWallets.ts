@@ -8,6 +8,12 @@ function pickStr(b?: string, a?: string): string | undefined {
   return b ?? a;
 }
 
+function pickNum(b?: number, a?: number): number | undefined {
+  if (b !== undefined && Number.isFinite(b)) return b;
+  if (a !== undefined && Number.isFinite(a)) return a;
+  return undefined;
+}
+
 export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): WalletSnapshot | undefined {
   if (!a && !b) return undefined;
   return {
@@ -15,6 +21,10 @@ export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): Wa
     referralReceivedUsdt: Math.max(0, b?.referralReceivedUsdt ?? a?.referralReceivedUsdt ?? 0),
     depositAddress: b?.depositAddress ?? a?.depositAddress,
     availableWithdrawUsdt: b?.availableWithdrawUsdt ?? a?.availableWithdrawUsdt,
+    minDepositUsdt: pickNum(b?.minDepositUsdt, a?.minDepositUsdt),
+    depositFeeBps: pickNum(b?.depositFeeBps, a?.depositFeeBps),
+    depositFeeFixedUsdt: pickNum(b?.depositFeeFixedUsdt, a?.depositFeeFixedUsdt),
+    minWithdrawUsdt: pickNum(b?.minWithdrawUsdt, a?.minWithdrawUsdt),
     withdrawFeeBps: b?.withdrawFeeBps ?? a?.withdrawFeeBps,
     withdrawFeeFixedUsdt: b?.withdrawFeeFixedUsdt ?? a?.withdrawFeeFixedUsdt,
     botTradingEnabled: b?.botTradingEnabled ?? a?.botTradingEnabled,

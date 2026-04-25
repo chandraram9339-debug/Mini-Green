@@ -132,6 +132,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration026ForcePalladiumPublicLinksAndFaqIfEmpty(db, now);
   runMigration027RestoreShortFaqOriginal(db, now);
   runMigration028FaqSyncToBundledMarkdown(db, now);
+  runMigration029PalladiumFeePolicy7AndPercents(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -607,5 +608,20 @@ function runMigration028FaqSyncToBundledMarkdown(db: Database, now: string) {
   setAppConfigValue(db, "content_faq_markdown", FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
   db
     .prepare("INSERT INTO _migrations (id, name) VALUES (28, '028_faq_sync_bundled_full_faq_md')")
+    .run();
+}
+
+/** Ввод: min 7 USDT + 7 USDT fix + 9% bps; вывод: min 7 USDT + 7 USDT fix + 19% bps. */
+function runMigration029PalladiumFeePolicy7AndPercents(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=29").get() as { ok: number } | undefined;
+  if (m) return;
+  setAppConfigValue(db, "min_deposit_usdt", "7", now);
+  setAppConfigValue(db, "deposit_fee_fixed_usdt", "7", now);
+  setAppConfigValue(db, "deposit_fee_bps", "900", now);
+  setAppConfigValue(db, "min_withdraw_usdt", "7", now);
+  setAppConfigValue(db, "withdraw_fee_fixed_usdt", "7", now);
+  setAppConfigValue(db, "withdraw_fee_bps", "1900", now);
+  db
+    .prepare("INSERT INTO _migrations (id, name) VALUES (29, '029_palladium_fee_policy_7_9_19')")
     .run();
 }

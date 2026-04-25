@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import type { Database } from "better-sqlite3";
-import { applyFee2Part } from "../domain/amounts.js";
+import { applyFee2Part, usdtHumanToMinor } from "../domain/amounts.js";
 import type { AppConfig } from "../config.js";
 import { tryClaimIdempotency } from "../domain/idempotency.js";
 import {
@@ -118,7 +118,8 @@ export async function createWithdrawal(
   const u = getUserByTg(db, tg);
   if (!u) return { ok: false, error: "no_user" as const };
   const fees = getFeeSnapshot(db, c);
-  if (amountMinor < c.minWithdrawMinor) {
+  const minWd = usdtHumanToMinor(fees.minWithdrawUsdt);
+  if (amountMinor < minWd) {
     return { ok: false, error: "below_min" as const };
   }
   const feeMinor = calculateWithdrawFeeMinor(amountMinor, fees);
@@ -429,7 +430,8 @@ export function applyTestWithdrawalSent(
   const u = getUserByTg(db, tg);
   if (!u) return { ok: false, error: "no_user" };
   const fees = getFeeSnapshot(db, c);
-  if (amountMinor < c.minWithdrawMinor) {
+  const minWd = usdtHumanToMinor(fees.minWithdrawUsdt);
+  if (amountMinor < minWd) {
     return { ok: false, error: "below_min" };
   }
   const feeMinor = applyFee2Part(amountMinor, fees.withdrawFeeFixedUsdt, fees.withdrawFeeBps);

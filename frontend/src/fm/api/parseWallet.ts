@@ -47,6 +47,11 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
 
   const availableWithdrawUsdt =
     num(o.availableWithdrawUsdt) ?? num(o.available_withdraw_usdt) ?? num(o.available_to_withdraw);
+  const minDepositUsdt = num(o.minDepositUsdt) ?? num(o.min_deposit_usdt);
+  const depositFeeBps = num(o.depositFeeBps) ?? num(o.deposit_fee_bps);
+  const depositFeeFixedUsdt =
+    num(o.depositFeeFixedUsdt) ?? num(o.deposit_fee_fixed_usdt) ?? num(o.deposit_fee_fixed);
+  const minWithdrawUsdt = num(o.minWithdrawUsdt) ?? num(o.min_withdraw_usdt);
   const withdrawFeeBps = num(o.withdrawFeeBps) ?? num(o.withdraw_fee_bps);
   const withdrawFeeFixedUsdt =
     num(o.withdrawFeeFixedUsdt) ?? num(o.withdraw_fee_fixed_usdt) ?? num(o.withdraw_fee_fixed);
@@ -90,6 +95,12 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
     depositAddress,
     availableWithdrawUsdt: availableWithdrawUsdt !== undefined ? Math.max(0, availableWithdrawUsdt) : undefined,
+    ...(minDepositUsdt !== undefined ? { minDepositUsdt: Math.max(0, minDepositUsdt) } : {}),
+    ...(depositFeeBps !== undefined ? { depositFeeBps: Math.max(0, depositFeeBps) } : {}),
+    ...(depositFeeFixedUsdt !== undefined
+      ? { depositFeeFixedUsdt: Math.max(0, depositFeeFixedUsdt) }
+      : {}),
+    ...(minWithdrawUsdt !== undefined ? { minWithdrawUsdt: Math.max(0, minWithdrawUsdt) } : {}),
     withdrawFeeBps: withdrawFeeBps !== undefined ? Math.max(0, withdrawFeeBps) : undefined,
     withdrawFeeFixedUsdt:
       withdrawFeeFixedUsdt !== undefined ? Math.max(0, withdrawFeeFixedUsdt) : undefined,

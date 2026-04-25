@@ -210,11 +210,13 @@ From Telegram, open the official bot **@palladium_trade_bot** and use the **Mini
 
 ## Where do I see fees and minimums?
 
-**Before** each deposit / withdrawal or relevant action, the app and backend **effective fees** and **limits** (minimum deposit, minimum withdraw, bps) are applied — values come from the server. Your **transaction history** lists completed operations.
+**Before** each deposit / withdrawal, the app shows the **live** policy from the server. The **authoritative** figures are also on the **Top up** screen (deposit) and **Withdraw** flow (payout). Your **transaction history** lists completed operations.
+
+**Default product policy (confirm on-screen):** minimum **deposit** **7 USDT**; **deposit fee on credit:** **7 USDT** fixed **+ 9%** of the incoming transfer. Minimum **withdrawal** **7 USDT**; **withdrawal fee:** **7 USDT** fixed **+ 19%** of the requested amount. Admin / server configuration can override these; the UI always reflects the active values.
 
 ## Is there a minimum withdrawal amount?
 
-A common value mentioned in the product UI is on the order of **5 USDT** — **always confirm the live number** on the **Withdraw** form.
+The minimum withdrawal amount is **7 USDT** under the default policy — **always confirm the live number** on the **Withdraw** form and fee line.
 
 ## Is the referral percent fixed at 5%?
 

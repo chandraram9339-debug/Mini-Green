@@ -5,6 +5,8 @@ export type FeeSnapshot = {
   minDepositUsdt: number;
   depositFeeFixedUsdt: number;
   depositFeeBps: number;
+  /** Мин. сумма вывода (USDT), из app_config `min_withdraw_usdt` или env `MIN_WITHDRAW_MINOR`. */
+  minWithdrawUsdt: number;
   withdrawFeeFixedUsdt: number;
   withdrawFeeBps: number;
   referralPercentBps: number;
@@ -33,10 +35,12 @@ function getG(db: Database) {
 
 export function getFeeSnapshot(db: Database, c: AppConfig): FeeSnapshot {
   const g = getG(db);
+  const minWdUsdt = num(g("min_withdraw_usdt"), c.minWithdrawMinor / 100);
   return {
     minDepositUsdt: num(g("min_deposit_usdt"), c.minDepositUsdtHuman),
     depositFeeFixedUsdt: num(g("deposit_fee_fixed_usdt"), c.depositFeeFixedUsdtHuman),
     depositFeeBps: num(g("deposit_fee_bps"), c.depositFeeBps),
+    minWithdrawUsdt: minWdUsdt,
     withdrawFeeFixedUsdt: num(g("withdraw_fee_fixed_usdt"), c.withdrawFeeFixedUsdtHuman),
     withdrawFeeBps: num(g("withdraw_fee_bps"), c.withdrawFeeBps),
     referralPercentBps: num(g("referral_percent_bps"), c.referralPercentBps),

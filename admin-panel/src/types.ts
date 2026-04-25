@@ -15,6 +15,7 @@ export type FeePolicy = {
   minDepositUsdt: number;
   depositFeeFixedUsdt: number;
   depositFeeBps: number;
+  minWithdrawUsdt: number;
   withdrawFeeFixedUsdt: number;
   withdrawFeeBps: number;
   referralPercentBps: number;

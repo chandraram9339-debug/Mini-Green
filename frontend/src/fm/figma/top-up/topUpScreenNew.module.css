@@ -24,6 +24,15 @@
   box-sizing: border-box;
 }
 
+/* Policy line — matches backend fee snapshot */
+.feeNote {
+  margin: 10px 20px 0;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #55647b;
+}
+
 /* ── AppBar ─────────────────────────────────────────────────── */
 .appBar {
   width: 100%;

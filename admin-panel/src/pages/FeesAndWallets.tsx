@@ -58,6 +58,7 @@ export default function FeesAndWallets() {
   const [minDepositUsdt, setMinDepositUsdt] = useState("");
   const [depositFeeFixedUsdt, setDepositFeeFixedUsdt] = useState("");
   const [depositFeeBps, setDepositFeeBps] = useState("");
+  const [minWithdrawUsdt, setMinWithdrawUsdt] = useState("");
   const [withdrawFeeFixedUsdt, setWithdrawFeeFixedUsdt] = useState("");
   const [withdrawFeeBps, setWithdrawFeeBps] = useState("");
   const [metaPurchaseMinUsdt, setMetaPurchaseMinUsdt] = useState("");
@@ -82,6 +83,7 @@ export default function FeesAndWallets() {
         setMinDepositUsdt(String(p.minDepositUsdt));
         setDepositFeeFixedUsdt(String(p.depositFeeFixedUsdt));
         setDepositFeeBps(String(p.depositFeeBps));
+        setMinWithdrawUsdt(String(p.minWithdrawUsdt));
         setWithdrawFeeFixedUsdt(String(p.withdrawFeeFixedUsdt));
         setWithdrawFeeBps(String(p.withdrawFeeBps));
         setMetaPurchaseMinUsdt(String(p.metaPurchaseMinUsdt));
@@ -131,6 +133,7 @@ export default function FeesAndWallets() {
           min_deposit_usdt: Number(minDepositUsdt),
           deposit_fee_fixed_usdt: Number(depositFeeFixedUsdt),
           deposit_fee_bps: Number(depositFeeBps),
+          min_withdraw_usdt: Number(minWithdrawUsdt),
           withdraw_fee_fixed_usdt: Number(withdrawFeeFixedUsdt),
           withdraw_fee_bps: Number(withdrawFeeBps),
           meta_purchase_min_usdt: Number(metaPurchaseMinUsdt)
@@ -267,6 +270,15 @@ export default function FeesAndWallets() {
             <input type="number" value={depositFeeBps} onChange={(e) => setDepositFeeBps(e.target.value)} />
           </div>
           <div className="row">
+            <label>min_withdraw_usdt</label>
+            <input
+              type="number"
+              step="any"
+              value={minWithdrawUsdt}
+              onChange={(e) => setMinWithdrawUsdt(e.target.value)}
+            />
+          </div>
+          <div className="row">
             <label>withdraw_fee_fixed_usdt</label>
             <input
               type="number"
@@ -291,9 +303,9 @@ export default function FeesAndWallets() {
           {policy ? (
             <p className="muted">
               Снимок после сохранения: мин. депозит {policy.minDepositUsdt}, фикс комиссии депозита{" "}
-              {policy.depositFeeFixedUsdt}, депозит bps {policy.depositFeeBps}, фикс комиссии вывода{" "}
-              {policy.withdrawFeeFixedUsdt}, вывод bps {policy.withdrawFeeBps}, порог Meta (CAPI){" "}
-              {policy.metaPurchaseMinUsdt}
+              {policy.depositFeeFixedUsdt}, депозит bps {policy.depositFeeBps}, мин. вывод {policy.minWithdrawUsdt}
+              , фикс комиссии вывода {policy.withdrawFeeFixedUsdt}, вывод bps {policy.withdrawFeeBps}, порог Meta
+              (CAPI) {policy.metaPurchaseMinUsdt}
             </p>
           ) : null}
           <button type="submit" className="btn btn-primary">

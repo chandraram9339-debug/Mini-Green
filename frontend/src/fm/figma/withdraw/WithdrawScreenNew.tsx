@@ -34,7 +34,10 @@ function mapWithdrawValidationMessage(
 ): string | null {
   if (!err) return null;
   if (err === "Enter a valid amount.") return tr("withdraw.errInvalidAmountValue");
-  if (err.startsWith("Minimum withdrawal")) return tr("withdraw.errMinimum", { min: WITHDRAW_MIN_USDT });
+  if (err.startsWith("Minimum withdrawal")) {
+    const m = err.match(/Minimum withdrawal is ([\d.]+) USDT/);
+    return tr("withdraw.errMinimum", { min: m ? m[1] : WITHDRAW_MIN_USDT });
+  }
   if (err === "Amount and fee exceed your balance.") return tr("withdraw.errExceedBalance");
   if (err === "Amount exceeds available for withdrawal.") return tr("withdraw.errExceedAvailable");
   return err;

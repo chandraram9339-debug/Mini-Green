@@ -741,6 +741,7 @@ export function registerAdminApi(app: express.Express) {
     if (b.min_deposit_usdt != null) setS("min_deposit_usdt", b.min_deposit_usdt);
     if (b.deposit_fee_fixed_usdt != null) setS("deposit_fee_fixed_usdt", b.deposit_fee_fixed_usdt);
     if (b.deposit_fee_bps != null) setS("deposit_fee_bps", b.deposit_fee_bps);
+    if (b.min_withdraw_usdt != null) setS("min_withdraw_usdt", b.min_withdraw_usdt);
     if (b.withdraw_fee_fixed_usdt != null) setS("withdraw_fee_fixed_usdt", b.withdraw_fee_fixed_usdt);
     if (b.withdraw_fee_bps != null) setS("withdraw_fee_bps", b.withdraw_fee_bps);
     if (b.referral_percent_bps != null) setS("referral_percent_bps", b.referral_percent_bps);

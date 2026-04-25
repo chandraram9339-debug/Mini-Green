@@ -5,6 +5,8 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
+import { useWalletDisplay } from "../useWalletDisplay";
+import { formatDepositFeeFootnote } from "../withdraw/withdrawDraft";
 import {
   hapticError,
   hapticLight,
@@ -240,8 +242,14 @@ export default function TopUpScreenNew() {
   const { t } = useFmLocale();
   const activeNav = useActiveNav();
   const { wallet, confirmDepositPaid, notificationUnreadCount } = useAppSession();
+  const { minDepositUsdt, depositFeeBps, depositFeeFixedUsdt } = useWalletDisplay();
 
   const depositAddress = wallet?.depositAddress ?? DEPOSIT_WALLET_ADDRESS;
+  const depositFeeNote = formatDepositFeeFootnote({
+    minDepositUsdt,
+    depositFeeBps,
+    depositFeeFixedUsdt,
+  });
 
   /* QR image error fallback */
   const [qrOk, setQrOk] = useState(true);
@@ -313,6 +321,8 @@ export default function TopUpScreenNew() {
         <div className={s.addressCard}>
           <p className={s.addressText}>{depositAddress}</p>
         </div>
+
+        <p className={s.feeNote}>{depositFeeNote}</p>
 
         {/* Copy button */}
         <button
