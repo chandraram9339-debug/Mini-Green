@@ -21,8 +21,8 @@
 .screen {
   display: flex;
   flex-direction: column;
-  /* Exact height = viewport: lets flex layout pin TabBar at bottom */
-  height: var(--tg-viewport-stable-height, 100dvh);
+  flex: 1 1 0;
+  min-height: 0;
   /* overflow: hidden prevents outer <main> from scrolling this screen */
   overflow: hidden;
   width: 100%;

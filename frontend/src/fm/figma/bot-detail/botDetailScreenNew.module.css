@@ -11,8 +11,10 @@
 .screen {
   display: flex;
   flex-direction: column;
-  height: var(--tg-viewport-stable-height, 100dvh);
-  overflow: hidden;
+  flex: 1 1 0;
+  min-height: 0;
+  /* НЕ hidden: родитель с overflow hidden ломает position:sticky внутри .body */
+  overflow: visible;
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
@@ -139,14 +141,22 @@
   margin: 0 16px;
 }
 
-/* ── Scrollable body ────────────────────────────────────────── */
+/* ── Body: единый скролл; «Your trading history» + чипы — sticky вверху под App Bar ─ */
 .body {
-  flex: 1 1 auto;
+  position: relative;
+  z-index: 0;
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  min-height: 0;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+}
+
+/* Всё, что уходит вверх до липкого «Your trading history» (вкл. 24h/7d, Total deals, график) */
+.bodyPreFeed {
+  position: relative;
+  z-index: 0;
 }
 
 /* ── Bot Status Section ─────────────────────────────────────── */
@@ -416,9 +426,27 @@
 
 /* ── Trade Feed Section ─────────────────────────────────────── */
 .feedSection {
-  padding: 24px 16px;
-  /* pb-28 equivalent = 112px for safe space above tabbar */
+  padding: 0 16px;
+  /* pb-28 = 112px for safe area above tabbar */
   padding-bottom: 112px;
+}
+
+/* Отступ от блока статов; уезжает при скролле (не входит в sticky) */
+.feedSpacer {
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* Заголовок + All / Profit / Loss — прилипают к верху скролла (сразу под app bar); z-index > bodyPreFeed */
+.feedStickyHeader {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  padding: 0 0 4px;
+  background-color: #ecf1f4;
+  box-shadow: 0 1px 0 #d3dae5;
+  align-self: stretch;
 }
 
 .feedFilters {

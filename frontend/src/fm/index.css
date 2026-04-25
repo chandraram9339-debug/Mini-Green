@@ -87,13 +87,23 @@ body {
   transition: opacity 220ms ease;
   /* Высота как у Telegram WebView (не 100dvh — там часто лишние пиксели до низа миниаппа) */
   min-height: var(--tg-viewport-stable-height);
+  max-height: var(--tg-viewport-stable-height, 100dvh);
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  /* НЕ overflow:hidden: иначе ломается position:sticky у внутреннего .body (см. BotDetail — липкий «Your trading history»).
+     Высоту держат max-height + flex-дети. */
+  overflow: visible;
 }
 
 .app-shell > .fm-session-banner {
   flex-shrink: 0;
+}
+
+/* matched route: заполняет app-shell, без height: 100dvh (иначе + баннер > viewport) */
+.app-shell > *:not(.fm-session-banner) {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
 }
 
 .app-shell > main {

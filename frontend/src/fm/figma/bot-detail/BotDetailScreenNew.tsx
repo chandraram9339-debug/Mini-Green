@@ -374,6 +374,7 @@ export default function BotDetailScreenNew() {
       <AppBar bellBadge={notificationUnreadCount} />
 
       <div className={s.body}>
+        <div className={s.bodyPreFeed}>
         {/* ── Bot Status ───────────────────────────────────── */}
         <section className={s.statusSection} aria-label={t("bot.statusAria")}>
           <div className={s.statusRow}>
@@ -489,26 +490,30 @@ export default function BotDetailScreenNew() {
             </div>
           </div>
         </section>
+        </div>
 
-        {/* ── Trade Feed ────────────────────────────────── */}
+        {/* Липко только ниже: до этого уезжает весь bodyPreFeed (период, график, статы) */}
+        {/* ── Trade Feed: липкий блок заголовок+фильтры под app bar, список скроллится в том же .body ─ */}
         <section
           className={s.feedSection}
           aria-label={fromJournal ? t("bot.feedAriaJournal") : t("bot.feedAriaAlgo")}
         >
-          <h2 className={s.sectionTitle}>{t("bot.feedTitleAlgo")}</h2>
-
-          <div className={s.feedFilters} role="tablist" aria-label={t("bot.feedFilterAria")}>
-            {FEED_FILTERS.map(({ key, label }) => (
-              <button
-                key={key}
-                role="tab"
-                aria-selected={tradeResultFilter === key}
-                className={`${s.feedFilter} ${tradeResultFilter === key ? s.feedFilterActive : s.feedFilterInactive}`}
-                onClick={() => setTradeResultFilter(key)}
-              >
-                {label}
-              </button>
-            ))}
+          <div className={s.feedSpacer} aria-hidden="true" />
+          <div className={s.feedStickyHeader}>
+            <h2 className={s.sectionTitle}>{t("bot.feedTitleAlgo")}</h2>
+            <div className={s.feedFilters} role="tablist" aria-label={t("bot.feedFilterAria")}>
+              {FEED_FILTERS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={tradeResultFilter === key}
+                  className={`${s.feedFilter} ${tradeResultFilter === key ? s.feedFilterActive : s.feedFilterInactive}`}
+                  onClick={() => setTradeResultFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {!hasApiBase() ? (
