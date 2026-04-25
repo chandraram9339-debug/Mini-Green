@@ -7,6 +7,7 @@ import { getBotTradingEnabled, getUserByTg } from "../repos/userRepo.js";
 import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 import { maxWithdrawAmountMinor } from "../services/withdrawalService.js";
 import { buildMiniappUiLinks } from "./uiSettings.js";
+import { buildWalletSeedMeta } from "./walletSeedPayload.js";
 
 const MINOR_PER_USDT = 100;
 
@@ -66,5 +67,7 @@ export function buildWalletForUser(userId: string) {
     miniapp_webapp_url: ui.miniapp_webapp_url,
     /** Дублирование /wallet ↔ ui-settings (FAQ из админки). */
     faq_markdown: ui.faq_markdown,
+    /** Режим экрана сида: без мнемоники (см. mode/reason; слова — только GET /wallet/seed). */
+    seedScreen: buildWalletSeedMeta(userId),
   };
 }

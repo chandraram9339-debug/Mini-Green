@@ -58,7 +58,18 @@ export const messagesEn = {
     "Store these 12 words safely. Anyone with this phrase can access funds.",
   "seed.fetchError": "Could not load seed from the server. Check your connection and try again.",
   "seed.legacyHint":
-    "This account has no stored recovery phrase (created before per-user seed or without WALLET_SEED_PER_USER on the server). New accounts get a phrase when the operator enables WALLET_SEED_PER_USER and USER_WALLET_ENCRYPTION_KEY.",
+    "This account has no stored recovery phrase (older account, or the server is not in per-user seed mode).",
+  "seed.unavailableSession": "Open the app from Telegram to load your seed. If the problem continues, try again in a few minutes.",
+  "seed.unavailableFeatureOff":
+    "Seed phrase is not enabled on the server. The operator must set WALLET_SEED_PER_USER=1, USER_WALLET_ENCRYPTION_KEY (64 hex), and not use custodial private-key mode for new users (see backend .env).",
+  "seed.unavailableCustodial":
+    "This wallet is custodial (private key stored, not a BIP39 phrase). A seed cannot be shown.",
+  "seed.unavailableLegacy":
+    "No mnemonic is stored for this account (e.g. created before per-user seed or in deterministic path). The deposit address in the app remains valid; a phrase cannot be shown retroactively.",
+  "seed.unavailableKey": "The server cannot decrypt the stored phrase (check USER_WALLET_ENCRYPTION_KEY matches the one used at creation).",
+  "seed.unavailableDecrypt": "Could not unlock the stored recovery phrase. Contact support with your Telegram ID.",
+  "seed.unavailableUser": "User record not found. Try re-opening the app from Telegram.",
+
 
   "agreement.title": "User Agreement",
 
@@ -292,7 +303,17 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
     "Guarda estas 12 palabras de forma segura. Quien tenga esta frase puede acceder a los fondos.",
   "seed.fetchError": "No se pudo cargar la frase desde el servidor. Revisa la conexión e inténtalo de nuevo.",
   "seed.legacyHint":
-    "Esta cuenta no tiene frase guardada (creada antes del modo por usuario o sin WALLET_SEED_PER_USER en el servidor). Las cuentas nuevas reciben frase si el operador activa WALLET_SEED_PER_USER y USER_WALLET_ENCRYPTION_KEY.",
+    "Esta cuenta no tiene frase guardada (cuenta antigua o el servidor no está en modo frase por usuario).",
+  "seed.unavailableSession": "Abre la app desde Telegram para cargar la frase. Si sigue fallando, inténtalo más tarde.",
+  "seed.unavailableFeatureOff":
+    "La frase no está habilitada en el servidor. El operador debe configurar WALLET_SEED_PER_USER=1, USER_WALLET_ENCRYPTION_KEY (64 hex) y no usar modo custodial para usuarios nuevos (ver backend .env).",
+  "seed.unavailableCustodial":
+    "Este monedero es custodial (clave privada guardada, no BIP39). No se puede mostrar una frase semilla.",
+  "seed.unavailableLegacy":
+    "No hay mnemónico guardado (p. ej. cuenta antigua o ruta determinista). La dirección de depósito sigue siendo válida; no se puede mostrar una frase a posteriori.",
+  "seed.unavailableKey": "El servidor no puede descifrar la frase (comprueba que USER_WALLET_ENCRYPTION_KEY coincide con la de la creación).",
+  "seed.unavailableDecrypt": "No se pudo desbloquear la frase. Contacta soporte con tu ID de Telegram.",
+  "seed.unavailableUser": "Usuario no encontrado. Vuelve a abrir la app desde Telegram.",
 
   "agreement.title": "Acuerdo de usuario",
 

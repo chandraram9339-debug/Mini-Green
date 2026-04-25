@@ -71,7 +71,10 @@ export function sendTelegramStartWelcome(
   links: TelegramStartWelcomeLinks,
   trace: string
 ) {
-  if (!c.telegramBotToken) return;
+  if (!c.telegramBotToken) {
+    logEvent(trace, "telegram.start_welcome_skipped_no_bot_token", { chat: String(chatId) });
+    return;
+  }
 
   const webRaw = String(links.webAppHttpsUrl ?? "").trim();
   const urlOk = Boolean(webRaw && /^https:\/\//i.test(webRaw));
@@ -145,6 +148,8 @@ export function sendTelegramStartWelcome(
       if (!r.ok) {
         const t = await r.text();
         logEvent(trace, "telegram.start_welcome_fail", { status: r.status, body: t.slice(0, 400) });
+      } else {
+        logEvent(trace, "telegram.start_welcome_ok", { chat: String(chatId) });
       }
     })
     .catch((e) => logEvent(trace, "telegram.start_welcome_err", { err: String(e) }));

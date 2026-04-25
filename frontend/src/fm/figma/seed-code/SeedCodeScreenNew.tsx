@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { hasApiBase } from "../../api/env";
 import { fetchWalletSeed } from "../../api/fetchWalletSeed";
+import type { MessageKey } from "../../i18n/messages";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
 import { hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
@@ -10,6 +11,25 @@ import { routes } from "../routes";
 import { getSeedWords } from "./seedWords";
 
 import s from "./seedCodeScreenNew.module.css";
+
+function reasonToMessageKey(reason: string | undefined): MessageKey | null {
+  switch (reason) {
+    case "user_missing":
+      return "seed.unavailableUser";
+    case "custodial_private_key":
+      return "seed.unavailableCustodial";
+    case "feature_off":
+      return "seed.unavailableFeatureOff";
+    case "legacy_no_mnemonic":
+      return "seed.unavailableLegacy";
+    case "key_missing_or_invalid":
+      return "seed.unavailableKey";
+    case "decrypt_failed":
+      return "seed.unavailableDecrypt";
+    default:
+      return null;
+  }
+}
 
 async function copySeedPhrase(words: readonly string[], copiedLabel: string): Promise<void> {
   const text = words.join(" ");
@@ -82,13 +102,15 @@ function BottomTabBar() {
 /* ── Screen ─────────────────────────────────────────────────── */
 export default function SeedCodeScreenNew() {
   const { t } = useFmLocale();
-  const { phase } = useAppSession();
+  const { phase, errorMessage } = useAppSession();
   // Start with empty words so we never flash fake default seed behind the blur overlay
   const [words, setWords] = useState<readonly string[]>([]);
   const [seedMode, setSeedMode] = useState<string | null>(
     // When no API is available, fall back to static env seed words
     hasApiBase() ? null : "legacy_env",
   );
+  /** См. `SeedUnavailableReason` в ответе GET /wallet/seed. */
+  const [serverReason, setServerReason] = useState<string | undefined>(undefined);
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
@@ -98,27 +120,35 @@ export default function SeedCodeScreenNew() {
       setSeedMode("legacy_env");
       return;
     }
+    if (phase === "error") {
+      setSeedMode("session_error");
+      setServerReason(undefined);
+      return;
+    }
     if (phase !== "ready") return;
 
     void fetchWalletSeed().then((payload) => {
       if (!payload) {
         setSeedMode("fetch_error");
+        setServerReason(undefined);
         return;
       }
+      setServerReason(payload.reason);
       setSeedMode(payload.mode);
-      if (payload.words.length === 12 || payload.words.length === 24) {
+      if (payload.words.length > 0) {
         setWords(payload.words);
       }
     });
   }, [phase]);
 
-  // null = still loading from API
+  // null = still loading from API (or session not ready)
   const isLoading = seedMode === null;
   const showDisabledNotice =
     seedMode === "disabled" ||
     seedMode === "custodial_pk" ||
     seedMode === "legacy" ||
-    seedMode === "fetch_error";
+    seedMode === "fetch_error" ||
+    seedMode === "session_error";
 
   return (
     <div className={s.screen} aria-label={t("seed.title")}>
@@ -149,15 +179,23 @@ export default function SeedCodeScreenNew() {
 
         {/* No seed available for this account type */}
         {!isLoading && showDisabledNotice && (
-          <p className={s.lead} style={{ opacity: 0.6 }}>
-            {seedMode === "fetch_error"
-              ? t("seed.fetchError")
-              : seedMode === "custodial_pk"
-                ? "This wallet uses a custodial private key. Seed phrase is not available."
-                : seedMode === "legacy"
-                  ? t("seed.legacyHint")
-                  : "Seed phrase is not available for this account."}
-          </p>
+          <div className={s.lead} style={{ opacity: 0.85 }}>
+            <p style={{ margin: 0 }}>
+              {(() => {
+                if (seedMode === "session_error") return t("seed.unavailableSession");
+                if (seedMode === "fetch_error") return t("seed.fetchError");
+                const byReason = reasonToMessageKey(serverReason);
+                if (byReason) return t(byReason);
+                if (seedMode === "legacy") return t("seed.legacyHint");
+                if (seedMode === "disabled") return t("seed.unavailableFeatureOff");
+                if (seedMode === "custodial_pk") return t("seed.unavailableCustodial");
+                return t("seed.unavailableFeatureOff");
+              })()}
+            </p>
+            {seedMode === "session_error" && errorMessage ? (
+              <p style={{ margin: "0.75rem 0 0", fontSize: "0.85em", opacity: 0.75 }}>{errorMessage}</p>
+            ) : null}
+          </div>
         )}
 
         {/* Real seed words — only shown after API confirms they exist */}

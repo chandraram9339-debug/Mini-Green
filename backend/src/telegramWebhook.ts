@@ -13,19 +13,23 @@ import { ensureUser, setUserBotBlockedByTg, touchUserLastActiveByTg } from "./re
  */
 export function registerTelegramWebhook(app: express.Express) {
   app.post("/hooks/telegram", async (req, res) => {
+    const tr = String((res as { locals: { traceId?: string } }).locals?.traceId ?? "tg");
     if (!config.telegramWebhookSecret) {
+      logEvent(tr, "telegram.webhook_secret_missing_503", {});
       res.status(503).json({ error: "TELEGRAM_WEBHOOK_SECRET not set" });
       return;
     }
     const s = String(req.query.secret ?? "");
     if (s !== config.telegramWebhookSecret) {
+      logEvent(tr, "telegram.webhook_unauthorized_401", {
+        hasQuerySecret: s.length > 0
+      });
       res.status(401).json({ error: "unauthorized" });
       return;
     }
-    const tr = String(res.locals.traceId ?? "tg");
     const db = getDb();
     const j = req.body as {
-      message?: { from?: { id?: number }; text?: string };
+      message?: { from?: { id?: number }; chat?: { id?: number; type?: string }; text?: string };
       my_chat_member?: {
         chat?: { id?: number; type?: string };
         new_chat_member?: { status?: string };
@@ -35,7 +39,8 @@ export function registerTelegramWebhook(app: express.Express) {
     if (j?.message?.from?.id != null) {
       const uid = String(j.message.from.id);
       const t = (j.message.text ?? "").trim();
-      const isStart = t === "/start" || t.toLowerCase().startsWith("/start ");
+      const tNorm = t.toLowerCase();
+      const isStart = tNorm === "/start" || tNorm.startsWith("/start ");
       if (isStart) {
         const inviter = parseInviterTgFromStartMessage(t);
         try {
@@ -62,7 +67,10 @@ export function registerTelegramWebhook(app: express.Express) {
         const channelUrl = String(map["content_channel_url"] ?? "").trim() || null;
         const chatUrl = String(map["content_chat_url"] ?? "").trim() || null;
         const welcomeText = String(map["content_telegram_welcome_text"] ?? "").trim() || null;
-        const chatId = j.message!.from!.id!;
+        const fromId = j.message!.from!.id!;
+        const chatRaw = j.message?.chat?.id;
+        const chatId =
+          chatRaw != null && !Number.isNaN(Number(chatRaw)) ? Number(chatRaw) : fromId;
         sendTelegramStartWelcome(config, chatId, {
           webAppHttpsUrl: webAppUrl,
           channelUrl,

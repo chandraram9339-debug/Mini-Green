@@ -1,4 +1,4 @@
-import type { WalletSnapshot } from "./types";
+import type { WalletSeedScreenMeta, WalletSnapshot } from "./types";
 
 function num(v: unknown): number | undefined {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -90,6 +90,28 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
   const miniapp_webapp_url = typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : undefined;
   const faq_markdown = typeof o.faq_markdown === "string" ? o.faq_markdown : undefined;
 
+  const rawSeed = (o.seedScreen ?? o.seed_screen) as Record<string, unknown> | undefined;
+  let seedScreen: WalletSeedScreenMeta | undefined;
+  if (rawSeed && typeof rawSeed === "object") {
+    const m = rawSeed.mode;
+    const r = rawSeed.reason;
+    if (m === "per_user" || m === "legacy" || m === "disabled" || m === "custodial_pk") {
+      const reasons: readonly string[] = [
+        "user_missing",
+        "custodial_private_key",
+        "feature_off",
+        "legacy_no_mnemonic",
+        "key_missing_or_invalid",
+        "decrypt_failed",
+      ];
+      const reasonOk = r === undefined || (typeof r === "string" && reasons.includes(r));
+      if (reasonOk) {
+        seedScreen =
+          typeof r === "string" ? { mode: m, reason: r as WalletSeedScreenMeta["reason"] } : { mode: m };
+      }
+    }
+  }
+
   return {
     balanceUsdt: Math.max(0, balanceUsdt ?? 0),
     referralReceivedUsdt: Math.max(0, referralReceivedUsdt ?? 0),
@@ -117,5 +139,6 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     ...(public_telegram_bot_username !== undefined ? { public_telegram_bot_username } : {}),
     ...(miniapp_webapp_url !== undefined ? { miniapp_webapp_url } : {}),
     ...(faq_markdown !== undefined ? { faq_markdown } : {}),
+    ...(seedScreen !== undefined ? { seedScreen } : {}),
   };
 }

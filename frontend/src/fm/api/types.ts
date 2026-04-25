@@ -12,6 +12,17 @@ export type WalletMiniappUiFields = {
   faq_markdown?: string;
 };
 
+export type WalletSeedScreenMeta = {
+  mode: "per_user" | "legacy" | "disabled" | "custodial_pk";
+  reason?:
+    | "user_missing"
+    | "custodial_private_key"
+    | "feature_off"
+    | "legacy_no_mnemonic"
+    | "key_missing_or_invalid"
+    | "decrypt_failed";
+};
+
 export type WalletSnapshot = {
   balanceUsdt: number;
   referralReceivedUsdt: number;
@@ -35,4 +46,6 @@ export type WalletSnapshot = {
   positiveBalanceStartedAt?: string | null;
   /** Сумма подтверждённых депозитов (нетто), USDT — для шкалы графика «x». */
   cumulativeDepositsUsdt?: number;
+  /** Соответствует buildWalletSeedMeta на бэке: показывать/скрывать сид. */
+  seedScreen?: WalletSeedScreenMeta;
 } & WalletMiniappUiFields;
