@@ -1,15 +1,6 @@
 import type { AppConfig } from "../config.js";
 import { logEvent } from "../httpEnvelope.js";
 
-/** href в Telegram HTML: & и кавычки */
-function escapeHtmlAttr(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
-}
-
-function escapeHtmlText(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function normalizeExternalUrl(raw: string | null | undefined): string | null {
   let u = String(raw ?? "").trim();
   if (!u) return null;
@@ -88,7 +79,21 @@ export function sendTelegramStartWelcome(
   const chatU = normalizeExternalUrl(links.chatUrl);
 
   const customWelcome = String(links.welcomeText ?? "").trim();
-
+  /** Дефолт, если в Admin → Контент пусто (`content_telegram_welcome_text`). Кнопки: App (Web App) + Channel + Chat. */
+  const defaultLines = [
+    "🔥 Welcome to PALLADIUM AI",
+    "",
+    "The next generation of AI-powered trading.",
+    "",
+    "Autonomous. Secure. AI-powered.",
+    "",
+    "Jump in here:",
+    "📲 App",
+    "📢 Channel",
+    "💬 Chat",
+    "",
+    "Tap Launch and join the community"
+  ];
   const hints: string[] = [];
   if (!urlOk) {
     hints.push(
@@ -101,44 +106,11 @@ export function sendTelegramStartWelcome(
   if (!channelU && !chatU) {
     hints.push("", "Set Channel and Chat links in Admin → Content.");
   }
-
-  type ParseMode = "HTML" | undefined;
-  let parseMode: ParseMode;
   let text: string;
   if (customWelcome) {
-    parseMode = undefined;
     text = customWelcome + (hints.length ? `\n${hints.join("\n")}` : "");
   } else {
-    /** Дефолт: ссылки <a> (те же URL, что в inline-кнопках и в Admin / миграциях). */
-    parseMode = "HTML";
-    const line = (label: string, u: string | null): string => {
-      if (u) return `<a href="${escapeHtmlAttr(u)}">${label}</a>`;
-      return label;
-    };
-    const appLine = line("📲 App", urlOk ? webRaw : null);
-    const chLine = line("📢 Channel", channelU);
-    const chtLine = line("💬 Chat", chatU);
-    const cta = urlOk
-      ? `<a href="${escapeHtmlAttr(webRaw)}">Tap Launch and join the community</a>`
-      : "Tap Launch and join the community";
-    const body = [
-      "🔥 Welcome to PALLADIUM AI",
-      "",
-      "The next generation of AI-powered trading.",
-      "",
-      "Autonomous. Secure. AI-powered.",
-      "",
-      "Jump in here:",
-      appLine,
-      chLine,
-      chtLine,
-      "",
-      cta
-    ];
-    const hintSuffix = hints.length
-      ? "\n" + hints.map((h) => (h.length ? escapeHtmlText(h) : "")).join("\n")
-      : "";
-    text = body.join("\n") + hintSuffix;
+    text = [...defaultLines, ...hints].join("\n");
   }
 
   type IkBtn =
@@ -159,7 +131,6 @@ export function sendTelegramStartWelcome(
     text,
     disable_web_page_preview: true
   };
-  if (parseMode) payload.parse_mode = parseMode;
   if (rows.length) {
     payload.reply_markup = { inline_keyboard: rows };
   }

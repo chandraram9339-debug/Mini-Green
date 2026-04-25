@@ -335,8 +335,6 @@ export default function BotDetailScreenNew() {
   async function applyBotState(enabled: boolean) {
     if (botSwitchLoading) return;                           // prevent double-click while API is in flight
     if (balance <= 0 && enabled) { navigate(routes.depositTopUp); return; }
-    if (enabled && isBotActive) return;                     // уже в работе — без лишнего запроса
-    if (!enabled && !isBotActive) return;                   // уже выключен
     if (!hasApiBase() || mode === "mock") { setBotRunning(enabled); return; }
     setBotSwitchLoading(true);
     try {
