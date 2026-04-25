@@ -50,6 +50,7 @@ export function mergeUiSettingsFromWallet(
         youtube_url: wallet.youtube_url,
         public_telegram_bot_username: wallet.public_telegram_bot_username,
         miniapp_webapp_url: wallet.miniapp_webapp_url,
+        faq_markdown: wallet.faq_markdown,
       } as Record<string, unknown>)
     : null;
 

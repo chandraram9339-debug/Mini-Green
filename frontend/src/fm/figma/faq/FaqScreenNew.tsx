@@ -190,13 +190,19 @@ export default function FaqScreenNew() {
   const activeNav = useActiveNav();
   const { notificationUnreadCount, uiSettings, wallet } = useAppSession();
 
-  const faqFromApi = (uiSettings?.faq_markdown ?? wallet?.faq_markdown ?? "").trim();
+  /** Первый непустой текст: ui-settings или wallet (пустая строка в одном не должна блокировать другой). */
+  const faqRaw =
+    [uiSettings?.faq_markdown, wallet?.faq_markdown]
+      .map((s) => (typeof s === "string" ? s.trim() : ""))
+      .find((s) => s.length > 0) ?? "";
   /** Как в FAQ.md / backend: если API не отдал текст — показываем тот же дефолт, не i18n из 3 блоков. */
-  const effectiveFaq = faqFromApi || FAQ_DEFAULT_PALLADIUM_MARKDOWN;
-  const sections = useMemo(
-    () => parseFaqMarkdownSections(effectiveFaq),
-    [effectiveFaq]
-  );
+  const effectiveFaq = faqRaw || FAQ_DEFAULT_PALLADIUM_MARKDOWN;
+  const sections = useMemo(() => {
+    const parsed = parseFaqMarkdownSections(effectiveFaq);
+    const ok = parsed.some((sec) => sec.items.length > 0);
+    if (ok) return parsed;
+    return parseFaqMarkdownSections(FAQ_DEFAULT_PALLADIUM_MARKDOWN);
+  }, [effectiveFaq]);
 
   const navigate = useNavigate();
   const [sectionIndex, setSectionIndex] = useState<number | null>(null);

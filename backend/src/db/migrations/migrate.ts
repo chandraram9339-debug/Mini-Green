@@ -129,6 +129,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration023FaqPalladiumV2(db, now);
   runMigration024FaqPalladiumUsingTheApp(db, now);
   runMigration025DefaultTelegramCommunityLinks(db, now);
+  runMigration026ForcePalladiumPublicLinksAndFaqIfEmpty(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -555,4 +556,34 @@ function runMigration025DefaultTelegramCommunityLinks(db: Database, now: string)
   upsertAppConfigIfBlank(db, "content_channel_url", DEFAULT_CONTENT_CHANNEL_URL, now);
   upsertAppConfigIfBlank(db, "content_support_url", DEFAULT_CONTENT_SUPPORT_URL, now);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (25, '025_default_telegram_community_links')").run();
+}
+
+function setAppConfigValue(db: Database, key: string, value: string, now: string) {
+  const ex = db.prepare("SELECT 1 as x FROM app_config WHERE key = ?").get(key) as { x: number } | undefined;
+  if (ex) {
+    db.prepare("UPDATE app_config SET value = ?, updated_at = ? WHERE key = ?").run(value, now, key);
+  } else {
+    db.prepare("INSERT INTO app_config (key, value, updated_at) VALUES (?,?,?)").run(key, value, now);
+  }
+}
+
+/**
+ * Один раз: выставляем публичные ссылки чат/канал/саппорт (перекрываем старые из админки).
+ * 025 трогала только пустые поля — на проде часто оставались устаревшие t.me/…
+ */
+function runMigration026ForcePalladiumPublicLinksAndFaqIfEmpty(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=26").get() as { ok: number } | undefined;
+  if (m) return;
+  setAppConfigValue(db, "content_chat_url", DEFAULT_CONTENT_CHAT_URL, now);
+  setAppConfigValue(db, "content_channel_url", DEFAULT_CONTENT_CHANNEL_URL, now);
+  setAppConfigValue(db, "content_support_url", DEFAULT_CONTENT_SUPPORT_URL, now);
+  const faqRow = db
+    .prepare("SELECT value FROM app_config WHERE key = ?")
+    .get("content_faq_markdown") as { value: string } | undefined;
+  if (!String(faqRow?.value ?? "").trim()) {
+    setAppConfigValue(db, "content_faq_markdown", FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
+  }
+  db
+    .prepare("INSERT INTO _migrations (id, name) VALUES (26, '026_force_palladium_public_links_faq_if_empty')")
+    .run();
 }
