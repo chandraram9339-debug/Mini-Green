@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -6,6 +6,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
 import type { MessageKey } from "../../i18n/messages";
 import { routes } from "../routes";
+import { parseFaqMarkdownSections } from "../../faq/parseFaqMarkdown";
 
 import s from "./faqScreenNew.module.css";
 
@@ -90,6 +91,39 @@ function buildFaqSections(t: TF): { id: string; heading: string; items: FaqItem[
       ],
     },
   ];
+}
+
+/** Ответ из Markdown: абзацы по пустой строке, **жирный**. */
+function FaqPlainBody({ text }: { text: string }) {
+  const paras = text
+    .replace(/\r\n/g, "\n")
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return (
+    <>
+      {paras.map((para, i) => (
+        <p key={i} className={s.faqAnswerP}>
+          {formatInlineBold(para)}
+        </p>
+      ))}
+    </>
+  );
+}
+
+function formatInlineBold(str: string): ReactNode {
+  const parts = str.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) => {
+    const m = p.match(/^\*\*([^*]+)\*\*$/);
+    if (m) {
+      return (
+        <strong key={i} className={s.faqStrong}>
+          {m[1]}
+        </strong>
+      );
+    }
+    return <Fragment key={i}>{p}</Fragment>;
+  });
 }
 
 /* ── Chevron: collapsed (blue, pointing right →) ────────────── */
@@ -229,12 +263,28 @@ function BottomTabBar({ active }: { active: string }) {
 export default function FaqScreenNew() {
   const { t } = useFmLocale();
   const activeNav = useActiveNav();
-  const { notificationUnreadCount } = useAppSession();
+  const { notificationUnreadCount, uiSettings, wallet } = useAppSession();
+
+  const faqRaw = (uiSettings?.faq_markdown ?? wallet?.faq_markdown ?? "").trim();
+  const sectionsFromServer = useMemo(
+    () => (faqRaw ? parseFaqMarkdownSections(faqRaw) : []),
+    [faqRaw]
+  );
+  const hasServerFaq = sectionsFromServer.some((sec) => sec.items.length > 0);
+
+  const faqSections = useMemo(() => buildFaqSections(t), [t]);
 
   /* Single-open accordion — same state shape as old FaqScreen */
   const [openId, setOpenId] = useState<string>("withdraw");
 
-  const faqSections = useMemo(() => buildFaqSections(t), [t]);
+  useEffect(() => {
+    if (hasServerFaq) {
+      const first = sectionsFromServer[0]?.items[0]?.id;
+      if (first) setOpenId(first);
+    } else {
+      setOpenId("withdraw");
+    }
+  }, [hasServerFaq, faqRaw, sectionsFromServer]);
 
   return (
     <div className={s.screen} aria-label={t("faq.title")}>
@@ -242,32 +292,59 @@ export default function FaqScreenNew() {
 
       <div className={s.body}>
         <div className={s.list}>
-          {faqSections.map((section) => (
-            <Fragment key={section.id}>
-              <h2 className={s.sectionHeading}>{section.heading}</h2>
+          {hasServerFaq
+            ? sectionsFromServer.map((section, si) => (
+                <Fragment key={`${section.heading}-${si}`}>
+                  <h2 className={s.sectionHeading}>{section.heading}</h2>
+                  {section.items.map((item) => {
+                    const expanded = openId === item.id;
+                    return (
+                      <article key={item.id} className={s.faqCard}>
+                        <button
+                          type="button"
+                          className={s.faqBtn}
+                          aria-expanded={expanded}
+                          onClick={() => setOpenId(expanded ? "" : item.id)}
+                        >
+                          <p className={s.faqQuestion}>{item.q}</p>
+                          {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
+                        </button>
+                        {expanded && (
+                          <div className={s.faqAnswer}>
+                            <FaqPlainBody text={item.a} />
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </Fragment>
+              ))
+            : faqSections.map((section) => (
+                <Fragment key={section.id}>
+                  <h2 className={s.sectionHeading}>{section.heading}</h2>
 
-              {section.items.map((item) => {
-                const expanded = openId === item.id;
-                return (
-                  <article key={item.id} className={s.faqCard}>
-                    <button
-                      type="button"
-                      className={s.faqBtn}
-                      aria-expanded={expanded}
-                      onClick={() => setOpenId(expanded ? "" : item.id)}
-                    >
-                      <p className={s.faqQuestion}>{item.title}</p>
-                      {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
-                    </button>
+                  {section.items.map((item) => {
+                    const expanded = openId === item.id;
+                    return (
+                      <article key={item.id} className={s.faqCard}>
+                        <button
+                          type="button"
+                          className={s.faqBtn}
+                          aria-expanded={expanded}
+                          onClick={() => setOpenId(expanded ? "" : item.id)}
+                        >
+                          <p className={s.faqQuestion}>{item.title}</p>
+                          {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
+                        </button>
 
-                    {expanded && (
-                      <div className={s.faqAnswer}>{item.body}</div>
-                    )}
-                  </article>
-                );
-              })}
-            </Fragment>
-          ))}
+                        {expanded && (
+                          <div className={s.faqAnswer}>{item.body}</div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </Fragment>
+              ))}
         </div>
       </div>
 

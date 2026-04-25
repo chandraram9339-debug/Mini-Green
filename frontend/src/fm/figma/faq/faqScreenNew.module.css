@@ -261,6 +261,21 @@
   margin-bottom: 0;
 }
 
+.faqAnswerP {
+  margin: 0 0 0.5em;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #55647b;
+  white-space: pre-wrap;
+}
+.faqAnswerP:last-child {
+  margin-bottom: 0;
+}
+.faqStrong {
+  font-weight: 600;
+  color: #192b48;
+}
+
 .faqAccent {
   color: #73c1b1;
 }

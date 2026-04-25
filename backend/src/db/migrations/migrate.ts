@@ -1,5 +1,6 @@
 import type { Database } from "better-sqlite3";
 import type { AppConfig } from "../../config.js";
+import { FAQ_DEFAULT_PALLADIUM_MARKDOWN } from "./faqDefaultPalladiumMarkdown.js";
 
 const M1 = `
 CREATE TABLE IF NOT EXISTS app_config (
@@ -122,6 +123,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration019WithdrawalIdempotency(db);
   runMigration020TradePositionsClosedAtIndex(db);
   runMigration021TelegramWelcomeText(db, now);
+  runMigration022FaqDefaultPalladium(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -466,4 +468,27 @@ function runMigration021TelegramWelcomeText(db: Database, now: string) {
   if (m) return;
   setConfigIfMissing(db, "content_telegram_welcome_text", "", now);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (21, '021_telegram_welcome_text')").run();
+}
+
+/** FAQ по умолчанию (Palladium / t.me), если админка ещё пустая. */
+function runMigration022FaqDefaultPalladium(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=22").get() as { ok: number } | undefined;
+  if (m) return;
+  const row = db.prepare("SELECT value FROM app_config WHERE key = ?").get("content_faq_markdown") as
+    | { value: string }
+    | undefined;
+  const cur = String(row?.value ?? "").trim();
+  if (!cur) {
+    const upd = db
+      .prepare("UPDATE app_config SET value = ?, updated_at = ? WHERE key = 'content_faq_markdown'")
+      .run(FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
+    if (upd.changes === 0) {
+      db.prepare("INSERT INTO app_config (key, value, updated_at) VALUES (?,?,?)").run(
+        "content_faq_markdown",
+        FAQ_DEFAULT_PALLADIUM_MARKDOWN,
+        now
+      );
+    }
+  }
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (22, '022_faq_default_palladium')").run();
 }

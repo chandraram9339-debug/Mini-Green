@@ -8,6 +8,8 @@ export type WalletMiniappUiFields = {
   youtube_url?: string;
   public_telegram_bot_username?: string;
   miniapp_webapp_url?: string;
+  /** HTML-free Markdown FAQ: ## вопрос + ответ; опционально # секция (admin). */
+  faq_markdown?: string;
 };
 
 export type WalletSnapshot = {

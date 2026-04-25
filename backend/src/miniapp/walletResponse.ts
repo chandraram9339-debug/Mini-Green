@@ -60,5 +60,7 @@ export function buildWalletForUser(userId: string) {
     youtube_url: ui.youtube_url,
     public_telegram_bot_username: ui.public_telegram_bot_username,
     miniapp_webapp_url: ui.miniapp_webapp_url,
+    /** Дублирование /wallet ↔ ui-settings (FAQ из админки). */
+    faq_markdown: ui.faq_markdown,
   };
 }

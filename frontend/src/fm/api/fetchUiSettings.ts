@@ -8,6 +8,7 @@ export type UiSettings = {
   youtube_url: string;
   public_telegram_bot_username: string;
   miniapp_webapp_url: string;
+  faq_markdown: string;
 };
 
 const UI_KEYS: (keyof UiSettings)[] = [
@@ -17,6 +18,7 @@ const UI_KEYS: (keyof UiSettings)[] = [
   "youtube_url",
   "public_telegram_bot_username",
   "miniapp_webapp_url",
+  "faq_markdown",
 ];
 
 function parseUiPayload(o: Record<string, unknown>): UiSettings {
@@ -28,6 +30,7 @@ function parseUiPayload(o: Record<string, unknown>): UiSettings {
     public_telegram_bot_username:
       typeof o.public_telegram_bot_username === "string" ? o.public_telegram_bot_username : "",
     miniapp_webapp_url: typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : "",
+    faq_markdown: typeof o.faq_markdown === "string" ? o.faq_markdown : "",
   };
 }
 

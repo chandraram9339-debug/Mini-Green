@@ -28,5 +28,6 @@ export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): Wa
     youtube_url: pickStr(b?.youtube_url, a?.youtube_url),
     public_telegram_bot_username: pickStr(b?.public_telegram_bot_username, a?.public_telegram_bot_username),
     miniapp_webapp_url: pickStr(b?.miniapp_webapp_url, a?.miniapp_webapp_url),
+    faq_markdown: pickStr(b?.faq_markdown, a?.faq_markdown),
   };
 }

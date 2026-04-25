@@ -57,6 +57,8 @@ export function buildMiniappUiLinks(db: Database, c: AppConfig, tgUserId: string
     support_url: p.support_url,
     channel_url: p.channel_url,
     youtube_url: p.youtube_url,
+    /** FAQ: Admin → Content (content_faq_markdown). */
+    faq_markdown: cfg(db, "content_faq_markdown"),
     public_telegram_bot_username: bot,
     miniapp_webapp_url: cfg(db, "content_miniapp_webapp_url"),
     referral_link: p.referral_link

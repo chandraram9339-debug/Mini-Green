@@ -83,6 +83,7 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
   const public_telegram_bot_username =
     typeof o.public_telegram_bot_username === "string" ? o.public_telegram_bot_username : undefined;
   const miniapp_webapp_url = typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : undefined;
+  const faq_markdown = typeof o.faq_markdown === "string" ? o.faq_markdown : undefined;
 
   return {
     balanceUsdt: Math.max(0, balanceUsdt ?? 0),
@@ -104,5 +105,6 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     ...(youtube_url !== undefined ? { youtube_url } : {}),
     ...(public_telegram_bot_username !== undefined ? { public_telegram_bot_username } : {}),
     ...(miniapp_webapp_url !== undefined ? { miniapp_webapp_url } : {}),
+    ...(faq_markdown !== undefined ? { faq_markdown } : {}),
   };
 }
