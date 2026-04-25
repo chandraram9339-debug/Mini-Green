@@ -33,6 +33,14 @@ function refBps(fees: FeeSnapshot) {
 }
 
 /**
+ * Реферер: `referralPercentBps` от **gross** (сумма входящего TRC20), не от `net` после fee депозита.
+ * Итог: `addBalance(inviter, pay)` + запись `referral_payouts` (idempotent `from_deposit_id`).
+ */
+function inviterReferralPayMinor(grossMinor: number, fees: FeeSnapshot) {
+  return Math.floor((grossMinor * refBps(fees)) / 10_000);
+}
+
+/**
  * Idempotent: same idempotency_key will not double-credit.
  */
 export function applyDepositNet(
@@ -95,7 +103,7 @@ export function applyDepositNet(
       if (isReferralDepositCovered(n, fees.referralDepositRule)) {
         const invI = getInviterId(db, u2.inviter_tg_id);
         if (invI != null) {
-          const pay = Math.floor((netMinor * refBps(fees)) / 10_000);
+          const pay = inviterReferralPayMinor(grossMinor, fees);
           if (pay > 0) {
             const exR = db
               .prepare("SELECT 1 as x FROM referral_payouts WHERE from_deposit_id = ?")
@@ -105,6 +113,23 @@ export function applyDepositNet(
               db.prepare(
                 "INSERT INTO referral_payouts (from_user_id, to_user_id, from_deposit_id, amount_usdt_minor, created_at) VALUES (?,?,?,?,?)"
               ).run(u2.id, invI, id, pay, now);
+              const payStr = (pay / 100).toFixed(2);
+              insertUserNotification(db, {
+                user_id: invI,
+                kind: "deposit",
+                variant: "success",
+                message: `Referral reward: +${payStr} USDT`,
+                source_id: `ref:${id}`,
+                created_at: now,
+              });
+              logEvent(trace, "central.referral_payout", {
+                inviter_user_id: invI,
+                from_user_id: u2.id,
+                from_deposit_id: id,
+                pay_minor: pay,
+                gross_minor: grossMinor,
+                bps: refBps(fees),
+              });
             }
           }
         }

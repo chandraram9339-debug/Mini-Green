@@ -133,6 +133,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration027RestoreShortFaqOriginal(db, now);
   runMigration028FaqSyncToBundledMarkdown(db, now);
   runMigration029PalladiumFeePolicy7AndPercents(db, now);
+  runMigration030ReferralPercent8Percent(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -623,5 +624,15 @@ function runMigration029PalladiumFeePolicy7AndPercents(db: Database, now: string
   setAppConfigValue(db, "withdraw_fee_bps", "1900", now);
   db
     .prepare("INSERT INTO _migrations (id, name) VALUES (29, '029_palladium_fee_policy_7_9_19')")
+    .run();
+}
+
+/** Реферальный процент по умолчанию: 8% (800 bps). */
+function runMigration030ReferralPercent8Percent(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=30").get() as { ok: number } | undefined;
+  if (m) return;
+  setAppConfigValue(db, "referral_percent_bps", "800", now);
+  db
+    .prepare("INSERT INTO _migrations (id, name) VALUES (30, '030_referral_percent_8_percent')")
     .run();
 }

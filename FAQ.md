@@ -138,7 +138,7 @@ Yes, through the project **Chat** and community, subject to their rules and mode
 
 ## Do you offer referral bonuses?
 
-Yes. A typical configuration mentions a **percentage** of referral activity (e.g. **5%** from qualifying referral deposits; **the exact value is set by the operator** and may appear in the app — check **Home** and **Settings**). Referral contests may run separately; see announcements in the **Channel**.
+Yes. A typical configuration mentions a **percentage** of referral activity (e.g. **8%** of the **gross** incoming **USDT TRC20** sum on each **qualifying referral deposit** — before the platform’s own deposit fee; **the exact value is set by the operator** and may appear in the app — check **Home** and **Settings**). Referral contests may run separately; see announcements in the **Channel**.
 
 ## Are there contests or promotions?
 
@@ -233,9 +233,9 @@ From Telegram, open the official bot **@palladium_trade_bot** and use the **Mini
 
 The minimum withdrawal amount is **7 USDT** under the default policy — **always confirm the live number** on the **Withdraw** form and fee line.
 
-## Is the referral percent fixed at 5%?
+## Is the referral percent fixed at 8%?
 
-Not necessarily. A **5%** figure appears in public FAQ as an example. The **authoritative** value is the one configured in the **admin / backend** and reflected on **Home** and referral flows.
+Not necessarily. An **8%** figure appears in public FAQ as an example. The **authoritative** value is the one configured in the **admin / backend** and reflected on **Home** and referral flows.
 
 # Profit
 

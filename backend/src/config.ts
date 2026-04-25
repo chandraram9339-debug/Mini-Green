@@ -31,7 +31,7 @@ export type AppConfig = {
   depositFeeBps: number;
   /** Min deposit to accept pipeline (X in ТЗ) */
   minDepositUsdtHuman: number;
-  /** Referral % in bps (e.g. 500 = 5%) */
+  /** Referral % in bps (e.g. 800 = 8%) */
   referralPercentBps: number;
   /** "all" or "1,2,3" — which deposit numbers pay referral (1st, 2nd, …) */
   referralDepositRule: string;
@@ -161,7 +161,7 @@ export const config: AppConfig = {
   depositFeeFixedUsdtHuman: numEnv("DEPOSIT_FEE_FIXED_USDT", 7),
   depositFeeBps: numEnv("DEPOSIT_FEE_BPS", 900),
   minDepositUsdtHuman: numEnv("MIN_DEPOSIT_USDT", 7),
-  referralPercentBps: numEnv("REFERRAL_PERCENT_BPS", 500),
+  referralPercentBps: numEnv("REFERRAL_PERCENT_BPS", 800),
   referralDepositRule: strEnv("REFERRAL_DEPOSIT_COUNTS", "all"),
   jwtSecret: strEnv("JWT_SECRET", "dev-only-insecure-jwt-do-not-use-in-prod"),
   jwtAccessTtlSec: numEnv("JWT_ACCESS_TTL_SEC", 7 * 24 * 60 * 60),
