@@ -128,6 +128,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration022FaqDefaultPalladium(db, now);
   runMigration023FaqPalladiumV2(db, now);
   runMigration024FaqPalladiumUsingTheApp(db, now);
+  runMigration025DefaultTelegramCommunityLinks(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -527,4 +528,31 @@ function runMigration024FaqPalladiumUsingTheApp(db: Database, now: string) {
       .run(FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
   }
   db.prepare("INSERT INTO _migrations (id, name) VALUES (24, '024_faq_palladium_using_the_app')").run();
+}
+
+/** Дефолтные ссылки чат / канал / саппорт (t.me), если в БД пусто — и для /start, и для wallet/ui-settings. */
+const DEFAULT_CONTENT_CHAT_URL = "https://t.me/+AlYHO2dN2-MyZWE0";
+const DEFAULT_CONTENT_CHANNEL_URL = "https://t.me/+yX2EPnQ5rHxkMmM0";
+const DEFAULT_CONTENT_SUPPORT_URL = "https://t.me/palladium_trade_support";
+
+function upsertAppConfigIfBlank(db: Database, key: string, value: string, now: string) {
+  const row = db.prepare("SELECT value FROM app_config WHERE key = ?").get(key) as
+    | { value: string }
+    | undefined;
+  if (!row) {
+    db.prepare("INSERT INTO app_config (key, value, updated_at) VALUES (?,?,?)").run(key, value, now);
+    return;
+  }
+  if (!String(row.value ?? "").trim()) {
+    db.prepare("UPDATE app_config SET value = ?, updated_at = ? WHERE key = ?").run(value, now, key);
+  }
+}
+
+function runMigration025DefaultTelegramCommunityLinks(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=25").get() as { ok: number } | undefined;
+  if (m) return;
+  upsertAppConfigIfBlank(db, "content_chat_url", DEFAULT_CONTENT_CHAT_URL, now);
+  upsertAppConfigIfBlank(db, "content_channel_url", DEFAULT_CONTENT_CHANNEL_URL, now);
+  upsertAppConfigIfBlank(db, "content_support_url", DEFAULT_CONTENT_SUPPORT_URL, now);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (25, '025_default_telegram_community_links')").run();
 }

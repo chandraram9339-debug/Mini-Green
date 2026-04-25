@@ -3,10 +3,15 @@ const normalizeUrl = (value: string | undefined, fallback = "TODO"): string => {
   return trimmed && trimmed.length > 0 ? trimmed : fallback;
 };
 
-export const CHANNEL_URL = normalizeUrl(import.meta.env.VITE_CHANNEL_URL);
-export const CHAT_URL = normalizeUrl(import.meta.env.VITE_CHAT_URL);
+/** Как `fm/config/links` — инвайты + саппорт, если VITE_* не заданы */
+const DEFAULT_CHANNEL_URL = "https://t.me/+yX2EPnQ5rHxkMmM0";
+const DEFAULT_CHAT_URL = "https://t.me/+AlYHO2dN2-MyZWE0";
+const DEFAULT_SUPPORT_URL = "https://t.me/palladium_trade_support";
+
+export const CHANNEL_URL = normalizeUrl(import.meta.env.VITE_CHANNEL_URL, DEFAULT_CHANNEL_URL);
+export const CHAT_URL = normalizeUrl(import.meta.env.VITE_CHAT_URL, DEFAULT_CHAT_URL);
 export const YOUTUBE_URL = normalizeUrl(import.meta.env.VITE_YOUTUBE_URL);
-export const SUPPORT_URL = normalizeUrl(import.meta.env.VITE_SUPPORT_URL);
+export const SUPPORT_URL = normalizeUrl(import.meta.env.VITE_SUPPORT_URL, DEFAULT_SUPPORT_URL);
 export const REFERRAL_URL = normalizeUrl(import.meta.env.VITE_REFERRAL_URL);
 
 export const DASHBOARD_EXTERNAL_LINKS = {

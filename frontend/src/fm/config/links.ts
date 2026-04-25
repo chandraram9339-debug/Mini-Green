@@ -2,12 +2,12 @@
 export const TELEGRAM_REFERRAL_LINK =
   import.meta.env.VITE_TELEGRAM_REFERRAL_LINK ?? "https://t.me/";
 
-/** ТЗ экран 1 — Channel / Chat на дашборде */
+/** Инвайты сообщества (fallback, если в API / админке пусто) */
 export const TELEGRAM_CHANNEL_URL =
-  import.meta.env.VITE_TELEGRAM_CHANNEL_URL ?? "https://t.me/telegram";
+  import.meta.env.VITE_TELEGRAM_CHANNEL_URL ?? "https://t.me/+yX2EPnQ5rHxkMmM0";
 
 export const TELEGRAM_CHAT_URL =
-  import.meta.env.VITE_TELEGRAM_CHAT_URL ?? "https://t.me/telegram";
+  import.meta.env.VITE_TELEGRAM_CHAT_URL ?? "https://t.me/+AlYHO2dN2-MyZWE0";
 
 /** FAQ и Support — контакты саппорта (fallback, если в админке / wallet пусто) */
 export const SUPPORT_TELEGRAM_URL =
