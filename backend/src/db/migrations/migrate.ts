@@ -130,6 +130,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration024FaqPalladiumUsingTheApp(db, now);
   runMigration025DefaultTelegramCommunityLinks(db, now);
   runMigration026ForcePalladiumPublicLinksAndFaqIfEmpty(db, now);
+  runMigration027RestoreShortFaqOriginal(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -585,5 +586,15 @@ function runMigration026ForcePalladiumPublicLinksAndFaqIfEmpty(db: Database, now
   }
   db
     .prepare("INSERT INTO _migrations (id, name) VALUES (26, '026_force_palladium_public_links_faq_if_empty')")
+    .run();
+}
+
+/** Вернуть FAQ к короткому исходнику (3 раздела, как до длинного FAQ.md) — `content_faq_markdown` = бандл. */
+function runMigration027RestoreShortFaqOriginal(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=27").get() as { ok: number } | undefined;
+  if (m) return;
+  setAppConfigValue(db, "content_faq_markdown", FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
+  db
+    .prepare("INSERT INTO _migrations (id, name) VALUES (27, '027_restore_short_faq_original')")
     .run();
 }
