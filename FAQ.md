@@ -28,6 +28,44 @@ Palladium runs as a centralized AI engine with autonomous execution.
 
 No. **Palladium** is available as a **Telegram Mini App** (open it via the official bot: **@palladium_trade_bot**).
 
+# Using the app
+
+## How is the mini app organized?
+
+The **bottom tab bar** has **Home**, **Wallet**, **Bot** (Trading), and **Support**. **FAQ** is opened from **Support** (and often from **Settings**). **Settings** is opened from the **gear** icon in the app bar on supported screens.
+
+## What can I do on Home?
+
+**Home** shows balances, **bot status**, performance **charts**, shortcuts like **Top up**, **Withdraw**, and **Referrals**, and at the bottom **Channel** and **Chat** (links come from **admin / content**).
+
+## How do Wallet and Top up work?
+
+Use **Wallet** to open **Top up**, copy your **USDT TRC20** deposit address, and review balance-related entry points. Labels may vary slightly by app version.
+
+## How does withdrawal work in the UI?
+
+Withdrawal is a **multi-step** flow: **Withdraw** → enter a valid **USDT TRC20** **recipient** → **amount** → **confirm** → **done**. Always read **fees**, **minimums**, and **available** balance on each step.
+
+## What is the Bot (Trading) screen?
+
+The **Bot** tab shows a **performance chart**, **period tabs** (**24 h**, **7 d**, **30 d**, **All**), **statistics** for the selected period, and the **trading journal** (list of trades). Where the UI offers it, you can **filter** the feed by result (**all / profit / loss**). **Start** / **Stop** (or status) controls participation according to **server rules** and your balance.
+
+## Where are referrals and my link?
+
+See the **Referrals** line on **Home**, the **Wallet / Referral** entry where present, and **Settings** → **Referral link** to **copy and share** your personal URL.
+
+## What is in Settings?
+
+**Settings** can include: **interface language** (e.g. English / Spanish), **push notifications** and **vibration**, **Referral link**, **User agreement**, and entry to **FAQ** / support-related links. If **Seed code** is shown, treat it as **sensitive backup data** — store it **offline** and **never** share it (availability depends on server configuration).
+
+## Where are in-app notifications?
+
+The **bell** in the app bar opens **Notifications** for recent in-app / system messages when the deployment supports the feed.
+
+## What is the Social / Social media screen?
+
+**Social** (or **Social media**) shows **extra** links (for example YouTube) configured in the **admin / content** panel. It **adds to** the **Channel** and **Chat** buttons on **Home**; it is not a replacement for them.
+
 # Doubts & Fears
 
 ## Isn’t this too good to be true?
@@ -106,7 +144,7 @@ The project has described referral contests and prize pools. Follow the official
 
 ## How do I know the bot is trading?
 
-In the app: **trading / bot** sections, the **trading journal**, statistics for selected periods, and (where enabled) the engine feed. Exact labels depend on your app version and configuration.
+Open the **Bot** tab: check **active / inactive** status, the **chart**, switch **24 h / 7 d / 30 d / All** for **stats** and the **trading journal**; optional **engine** integration depends on server configuration. Same layout as in **Using the app → Bot (Trading) screen** above.
 
 ## Can I see the trades?
 

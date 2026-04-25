@@ -2,6 +2,7 @@ import type { Database } from "better-sqlite3";
 import type { AppConfig } from "../../config.js";
 import { FAQ_DEFAULT_PALLADIUM_MARKDOWN } from "./faqDefaultPalladiumMarkdown.js";
 import { FAQ_DEFAULT_PALLADIUM_V1 } from "./faqDefaultPalladiumV1ForMigration.js";
+import { FAQ_MARKDOWN_SNAPSHOT_PRE_024 } from "./faqContentBefore024Snapshot.js";
 
 const M1 = `
 CREATE TABLE IF NOT EXISTS app_config (
@@ -126,6 +127,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration021TelegramWelcomeText(db, now);
   runMigration022FaqDefaultPalladium(db, now);
   runMigration023FaqPalladiumV2(db, now);
+  runMigration024FaqPalladiumUsingTheApp(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -509,4 +511,20 @@ function runMigration023FaqPalladiumV2(db: Database, now: string) {
       .run(FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
   }
   db.prepare("INSERT INTO _migrations (id, name) VALUES (23, '023_faq_palladium_v2')").run();
+}
+
+/** FAQ v2 (полный) → v3: раздел «Using the app»; только если в БД байт-в-байт снимок pre-024. */
+function runMigration024FaqPalladiumUsingTheApp(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=24").get() as { ok: number } | undefined;
+  if (m) return;
+  const row = db.prepare("SELECT value FROM app_config WHERE key = ?").get("content_faq_markdown") as
+    | { value: string }
+    | undefined;
+  const cur = String(row?.value ?? "");
+  if (cur === FAQ_MARKDOWN_SNAPSHOT_PRE_024) {
+    db
+      .prepare("UPDATE app_config SET value = ?, updated_at = ? WHERE key = 'content_faq_markdown'")
+      .run(FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
+  }
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (24, '024_faq_palladium_using_the_app')").run();
 }
