@@ -181,7 +181,8 @@ export const config: AppConfig = {
   tronFeeLimitSun: numEnv("TRON_FEE_LIMIT_SUN", 80_000_000),
   stubDepositGrossUsdt: numEnv("STUB_DEPOSIT_GROSS_USDT", 100),
   adminApiKey: strEnv("ADMIN_API_KEY", ""),
-  telegramWebhookSecret: strEnv("TELEGRAM_WEBHOOK_SECRET", ""),
+  /** Trailing spaces / CRLF in .env would otherwise break match with `X-Telegram-Bot-Api-Secret-Token`. */
+  telegramWebhookSecret: strEnv("TELEGRAM_WEBHOOK_SECRET", "").trim().replace(/\r$/, ""),
   publicTelegramBotUsername: strEnv("PUBLIC_TELEGRAM_BOT_USERNAME", "").replace(/^@/, "").trim(),
   withdrawAutoApprove: strEnv("WITHDRAW_AUTO_APPROVE", "0") === "1",
   metaPixelId: strEnv("META_PIXEL_ID", ""),
