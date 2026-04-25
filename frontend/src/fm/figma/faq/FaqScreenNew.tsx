@@ -151,14 +151,13 @@ function ChevronExpanded() {
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
-function AppBar({ title, bellCount }: { title: string; bellCount: number }) {
-  const navigate = useNavigate();
+function AppBar({ title, bellCount, onBack }: { title: string; bellCount: number; onBack: () => void }) {
   return (
     <header className={s.appBar}>
       <div className={s.appBarRow}>
         <button
           className={s.appBarBack}
-          onClick={() => navigate(routes.support)}
+          onClick={onBack}
           aria-label="Back"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -275,76 +274,106 @@ export default function FaqScreenNew() {
   const faqSections = useMemo(() => buildFaqSections(t), [t]);
 
   /* Single-open accordion — same state shape as old FaqScreen */
+  const navigate = useNavigate();
+  const [sectionIndex, setSectionIndex] = useState<number | null>(null);
   const [openId, setOpenId] = useState<string>("withdraw");
 
+  const sectionList: { key: string; heading: string }[] = hasServerFaq
+    ? sectionsFromServer.map((sec, i) => ({ key: `srv-${i}-${sec.heading}`, heading: sec.heading }))
+    : faqSections.map((sec) => ({ key: sec.id, heading: sec.heading }));
+
   useEffect(() => {
+    setSectionIndex(null);
+  }, [hasServerFaq, faqRaw, sectionsFromServer, t]);
+
+  useEffect(() => {
+    if (sectionIndex === null) return;
     if (hasServerFaq) {
-      const first = sectionsFromServer[0]?.items[0]?.id;
+      const first = sectionsFromServer[sectionIndex]?.items[0]?.id;
       if (first) setOpenId(first);
     } else {
-      setOpenId("withdraw");
+      const first = faqSections[sectionIndex]?.items[0]?.id;
+      if (first) setOpenId(first);
     }
-  }, [hasServerFaq, faqRaw, sectionsFromServer]);
+  }, [sectionIndex, hasServerFaq, sectionsFromServer, faqSections]);
+
+  const atSectionList = sectionIndex === null;
+  const appBarTitle = atSectionList
+    ? t("faq.title")
+    : (hasServerFaq
+        ? sectionsFromServer[sectionIndex]?.heading
+        : faqSections[sectionIndex]?.heading) ?? t("faq.title");
+
+  const onAppBarBack = () => {
+    if (atSectionList) navigate(routes.support);
+    else setSectionIndex(null);
+  };
 
   return (
     <div className={s.screen} aria-label={t("faq.title")}>
-      <AppBar title={t("faq.title")} bellCount={notificationUnreadCount} />
+      <AppBar title={appBarTitle} bellCount={notificationUnreadCount} onBack={onAppBarBack} />
 
       <div className={s.body}>
         <div className={s.list}>
-          {hasServerFaq
-            ? sectionsFromServer.map((section, si) => (
-                <Fragment key={`${section.heading}-${si}`}>
-                  <h2 className={s.sectionHeading}>{section.heading}</h2>
-                  {section.items.map((item) => {
-                    const expanded = openId === item.id;
-                    return (
-                      <article key={item.id} className={s.faqCard}>
-                        <button
-                          type="button"
-                          className={s.faqBtn}
-                          aria-expanded={expanded}
-                          onClick={() => setOpenId(expanded ? "" : item.id)}
-                        >
-                          <p className={s.faqQuestion}>{item.q}</p>
-                          {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
-                        </button>
-                        {expanded && (
-                          <div className={s.faqAnswer}>
-                            <FaqPlainBody text={item.a} />
-                          </div>
-                        )}
-                      </article>
-                    );
-                  })}
-                </Fragment>
-              ))
-            : faqSections.map((section) => (
-                <Fragment key={section.id}>
-                  <h2 className={s.sectionHeading}>{section.heading}</h2>
+          {atSectionList &&
+            sectionList.map((row, si) => (
+              <article key={row.key} className={s.faqCard}>
+                <button
+                  type="button"
+                  className={s.faqBtn}
+                  onClick={() => setSectionIndex(si)}
+                >
+                  <p className={s.faqQuestion}>{row.heading}</p>
+                  <ChevronCollapsed />
+                </button>
+              </article>
+            ))}
 
-                  {section.items.map((item) => {
-                    const expanded = openId === item.id;
-                    return (
-                      <article key={item.id} className={s.faqCard}>
-                        <button
-                          type="button"
-                          className={s.faqBtn}
-                          aria-expanded={expanded}
-                          onClick={() => setOpenId(expanded ? "" : item.id)}
-                        >
-                          <p className={s.faqQuestion}>{item.title}</p>
-                          {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
-                        </button>
+          {!atSectionList &&
+            hasServerFaq &&
+            sectionsFromServer[sectionIndex!]?.items.map((item) => {
+              const expanded = openId === item.id;
+              return (
+                <article key={item.id} className={s.faqCard}>
+                  <button
+                    type="button"
+                    className={s.faqBtn}
+                    aria-expanded={expanded}
+                    onClick={() => setOpenId(expanded ? "" : item.id)}
+                  >
+                    <p className={s.faqQuestion}>{item.q}</p>
+                    {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
+                  </button>
+                  {expanded && (
+                    <div className={s.faqAnswer}>
+                      <FaqPlainBody text={item.a} />
+                    </div>
+                  )}
+                </article>
+              );
+            })}
 
-                        {expanded && (
-                          <div className={s.faqAnswer}>{item.body}</div>
-                        )}
-                      </article>
-                    );
-                  })}
-                </Fragment>
-              ))}
+          {!atSectionList &&
+            !hasServerFaq &&
+            faqSections[sectionIndex!]?.items.map((item) => {
+              const expanded = openId === item.id;
+              return (
+                <article key={item.id} className={s.faqCard}>
+                  <button
+                    type="button"
+                    className={s.faqBtn}
+                    aria-expanded={expanded}
+                    onClick={() => setOpenId(expanded ? "" : item.id)}
+                  >
+                    <p className={s.faqQuestion}>{item.title}</p>
+                    {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
+                  </button>
+                  {expanded && (
+                    <div className={s.faqAnswer}>{item.body}</div>
+                  )}
+                </article>
+              );
+            })}
         </div>
       </div>
 
