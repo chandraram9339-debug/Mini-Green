@@ -9,6 +9,20 @@ import { sendTelegramStartWelcome } from "./integrations/telegramBot.js";
 import { ensureUser, setUserBotBlockedByTg, touchUserLastActiveByTg } from "./repos/userRepo.js";
 
 /**
+ * Допускает оба варианта из `setWebhook`:
+ * - `?secret=...` в URL (как в примере .env);
+ * - `secret_token` в Bot API — Telegram шлёт `X-Telegram-Bot-Api-Secret-Token` (без query).
+ */
+function webhookSecretOk(req: express.Request, expected: string): boolean {
+  const fromQuery = String(req.query.secret ?? "").trim();
+  // Node lowercases all incoming header names.
+  const fromHeader = String(req.headers["x-telegram-bot-api-secret-token"] ?? "").trim();
+  if (fromQuery && fromQuery === expected) return true;
+  if (fromHeader && fromHeader === expected) return true;
+  return false;
+}
+
+/**
  * Telegram bot updates: `my_chat_member` (user blocked / re-opened private chat) and any `message` for DAU/MAU touch.
  */
 export function registerTelegramWebhook(app: express.Express) {
@@ -19,16 +33,18 @@ export function registerTelegramWebhook(app: express.Express) {
       res.status(503).json({ error: "TELEGRAM_WEBHOOK_SECRET not set" });
       return;
     }
-    const s = String(req.query.secret ?? "");
-    if (s !== config.telegramWebhookSecret) {
+    if (!webhookSecretOk(req, config.telegramWebhookSecret)) {
+      const hasH = Boolean(String(req.headers["x-telegram-bot-api-secret-token"] ?? "").trim());
       logEvent(tr, "telegram.webhook_unauthorized_401", {
-        hasQuerySecret: s.length > 0
+        hasQuerySecret: String(req.query.secret ?? "").length > 0,
+        hasHeaderSecret: hasH
       });
       res.status(401).json({ error: "unauthorized" });
       return;
     }
     const db = getDb();
     const j = req.body as {
+      update_id?: number;
       message?: { from?: { id?: number }; chat?: { id?: number; type?: string }; text?: string };
       my_chat_member?: {
         chat?: { id?: number; type?: string };
@@ -36,6 +52,17 @@ export function registerTelegramWebhook(app: express.Express) {
         old_chat_member?: { status?: string };
       };
     };
+    if (j?.update_id != null) {
+      logEvent(tr, "telegram.webhook_update", {
+        updateId: j.update_id,
+        hasMessage: j.message != null,
+        hasMyChatMember: j.my_chat_member != null
+      });
+    } else {
+      logEvent(tr, "telegram.webhook_no_update_id", {
+        bodyType: req.body == null ? "null" : typeof req.body
+      });
+    }
     if (j?.message?.from?.id != null) {
       const uid = String(j.message.from.id);
       const t = (j.message.text ?? "").trim();
