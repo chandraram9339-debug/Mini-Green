@@ -111,9 +111,10 @@ export function sendTelegramStartWelcome(
   if (urlOk) {
     rows.push([{ text: "Открыть приложение", web_app: { url: webRaw } }]);
   }
+  // Порядок как на главном экране мини-аппа: слева чат, справа канал
   const secondRow: IkBtn[] = [];
-  if (channelU) secondRow.push({ text: "Канал", url: channelU });
   if (chatU) secondRow.push({ text: "Чат", url: chatU });
+  if (channelU) secondRow.push({ text: "Канал", url: channelU });
   if (secondRow.length) rows.push(secondRow);
 
   const payload: Record<string, unknown> = {

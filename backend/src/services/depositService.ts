@@ -134,8 +134,10 @@ export function applyDepositNet(
   });
   const uAfter = getUserById(db, userId);
   if (uAfter && uAfter.balance_usdt_minor > 0) {
-    const flipped = setBotTradingEnabled(db, tgUserId, true);
-    if (flipped) fireTradingEngineNotify(tgUserId, "start", trace);
+    setBotTradingEnabled(db, tgUserId, true);
+    // Всегда «start» после успешного пополнения: SIB уже пересчитан ниже; движок
+    // получает сигнал и при повторных депозитах (раньше notify шёл только если флаг менялся).
+    fireTradingEngineNotify(tgUserId, "start", trace);
   }
   sibReevaluateAfterDeposit(db, userId);
   fireSibJournalSyncHook(c, tgUserId, trace);
