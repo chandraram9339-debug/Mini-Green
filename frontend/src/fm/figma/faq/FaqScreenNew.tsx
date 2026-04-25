@@ -4,9 +4,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
-import type { MessageKey } from "../../i18n/messages";
 import { routes } from "../routes";
 import { parseFaqMarkdownSections } from "../../faq/parseFaqMarkdown";
+import { FAQ_DEFAULT_PALLADIUM_MARKDOWN } from "../../faq/faqDefaultPalladiumMarkdown";
 
 import s from "./faqScreenNew.module.css";
 
@@ -17,80 +17,6 @@ function useActiveNav() {
   if (pathname.startsWith("/balance") || pathname.startsWith("/deposit") || pathname.startsWith("/withdraw")) return "wallet";
   if (pathname.startsWith("/support") || pathname.startsWith("/faq")) return "support";
   return "home";
-}
-
-/* ── Types ────────────────────────────────────────────────────── */
-type FaqItem = { id: string; title: string; body: ReactNode };
-type TF = (key: MessageKey, vars?: Record<string, string | number>) => string;
-
-/* ── FAQ data builder (same as old FaqScreen) ────────────────── */
-function buildFaqSections(t: TF): { id: string; heading: string; items: FaqItem[] }[] {
-  return [
-    {
-      id: "balance",
-      heading: t("faq.sectionBalance"),
-      items: [
-        {
-          id: "withdraw",
-          title: t("faq.q.withdraw"),
-          body: (
-            <>
-              <p>{t("faq.a.withdraw.p1")}</p>
-              <p>{t("faq.a.withdraw.p2")}</p>
-              <p>{t("faq.a.withdraw.p3")}</p>
-              <p>
-                {t("faq.a.withdraw.attentionBefore")}
-                <span className={s.faqAccent}>{t("faq.walletTypeTrc20")}</span>
-                {t("faq.a.withdraw.attentionAfter")}
-              </p>
-              <p>
-                {t("faq.a.withdraw.minimumBefore")}
-                <span className={s.faqAccent}>{t("faq.a.withdraw.minimumAmount")}</span>
-                {t("faq.a.withdraw.minimumAfter")}
-              </p>
-            </>
-          ),
-        },
-        {
-          id: "deposit",
-          title: t("faq.q.deposit"),
-          body: <p>{t("faq.a.deposit")}</p>,
-        },
-      ],
-    },
-    {
-      id: "trading",
-      heading: t("faq.sectionTrading"),
-      items: [
-        {
-          id: "bot",
-          title: t("faq.q.howBot"),
-          body: <p>{t("faq.a.howBot")}</p>,
-        },
-        {
-          id: "fees",
-          title: t("faq.q.fees"),
-          body: <p>{t("faq.a.fees")}</p>,
-        },
-      ],
-    },
-    {
-      id: "more",
-      heading: t("faq.sectionMore"),
-      items: [
-        {
-          id: "referral",
-          title: t("faq.q.referral"),
-          body: <p>{t("faq.a.referral")}</p>,
-        },
-        {
-          id: "security",
-          title: t("faq.q.security"),
-          body: <p>{t("faq.a.security")}</p>,
-        },
-      ],
-    },
-  ];
 }
 
 /** Ответ из Markdown: абзацы по пустой строке, **жирный**. */
@@ -264,45 +190,37 @@ export default function FaqScreenNew() {
   const activeNav = useActiveNav();
   const { notificationUnreadCount, uiSettings, wallet } = useAppSession();
 
-  const faqRaw = (uiSettings?.faq_markdown ?? wallet?.faq_markdown ?? "").trim();
-  const sectionsFromServer = useMemo(
-    () => (faqRaw ? parseFaqMarkdownSections(faqRaw) : []),
-    [faqRaw]
+  const faqFromApi = (uiSettings?.faq_markdown ?? wallet?.faq_markdown ?? "").trim();
+  /** Как в FAQ.md / backend: если API не отдал текст — показываем тот же дефолт, не i18n из 3 блоков. */
+  const effectiveFaq = faqFromApi || FAQ_DEFAULT_PALLADIUM_MARKDOWN;
+  const sections = useMemo(
+    () => parseFaqMarkdownSections(effectiveFaq),
+    [effectiveFaq]
   );
-  const hasServerFaq = sectionsFromServer.some((sec) => sec.items.length > 0);
 
-  const faqSections = useMemo(() => buildFaqSections(t), [t]);
-
-  /* Single-open accordion — same state shape as old FaqScreen */
   const navigate = useNavigate();
   const [sectionIndex, setSectionIndex] = useState<number | null>(null);
-  const [openId, setOpenId] = useState<string>("withdraw");
+  const [openId, setOpenId] = useState<string>("");
 
-  const sectionList: { key: string; heading: string }[] = hasServerFaq
-    ? sectionsFromServer.map((sec, i) => ({ key: `srv-${i}-${sec.heading}`, heading: sec.heading }))
-    : faqSections.map((sec) => ({ key: sec.id, heading: sec.heading }));
+  const sectionList = useMemo(
+    () => sections.map((sec, i) => ({ key: `sec-${i}-${sec.heading}`, heading: sec.heading })),
+    [sections]
+  );
 
   useEffect(() => {
     setSectionIndex(null);
-  }, [hasServerFaq, faqRaw, sectionsFromServer, t]);
+  }, [effectiveFaq]);
 
   useEffect(() => {
     if (sectionIndex === null) return;
-    if (hasServerFaq) {
-      const first = sectionsFromServer[sectionIndex]?.items[0]?.id;
-      if (first) setOpenId(first);
-    } else {
-      const first = faqSections[sectionIndex]?.items[0]?.id;
-      if (first) setOpenId(first);
-    }
-  }, [sectionIndex, hasServerFaq, sectionsFromServer, faqSections]);
+    const first = sections[sectionIndex]?.items[0]?.id;
+    if (first) setOpenId(first);
+  }, [sectionIndex, sections]);
 
   const atSectionList = sectionIndex === null;
   const appBarTitle = atSectionList
     ? t("faq.title")
-    : (hasServerFaq
-        ? sectionsFromServer[sectionIndex]?.heading
-        : faqSections[sectionIndex]?.heading) ?? t("faq.title");
+    : sections[sectionIndex]?.heading ?? t("faq.title");
 
   const onAppBarBack = () => {
     if (atSectionList) navigate(routes.support);
@@ -330,8 +248,7 @@ export default function FaqScreenNew() {
             ))}
 
           {!atSectionList &&
-            hasServerFaq &&
-            sectionsFromServer[sectionIndex!]?.items.map((item) => {
+            sections[sectionIndex!]?.items.map((item) => {
               const expanded = openId === item.id;
               return (
                 <article key={item.id} className={s.faqCard}>
@@ -348,28 +265,6 @@ export default function FaqScreenNew() {
                     <div className={s.faqAnswer}>
                       <FaqPlainBody text={item.a} />
                     </div>
-                  )}
-                </article>
-              );
-            })}
-
-          {!atSectionList &&
-            !hasServerFaq &&
-            faqSections[sectionIndex!]?.items.map((item) => {
-              const expanded = openId === item.id;
-              return (
-                <article key={item.id} className={s.faqCard}>
-                  <button
-                    type="button"
-                    className={s.faqBtn}
-                    aria-expanded={expanded}
-                    onClick={() => setOpenId(expanded ? "" : item.id)}
-                  >
-                    <p className={s.faqQuestion}>{item.title}</p>
-                    {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
-                  </button>
-                  {expanded && (
-                    <div className={s.faqAnswer}>{item.body}</div>
                   )}
                 </article>
               );
