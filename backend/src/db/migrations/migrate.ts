@@ -131,6 +131,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration025DefaultTelegramCommunityLinks(db, now);
   runMigration026ForcePalladiumPublicLinksAndFaqIfEmpty(db, now);
   runMigration027RestoreShortFaqOriginal(db, now);
+  runMigration028FaqSyncToBundledMarkdown(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -596,5 +597,15 @@ function runMigration027RestoreShortFaqOriginal(db: Database, now: string) {
   setAppConfigValue(db, "content_faq_markdown", FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
   db
     .prepare("INSERT INTO _migrations (id, name) VALUES (27, '027_restore_short_faq_original')")
+    .run();
+}
+
+/** После возврата `FAQ.md` в полный вид — выровнять БД с бандлом (длинный FAQ). */
+function runMigration028FaqSyncToBundledMarkdown(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=28").get() as { ok: number } | undefined;
+  if (m) return;
+  setAppConfigValue(db, "content_faq_markdown", FAQ_DEFAULT_PALLADIUM_MARKDOWN, now);
+  db
+    .prepare("INSERT INTO _migrations (id, name) VALUES (28, '028_faq_sync_bundled_full_faq_md')")
     .run();
 }
