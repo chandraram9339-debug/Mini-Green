@@ -1,3 +1,7 @@
+> **USDT TRC20 — fees (default; always confirm in the app):** minimum **deposit** and minimum **withdrawal** **7 USDT**; **fee when crediting a deposit:** **7 USDT** fixed **+ 9%** of the **incoming** transfer; **withdrawal fee:** **7 USDT** fixed **+ 19%** of the **requested** amount. The operator or server can change policy — **Top up** and **Withdraw** in the app show the live values. If your in-app FAQ was edited in **Admin → Content**, it may differ from the repo’s default: compare with the **Money and fees** section in the project’s `FAQ.md`.
+>
+> *Keywords for search: commission, fee, comisión, 9%, 19%, min 7, withdrawal fee, deposit fee.*
+
 # About the product
 
 ## What is Palladium?
@@ -203,6 +207,17 @@ From Telegram, open the official bot **@palladium_trade_bot** and use the **Mini
 **PALLADIUM AI** is the **automated analytic system** name used in the app for the trading and balance accrual side of the product, together with the trading **journal** and (where present) SIB / engine hooks after deposits.
 
 # Money and fees
+
+## Commissions: deposit and withdrawal (summary)
+
+|  | **Default (confirm on-screen)** |
+|---|---|
+| **Minimum deposit** | **7 USDT** (you cannot credit below the policy; see **Top up**) |
+| **Fee on crediting a deposit** | **7 USDT** fixed **+ 9%** of the **gross** incoming USDT TRC20 transfer |
+| **Minimum withdrawal** | **7 USDT** (see **Withdraw**) |
+| **Fee on withdrawal** | **7 USDT** fixed **+ 19%** of the **gross** amount you request to send out |
+
+`Admin / app_config` and env defaults can **override** these. The **authoritative** numbers are the ones shown in the mini app on **Top up** and **Withdraw** (and the wallet / API response the UI uses).
 
 ## What currency and network are supported?
 

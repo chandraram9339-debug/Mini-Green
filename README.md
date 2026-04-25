@@ -2,6 +2,11 @@
 
 This repository is a bootstrap for a Telegram Mini App project.
 
+## Fees and default FAQ text
+
+- **Commissions and minimums (USDT TRC20 default policy, 7 + 9% / 7 + 19%):** see [`FAQ.md`](FAQ.md) at the top (callout) and the **Money and fees** / **Commissions: deposit and withdrawal (summary)** sections. Russian copy: [`FAQ.ru.md`](FAQ.ru.md). After editing `FAQ.md`, run `node scripts/sync-faq-md-to-backend.mjs` so the mini app and migration default string stay in sync (unless the operator overrides FAQ text in the admin **Content**).
+- **Backend defaults / overrides:** `backend/.env.example` (`MIN_DEPOSIT_USDT`, `DEPOSIT_FEE_*`, `WITHDRAW_FEE_*`, `REFERRAL_*`); live production policy is often stored in the database `app_config` and the admin **Fees and limits** screen — see `ENV_SETUP.md` § *Комиссии*.
+
 ## Structure
 
 - `frontend` - client app (React + Vite + TypeScript)
