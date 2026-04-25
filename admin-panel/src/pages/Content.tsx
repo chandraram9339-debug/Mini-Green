@@ -159,11 +159,12 @@ export default function Content() {
               value={telegramWelcomeText}
               onChange={(e) => setTelegramWelcomeText(e.target.value)}
               style={{ minHeight: 120 }}
-              placeholder="Оставьте пустым для дефолта (PALLADIUM welcome + кнопки), или вставьте свой plain text. Кнопки App / Channel / Chat — по ссылкам из полей выше."
+              placeholder="Пусто — дефолт: HTML с кликабельными 📲 App / 📢 Channel / 💬 Chat (те же URL, что ниже и в кнопках). Свой текст — только plain text, без HTML."
             />
             <FieldNote>
-              Отправляется после /start. Если пусто — английский текст по умолчанию (Welcome to PALLADIUM AI + кнопки App /
-              Channel / Chat). Техподсказки при незаполненных ссылках дописываются автоматически.
+              После /start. Пустое поле — бэкенд шлёт дефолт с ссылками в тексте + inline-кнопки. Свой текст переключает
+              сообщение в обычный plain (кнопки остаются по ссылкам из полей выше). Техподсказки при пустых URL
+              дописываются автоматически.
             </FieldNote>
           </div>
           <div className="row">
