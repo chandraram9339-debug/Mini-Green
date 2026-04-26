@@ -11,7 +11,9 @@
 
 ## Комиссии (депозит / вывод) и справка в FAQ
 
-- **Человекочитаемое описание политики (по умолчанию: мин. 7 USDT, ввод 7+9%, вывод 7+19%):** корневой [`FAQ.md`](FAQ.md) (в начале файла и раздел *Money and fees*), копия на русском — [`FAQ.ru.md`](FAQ.ru.md). Текст для мини-апа по умолчанию синхронизируется: `node scripts/sync-faq-md-to-backend.mjs` после правок `FAQ.md` (пока в админке **Контент** не задан собственный markdown FAQ).
+- **Структура FAQ (разделы/вопросы) для мини-апа:** внутренний спецификационный файл [`архитектура  FAQ`](архитектура%20%20FAQ) → генерация корневого [`FAQ.md`](FAQ.md): `node scripts/generate-faq-md-from-architecture.mjs`.
+- **Текст для мини-апа по умолчанию (когда в админке нет своего markdown FAQ):** после генерации/правок `FAQ.md` прогоните `node scripts/sync-faq-md-to-backend.mjs` (обновляет `frontend/src/fm/faq/faqDefaultPalladiumMarkdown.ts` и `backend/src/db/migrations/faqDefaultPalladiumMarkdown.ts`).
+- **Копия на русском (если используете):** [`FAQ.ru.md`](FAQ.ru.md) — синхронизируйте вручную при необходимости (генератор сейчас обновляет только `FAQ.md`).
 - **Фолбэки в коде (если в БД нет `app_config`):** см. `backend/.env.example` — `MIN_DEPOSIT_USDT`, `DEPOSIT_FEE_FIXED_USDT`, `DEPOSIT_FEE_BPS` (100 bps = 1 %), `WITHDRAW_FEE_*`, `MIN_WITHDRAW_MINOR` (копеечные USDT, 700 = 7 USDT), `REFERRAL_PERCENT_BPS` и т.д.
 - **Прод: источник правды** — таблица `app_config` (миграции могут проставлять значения) и админка **Комиссии и лимиты** (`/admin/config`). После смены политики перезапустите бэкенд, чтобы `GET` кошелька отдавал актуальные цифры.
 

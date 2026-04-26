@@ -1,231 +1,173 @@
-> **Note:** This FAQ structure follows the internal spec `архитектура  FAQ`. Numbers that look like fees or minimums are **marketing copy from that spec** — always confirm **live fees and minimums** in the mini app (**Top up** / **Withdraw**) and in operator configuration.
-
-> **Network:** USDT **TRC20** on TRON for deposits/withdrawals in this product (unless your deployment explicitly supports another network).
-
-# About the product
-
-## What is Palladium?
-
+Рздел - About the product
+Внутри раздела- What is Palladium?
 Palladium is an autonomous trading system that analyzes crypto market microstructure in real time and executes trades automatically. It doesn’t send signals — it trades for you.
 
-## How does the bot trade?
-
+How does the bot trade?
 It monitors order flow, imbalance, CVD, liquidity density, volatility clusters, and executes trades directly. No indicators, no manual analysis.
 
-## Does it use indicators or signals?
-
+Does it use indicators or signals?
 No. Palladium is not a signal bot — it executes based on structural patterns in market microdata.
 
-## Can I control the trades manually?
-
+Can I control the trades manually?
 No, the system is fully autonomous. The only actions available are deposit and withdrawal.
 
-## Which exchanges does it work with?
-
+Which exchanges does it work with?
 Palladium trades through Binance liquidity.
 
-## Is it decentralized or centralized?
-
+Is it decentralized or centralized?
 Palladium runs as a centralized AI engine with autonomous execution.
 
-## Do I need to install an app?
-
+Do I need to install an app?
 No. Palladium is available directly in Telegram Mini App.
 
-# Money and fees
-
-## What is the minimum deposit?
-
+Раздел - Money and fees
+внтури раздела- What is the minimum deposit?
 There is no fixed minimum deposit in Palladium — you can start with any amount. Just note that each deposit has a fee of 8 USDT + 9%.
 
-## How much do you charge for deposit?
-
+How much do you charge for deposit?
 Deposit fee: 7 USDT + 9%.
 
-## How much do you charge for withdrawal?
-
+How much do you charge for withdrawal?
 Withdrawal fee: 7 USDT + 19%.
 
-## Are there any hidden fees?
-
+Are there any hidden fees?
 No hidden fees. All commissions are transparent and fixed.
 
-## Do I pay a subscription fee?
-
+Do I pay a subscription fee?
 No. There are no monthly or yearly subscriptions.
 
-## What payment methods are supported?
-
+What payment methods are supported?
 Deposits and withdrawals are in USDT (TRC-20).
 
-## Is there a gas fee to execute trades?
-
+Is there a gas fee to execute trades?
 No. All trading execution costs are covered inside the system.
 
-# Profit
-
-## How much profit can I expect daily?
-
+Раздел - Profit
+Внутри раздела- How much profit can I expect daily?
 On average, 1–9% daily profit. Results vary depending on market conditions.
 
-## What is the average monthly profit?
-
+What is the average monthly profit?
 Historically, 40–150% monthly.
 
-## Are profits guaranteed?
-
+Are profits guaranteed?
 No. Palladium does not guarantee profit. Both winning and losing trades exist, but historically profits outweigh losses.
 
-## Do you have losing trades too?
-
+Do you have losing trades too?
 Yes. Transparency means we publish all trades, profitable and losing.
 
-## Is compounding possible?
-
+Is compounding possible?
 Yes, profit is added to your balance and continues trading automatically.
 
-## Can I withdraw profit anytime?
-
+Can I withdraw profit anytime?
 Yes, withdrawals are available at any time.
 
-# Withdrawals
 
-## How long do withdrawals take?
-
+Раздел - withdrawals
+Внутри раздела -How long do withdrawals take?
 From 10 minutes to 2–3 hours. Maximum up to 7 days in rare cases.
 
-## Is the withdrawal automatic or manual?
-
+Is the withdrawal automatic or manual?
 Automatic. The bot closes open trades and processes withdrawal.
 
-## Do I need to pass KYC for withdrawal?
-
+Do I need to pass KYC for withdrawal?
 No. Palladium does not require KYC for deposits or withdrawals.
 
-## What if withdrawal is delayed?
-
+What if withdrawal is delayed?
 Contact support in Telegram. The system will still process your request.
 
-## Is there a withdrawal limit?
-
+Is there a withdrawal limit?
 No fixed limit, but the bot must close active trades first.
 
-# Safety
 
-## Is my money safe with Palladium?
-
+Раздел - Safety 
+Внитри раздела - Is my money safe with Palladium?
 All operations are automated and transparent. Users control deposits and withdrawals.
 
-## Does Palladium have access to my exchange account?
-
+Does Palladium have access to my exchange account?
 No. The bot operates independently and does not require API keys.
 
-## Is Palladium regulated?
-
+Is Palladium regulated?
 Palladium operates as a software service. There is no financial license.
 
-## Do you comply with AML / FATF rules?
-
+Do you comply with AML / FATF rules?
 Yes. Deposits are only accepted in crypto (USDT), no fiat or cash transfers.
 
-## What happens if the bot stops working?
-
+What happens if the bot stops working?
 The system is designed for high stability. If trading is paused, funds remain on your balance and are available for withdrawal.
 
-# Technical
 
-## How do I know the bot is trading?
-
+Раздел - Technical 
+Внутри раздела - How do I know the bot is trading?
 You can see live trades and statistics in the app.
 
-## Can I see the trades?
-
+Can I see the trades?
 Yes. All trades are published with timestamps.
 
-## Do you publish statistics?
-
+Do you publish statistics?
 Yes. Daily, weekly, and monthly performance is open and transparent.
 
-## Can I connect API keys?
-
+Can I connect API keys?
 No, API connection is not needed. The system is fully internal.
 
-## Is there a mobile app or only Telegram Mini App?
-
+Is there a mobile app or only Telegram Mini App?
 Only Telegram Mini App at this stage.
 
-## Do I need VPN to use Palladium?
-
+Do I need VPN to use Palladium?
 No. The service works globally.
 
-# Trust & Experience
-
-## Why should I trust Palladium?
-
+Раздел - Trust & Experience
+Внтури раздела - Why should I trust Palladium?
 Because all trades and statistics are public and verifiable. No hidden data.
 
-## How is Palladium different from scams?
-
+How is Palladium different from scams?
 We don’t promise guaranteed returns. We show real trades with both profits and losses. Withdrawals are automatic.
 
-## If it works, why not everyone is using it?
-
+If it works, why not everyone is using it?
 Adoption takes time. Many people doubt new technologies until they see proof.
 
-## Do you use your own money in the system?
-
+Do you use your own money in the system?
 Yes. The team tests Palladium with real funds.
 
-## How long has Palladium been running?
-
+How long has Palladium been running?
 Public since January 2026.
 
-## Can I test it with a small amount first?
-
+Can I test it with a small amount first?
 Yes.
 
-# Community & Support
 
-## Is there a support team?
-
+Раздел - Community & Support 
+Внутри раздела- Is there a support team?
 Yes. Support is available directly in Telegram.
 
-## Do you have a Telegram group or channel?
-
+Do you have a Telegram group or channel?
 Yes, both. Channel for updates, group for discussion.
 
-## Can I contact real users?
-
+Can I contact real users?
 Yes, in the community chat.
 
-## Do you offer referral bonuses?
-
+Do you offer referral bonuses?
 Yes. 5% from each referral deposit.
 
-## Are there contests or promotions?
-
+Are there contests or promotions?
 Yes. We run referral contests with prize pools.
 
-# Doubts & Fears
 
-## Isn’t this too good to be true?
 
+Раздел - Dubts & Fears 
+Внутри раздела - Isn’t this too good to be true?
 Many thought the same. That’s why we publish all stats openly.
 
-## Is Palladium a long-term project?
-
+Is Palladium a long-term project?
 Yes. Palladium is built for the long term. We plan to operate securely at least until 2030, with focus on stability and transparency.
 
-## What if Binance blocks this bot?
-
+What if Binance blocks this bot?
 Palladium doesn’t depend on Binance API — it works via liquidity analysis.
+
 I was scammed before, how are you different?
 We don’t take money manually, don’t promise fixed returns, and all trades are verifiable.
 
-## What happens in a bear market?
-
+What happens in a bear market?
 Palladium trades both directions. It can profit in bull and bear conditions.
 
-## What happens if everyone uses Palladium?
-
+What happens if everyone uses Palladium?
 Markets adapt, but inefficiencies remain. Not all liquidity reacts at once.
