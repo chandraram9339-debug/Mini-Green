@@ -315,7 +315,8 @@
 .chartWrap {
   width: 100%;
   overflow: visible;
-  margin-bottom: var(--home-chart-v-rhythm);
+  /* На 5px меньше верхнего зазора секции — только под графиком */
+  margin-bottom: calc(var(--home-chart-v-rhythm) - 5px);
   padding-top: 2px;
   padding-bottom: 6px;
 }
