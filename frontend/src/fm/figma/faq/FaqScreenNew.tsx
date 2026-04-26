@@ -205,76 +205,48 @@ export default function FaqScreenNew() {
   }, [effectiveFaq]);
 
   const navigate = useNavigate();
-  const [sectionIndex, setSectionIndex] = useState<number | null>(null);
   const [openId, setOpenId] = useState<string>("");
 
-  const sectionList = useMemo(
-    () => sections.map((sec, i) => ({ key: `sec-${i}-${sec.heading}`, heading: sec.heading })),
-    [sections]
-  );
-
   useEffect(() => {
-    setSectionIndex(null);
+    setOpenId("");
   }, [effectiveFaq]);
 
-  useEffect(() => {
-    if (sectionIndex === null) return;
-    const first = sections[sectionIndex]?.items[0]?.id;
-    if (first) setOpenId(first);
-  }, [sectionIndex, sections]);
-
-  const atSectionList = sectionIndex === null;
-  const appBarTitle = atSectionList
-    ? t("faq.title")
-    : sections[sectionIndex]?.heading ?? t("faq.title");
-
   const onAppBarBack = () => {
-    if (atSectionList) navigate(routes.support);
-    else setSectionIndex(null);
+    navigate(routes.support);
   };
 
   return (
     <div className={s.screen} aria-label={t("faq.title")}>
-      <AppBar title={appBarTitle} bellCount={notificationUnreadCount} onBack={onAppBarBack} />
+      <AppBar title={t("faq.title")} bellCount={notificationUnreadCount} onBack={onAppBarBack} />
 
       <div className={s.body}>
         <div className={s.list}>
-          {atSectionList &&
-            sectionList.map((row, si) => (
-              <article key={row.key} className={s.faqCard}>
-                <button
-                  type="button"
-                  className={s.faqBtn}
-                  onClick={() => setSectionIndex(si)}
-                >
-                  <p className={s.faqQuestion}>{row.heading}</p>
-                  <ChevronCollapsed />
-                </button>
-              </article>
-            ))}
-
-          {!atSectionList &&
-            sections[sectionIndex!]?.items.map((item) => {
-              const expanded = openId === item.id;
-              return (
-                <article key={item.id} className={s.faqCard}>
-                  <button
-                    type="button"
-                    className={s.faqBtn}
-                    aria-expanded={expanded}
-                    onClick={() => setOpenId(expanded ? "" : item.id)}
-                  >
-                    <p className={s.faqQuestion}>{item.q}</p>
-                    {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
-                  </button>
-                  {expanded && (
-                    <div className={s.faqAnswer}>
-                      <FaqPlainBody text={item.a} />
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+          {sections.map((sec, si) => (
+            <Fragment key={`sec-${si}-${sec.heading}`}>
+              <h2 className={s.sectionHeading}>{sec.heading}</h2>
+              {sec.items.map((item) => {
+                const expanded = openId === item.id;
+                return (
+                  <article key={item.id} className={s.faqCard}>
+                    <button
+                      type="button"
+                      className={s.faqBtn}
+                      aria-expanded={expanded}
+                      onClick={() => setOpenId(expanded ? "" : item.id)}
+                    >
+                      <p className={s.faqQuestion}>{item.q}</p>
+                      {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
+                    </button>
+                    {expanded && (
+                      <div className={s.faqAnswer}>
+                        <FaqPlainBody text={item.a} />
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </Fragment>
+          ))}
         </div>
       </div>
 
