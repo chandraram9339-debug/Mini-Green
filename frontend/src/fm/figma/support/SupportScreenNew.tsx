@@ -5,7 +5,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
 import { SUPPORT_TELEGRAM_URL, openTelegramOrExternal } from "../../config/links";
-import { appBarLogoUrl } from "../assets/appBarShared";
 import { routes } from "../routes";
 
 import s from "./supportScreenNew.module.css";

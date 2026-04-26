@@ -18,6 +18,7 @@ import HomeScreenNew from "./figma/home/HomeScreenNew";
 import SeedCodeScreen from "./figma/seed-code/SeedCodeScreenNew";
 import UserAgreementScreen from "./figma/user-agreement/UserAgreementScreenNew";
 import "./figma/home/homeScreen.css";
+import "./figma/components/appBarLogoShimmer.css";
 import { routes } from "./figma/routes";
 import { FmLocaleProvider } from "./i18n/FmLocaleContext";
 import { AppSessionProvider } from "./session/AppSessionProvider";

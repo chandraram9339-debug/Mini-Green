@@ -1,0 +1,56 @@
+/**
+ * Блеск на логотипе Palladium в app bar (168×20).
+ * Добавь класс `app-bar-logo-shimmer` к обёртке рядом с локальными стилями `.appBarLogo`.
+ * Для `FigmaAppBar` уже есть `.fm-appbar-brand::after` в homeScreen.css.
+ */
+.app-bar-logo-shimmer {
+  isolation: isolate;
+}
+
+.app-bar-logo-shimmer::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 168px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 18%,
+    rgba(255, 255, 255, 0.1) 34%,
+    rgba(255, 255, 255, 0.75) 48%,
+    rgba(181, 214, 255, 0.55) 54%,
+    rgba(255, 255, 255, 0.08) 66%,
+    rgba(255, 255, 255, 0) 82%
+  );
+  background-size: 168px 100%;
+  background-repeat: no-repeat;
+  animation: app-bar-logo-shimmer-kf 5.9s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.95;
+  -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 168px 20px;
+  mask-image: url("/assets/app-bar/palladium-logo.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 168px 20px;
+}
+
+@keyframes app-bar-logo-shimmer-kf {
+  0% {
+    background-position: -240px 50%;
+  }
+  100% {
+    background-position: 240px 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-bar-logo-shimmer::after {
+    animation: none;
+    opacity: 0.3;
+  }
+}

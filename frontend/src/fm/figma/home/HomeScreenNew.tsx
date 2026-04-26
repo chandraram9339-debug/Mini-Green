@@ -63,7 +63,7 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
         </button>
 
         {/* Логотип строго по центру */}
-        <div className={s.appBarLogo} aria-label="Palladium">
+        <div className={`${s.appBarLogo} app-bar-logo-shimmer`} aria-label="Palladium">
           <img src={appBarLogoUrl} alt="Palladium" />
         </div>
 

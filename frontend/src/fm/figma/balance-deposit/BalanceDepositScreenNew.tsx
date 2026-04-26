@@ -130,7 +130,7 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
           </svg>
         </button>
 
-        <div className={s.appBarLogo} aria-label="Palladium">
+        <div className={`${s.appBarLogo} app-bar-logo-shimmer`} aria-label="Palladium">
           <img src={appBarLogoUrl} alt="Palladium" />
         </div>
 
