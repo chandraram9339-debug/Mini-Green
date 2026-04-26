@@ -206,10 +206,16 @@ export default function FaqScreenNew() {
 
   const navigate = useNavigate();
   const [openId, setOpenId] = useState<string>("");
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setOpenId("");
-  }, [effectiveFaq]);
+    const next: Record<string, boolean> = {};
+    for (let i = 0; i < sections.length; i += 1) {
+      next[`sec-${i}`] = true;
+    }
+    setOpenSections(next);
+  }, [effectiveFaq, sections.length]);
 
   const onAppBarBack = () => {
     navigate(routes.support);
@@ -223,28 +229,53 @@ export default function FaqScreenNew() {
         <div className={s.list}>
           {sections.map((sec, si) => (
             <Fragment key={`sec-${si}-${sec.heading}`}>
-              <h2 className={s.sectionHeading}>{sec.heading}</h2>
-              {sec.items.map((item) => {
-                const expanded = openId === item.id;
-                return (
-                  <article key={item.id} className={s.faqCard}>
-                    <button
-                      type="button"
-                      className={s.faqBtn}
-                      aria-expanded={expanded}
-                      onClick={() => setOpenId(expanded ? "" : item.id)}
-                    >
-                      <p className={s.faqQuestion}>{item.q}</p>
-                      {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
-                    </button>
-                    {expanded && (
-                      <div className={s.faqAnswer}>
-                        <FaqPlainBody text={item.a} />
-                      </div>
-                    )}
-                  </article>
-                );
-              })}
+              <article className={s.sectionCard}>
+                <button
+                  type="button"
+                  className={s.sectionHeaderBtn}
+                  aria-expanded={Boolean(openSections[`sec-${si}`])}
+                  onClick={() => {
+                    const key = `sec-${si}`;
+                    const nextOpen = !openSections[key];
+                    setOpenSections((prev) => ({ ...prev, [key]: nextOpen }));
+                    if (!nextOpen) {
+                      setOpenId((cur) => {
+                        const inThis = sec.items.some((it) => it.id === cur);
+                        return inThis ? "" : cur;
+                      });
+                    }
+                  }}
+                >
+                  <p className={s.sectionHeaderTitle}>{sec.heading}</p>
+                  {openSections[`sec-${si}`] ? <ChevronExpanded /> : <ChevronCollapsed />}
+                </button>
+
+                {openSections[`sec-${si}`] ? (
+                  <div className={s.sectionBody}>
+                    {sec.items.map((item) => {
+                      const expanded = openId === item.id;
+                      return (
+                        <article key={item.id} className={s.faqCard}>
+                          <button
+                            type="button"
+                            className={s.faqBtn}
+                            aria-expanded={expanded}
+                            onClick={() => setOpenId(expanded ? "" : item.id)}
+                          >
+                            <p className={s.faqQuestion}>{item.q}</p>
+                            {expanded ? <ChevronExpanded /> : <ChevronCollapsed />}
+                          </button>
+                          {expanded && (
+                            <div className={s.faqAnswer}>
+                              <FaqPlainBody text={item.a} />
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </article>
             </Fragment>
           ))}
         </div>
