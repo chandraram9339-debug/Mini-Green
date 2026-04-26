@@ -311,6 +311,11 @@
   padding: var(--home-chart-v-rhythm) 16px 0;
 }
 
+/* Нижняя Details: не 24px как у кнопки в блоке баланса — иначе зазор до графика (20px) и до кнопки разъезжаются */
+.botSection .btnDetails {
+  margin-top: var(--home-chart-v-rhythm);
+}
+
 /* ── График (структура как на 3-м экране) ───────────────────── */
 .chartWrap {
   width: 100%;
