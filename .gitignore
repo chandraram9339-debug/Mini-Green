@@ -4,6 +4,15 @@ dist
 .env.local
 .DS_Store
 coverage
+
+# IDE / local debug (never commit — may contain PII, tg ids, paths)
+.cursor/*.log
+
+# Backend runtime logs (runner/CI artifacts)
+backend/**/*.log
+
+# Figma export trees — template .env must not be tracked (precedent for real secrets)
+Figma new/**/.env
 # Root `pnpm-lock.yaml` should be committed for reproducible installs (pnpm workspace).
 
 # Local QA captures / build info (not part of source bundle)

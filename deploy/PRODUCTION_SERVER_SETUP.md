@@ -1,3 +1,4 @@
+
 # Production Setup
 
 Этот проект нужно запускать на сервере так:
@@ -61,7 +62,8 @@ Production-сервер:
 Минимально критичные переменные:
 
 - `PORT=4000`
-- `JWT_SECRET=...`
+- `JWT_SECRET=...` — **обязательно** сгенерировать случайную строку (см. `ENV_SETUP.md`); значение из `backend/.env.example` (`dev-only-insecure-jwt-do-not-use-in-prod`) на production **нельзя** использовать.
+- `CORS_ORIGINS=...` — через запятую разрешённые `Origin` для браузера (HTTPS-домен миниаппа, при необходимости `https://web.telegram.org`). Пустое значение в `AUTH_PROVIDER_MODE=telegram` оставляет открытый CORS и пишет предупреждение в лог при старте — для публичного прод лучше задать whitelist явно.
 - `ADMIN_API_KEY=...`
 - `TELEGRAM_BOT_TOKEN=...` если используете реальный Telegram auth
 - `TRON_API_KEY=...` если нужен live Tron

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 RUNNER_ID="${RUNNER_ID:-06}"
 PROFILE_ID="${PROFILE_ID:-}"
-ENV_SOURCE="${ENV_SOURCE:-/home/ramos/Документы/miniapp/backend/.env}"
+ENV_SOURCE="${ENV_SOURCE:-${_REPO_ROOT}/backend/.env}"
 EXPECTED_ENV_SOURCE="${EXPECTED_ENV_SOURCE:-$ENV_SOURCE}"
 TS_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 

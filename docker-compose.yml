@@ -1,3 +1,6 @@
+# DEV / LOCAL STACK ONLY — do not expose this Postgres/Redis compose file on production VPS as-is.
+# Production uses SQLite + pm2 (see deploy/PRODUCTION_SERVER_SETUP.md). Default credentials below are not secrets for prod.
+
 services:
   postgres:
     image: postgres:16-alpine

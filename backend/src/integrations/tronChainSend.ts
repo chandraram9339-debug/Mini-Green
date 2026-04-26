@@ -31,6 +31,19 @@ function minorToUsdt6String(minor: number) {
   return (BigInt(Math.max(0, Math.floor(minor))) * 10_000n).toString();
 }
 
+/** Safe subset of TronWeb `sendTrx` result for ops logs (no full provider payload). */
+function trxSendResultForLog(r: unknown): Record<string, unknown> {
+  if (!r || typeof r !== "object") return { result_shape: typeof r };
+  const o = r as Record<string, unknown>;
+  const msg = o.message;
+  return {
+    result: o.result,
+    txid: o.txid,
+    code: typeof o.code === "string" ? o.code : undefined,
+    message: typeof msg === "string" ? msg.slice(0, 240) : undefined
+  };
+}
+
 /**
  * GAZ-bank: TRX to user (sun). Requires `LIVE_TRON_SEND` + `GAZ_BANK_PRIVATE_KEY` + valid Tron `to` address.
  */
@@ -59,7 +72,7 @@ export async function sendGasTrx(
       logEvent(trace, "chain.live.trx_gaz", { to: toBase58, sun: amountSun, txid: r.txid });
       return { ok: true as const, txid: r.txid as string | undefined };
     }
-    logEvent(trace, "chain.live.trx_gaz_fail", { to: toBase58, r });
+    logEvent(trace, "chain.live.trx_gaz_fail", { to: toBase58, ...trxSendResultForLog(r) });
     return { ok: false as const, error: "broadcast" as const };
   } catch (e) {
     logEvent(trace, "chain.live.trx_gaz_ex", { err: String(e) });

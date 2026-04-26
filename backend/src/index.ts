@@ -1,6 +1,6 @@
 import "dotenv/config";
 import crypto from "node:crypto";
-import cors from "cors";
+import cors, { type CorsOptions } from "cors";
 import express from "express";
 import { assertWalletVaultEnv, config } from "./config.js";
 import { getTraceId, logEvent, sendError } from "./httpEnvelope.js";
@@ -16,6 +16,32 @@ import { scheduleAlTradeFeedPoller } from "./services/alTradeFeedSync.js";
 const app = express();
 const port = config.port;
 
+function corsMiddleware(): express.RequestHandler {
+  const origins = config.corsOrigins;
+  if (origins.length === 0) {
+    if (config.authProviderMode === "telegram" || config.executionMode === "telegram") {
+      console.warn(
+        "[boot] CORS_ORIGINS is empty in telegram mode: using permissive CORS. Set CORS_ORIGINS to a comma-separated whitelist (miniapp origin + https://web.telegram.org) in production."
+      );
+    }
+    return cors();
+  }
+  const opts: CorsOptions = {
+    origin(origin, callback) {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (origins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    }
+  };
+  return cors(opts);
+}
+
 assertWalletVaultEnv(config);
 const db = getDb();
 console.log(`[boot] SQLite database file: ${getDbPath()} (persist this path on a mounted volume in Docker/K8s)`);
@@ -30,7 +56,7 @@ for (const sig of ["SIGINT", "SIGTERM"] as const) {
     process.exit(0);
   });
 }
-app.use(cors());
+app.use(corsMiddleware());
 app.use(express.json());
 
 app.use((req, res, next) => {

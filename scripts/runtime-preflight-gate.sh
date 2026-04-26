@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 RUNNER_ID="${RUNNER_ID:-06}"
 PROFILE_ID="${PROFILE_ID:-}"
-ENV_SOURCE="${ENV_SOURCE:-/home/ramos/Документы/miniapp/backend/.env}"
-EXPECTED_ENV_SOURCE="${EXPECTED_ENV_SOURCE:-/home/ramos/Документы/miniapp/backend/.env}"
-COMPOSE_FILE="${COMPOSE_FILE:-/home/ramos/Документы/miniapp/docker-compose.yml}"
+ENV_SOURCE="${ENV_SOURCE:-${_REPO_ROOT}/backend/.env}"
+EXPECTED_ENV_SOURCE="${EXPECTED_ENV_SOURCE:-${_REPO_ROOT}/backend/.env}"
+COMPOSE_FILE="${COMPOSE_FILE:-${_REPO_ROOT}/docker-compose.yml}"
 EXPECTED_DATABASE_URL="${EXPECTED_DATABASE_URL:-}"
 CONTEXT_LABEL="${CONTEXT_LABEL:-runner}"
 TS_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"

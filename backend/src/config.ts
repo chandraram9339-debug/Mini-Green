@@ -130,6 +130,11 @@ export type AppConfig = {
   alTradeFeedSnapshotRetentionDays: number;
   /** Cap table size: after retention prune, delete oldest rows until count ≤ this. */
   alTradeFeedSnapshotMaxRows: number;
+  /**
+   * Browser `Origin` values allowed by CORS (`CORS_ORIGINS`, comma/semicolon/whitespace-separated).
+   * Empty → permissive `cors()` (dev); in telegram auth mode the server logs a production warning.
+   */
+  corsOrigins: string[];
 };
 
 function numEnv(name: string, def: number) {
@@ -218,7 +223,11 @@ export const config: AppConfig = {
   alPositionNotionalMinor: Math.max(100, numEnv("AL_POSITION_NOTIONAL_MINOR", 100_000)),
   alTradeFeedStoreSnapshots: strEnv("AL_TRADE_FEED_STORE_SNAPSHOTS", "1") === "1",
   alTradeFeedSnapshotRetentionDays: Math.max(1, numEnv("AL_TRADE_FEED_SNAPSHOT_RETENTION_DAYS", 7)),
-  alTradeFeedSnapshotMaxRows: Math.max(100, numEnv("AL_TRADE_FEED_SNAPSHOT_MAX_ROWS", 2000))
+  alTradeFeedSnapshotMaxRows: Math.max(100, numEnv("AL_TRADE_FEED_SNAPSHOT_MAX_ROWS", 2000)),
+  corsOrigins: (process.env.CORS_ORIGINS ?? "")
+    .split(/[,;\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
 };
 
 export function assertWalletVaultEnv(c: AppConfig) {

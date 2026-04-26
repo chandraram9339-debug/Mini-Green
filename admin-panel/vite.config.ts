@@ -7,6 +7,8 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "src") }
   },
+  // Production hardening: serve admin static via nginx and add a tight Content-Security-Policy
+  // (default-src 'self'; script-src 'self'; connect-src 'self' <api origin>) — Vite dev needs relaxed rules here.
   server: {
     port: 5180,
     strictPort: true,

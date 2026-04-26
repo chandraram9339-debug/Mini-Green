@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 RUNNER_ID="${RUNNER_ID:-06}"
-ENV_SOURCE="${ENV_SOURCE:-/home/ramos/Документы/miniapp/backend/.env}"
+ENV_SOURCE="${ENV_SOURCE:-${_REPO_ROOT}/backend/.env}"
 EXPECTED_ENV_SOURCE="${EXPECTED_ENV_SOURCE:-$ENV_SOURCE}"
 OWNER_TAG="${OWNER_TAG:-07_REPO_ARCH/Infra}"
 ALERT_LOG_PATH="${ALERT_LOG_PATH:-/tmp/provider-verification-alerts.log}"
