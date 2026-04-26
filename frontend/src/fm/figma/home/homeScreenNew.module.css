@@ -306,14 +306,16 @@
 
 /* ── Секция бота ───────────────────────────────────────────── */
 .botSection {
-  padding: 20px 16px 0;
+  /* Одинаковый вертикальный зазор: после верхней Details → график, и под графиком → блок статуса/цены */
+  --home-chart-v-rhythm: 20px;
+  padding: var(--home-chart-v-rhythm) 16px 0;
 }
 
 /* ── График (структура как на 3-м экране) ───────────────────── */
 .chartWrap {
   width: 100%;
   overflow: visible;
-  margin-bottom: 24px;
+  margin-bottom: var(--home-chart-v-rhythm);
   padding-top: 2px;
   padding-bottom: 6px;
 }

@@ -36,7 +36,7 @@ No. Palladium está disponible directamente en la Mini App de Telegram.
 
 ## ¿Cuál es el depósito mínimo?
 
-No hay un mínimo fijo en Palladium: puedes empezar con cualquier monto. Ten en cuenta que cada depósito tiene una comisión de 8 USDT + 9%.
+No hay un mínimo fijo en Palladium: puedes empezar con cualquier monto. Ten en cuenta que cada depósito tiene una comisión de 7 USDT + 9%.
 
 ## ¿Cuánto cobran por depósito?
 

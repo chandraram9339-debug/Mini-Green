@@ -36,7 +36,7 @@ No. Palladium is available directly in Telegram Mini App.
 
 ## What is the minimum deposit?
 
-There is no fixed minimum deposit in Palladium — you can start with any amount. Just note that each deposit has a fee of 8 USDT + 9%.
+There is no fixed minimum deposit in Palladium — you can start with any amount. Just note that each deposit has a fee of 7 USDT + 9%.
 
 ## How much do you charge for deposit?
 
