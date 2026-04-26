@@ -22,6 +22,7 @@ import {
   buildPersonalBalanceChartPoints,
   chartPointsSystemOrUserFallback,
   buildChartGeom,
+  CHART_HOME_PLOT_INSET_BOTTOM,
   CHART_VIEWBOX_HEIGHT,
   computeDepositBalanceYDomain,
   prependDepositTotalAnchor,
@@ -102,7 +103,10 @@ function PerformanceChart({
   yAxis: "percent" | "usdt";
   fixedYDomain?: [number, number];
 }) {
-  const geom = buildChartGeom(points, yAxis, fixedYDomain ? { fixedYDomain } : undefined);
+  const geom = buildChartGeom(points, yAxis, {
+    plotInsetBottom: CHART_HOME_PLOT_INSET_BOTTOM,
+    ...(fixedYDomain ? { fixedYDomain } : {}),
+  });
   const yPct = 100 / CHART_VIEWBOX_HEIGHT;
 
   return (

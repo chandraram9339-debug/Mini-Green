@@ -174,6 +174,11 @@ export type ChartGeom = {
 export type BuildChartGeomOptions = {
   /** Фиксированный диапазон по Y (например личный график USDT: от x×0.9 до z×1.1). */
   fixedYDomain?: [number, number];
+  /**
+   * Нижний inset в user space viewBox (0…H). По умолчанию `CHART_PLOT_INSET_BOTTOM` (экран бота / макет).
+   * Главная может передать меньшее значение — плотнее к контенту под графиком, без изменения третьего экрана.
+   */
+  plotInsetBottom?: number;
 };
 
 const STATIC_Y_LABELS = ["7.00%","6.00%","5.00%","4.00%","3.00%","2.00%","1.00%","0.00%","-1.00%","-2.00%"];
@@ -183,24 +188,34 @@ export const CHART_VIEWBOX_HEIGHT = 122;
 
 /**
  * Внутренний plot по Y (user space): крайние тики не в y=0 / y=H, чтобы подписи с `translateY(-50%)`
- * не обрезались. Низ чуть меньше верха — меньше пустой полосы между нижней сеткой и контентом под SVG.
+ * не обрезались. Низ не слишком большой — иначе линия визуально «уезжает вниз» и пустая полоса под графиком.
  */
 export const CHART_PLOT_INSET_TOP = 4;
-export const CHART_PLOT_INSET_BOTTOM = 2;
+export const CHART_PLOT_INSET_BOTTOM = 8;
 
-function chartPlotVerticalRange(): { plotTop: number; plotBottom: number; plotH: number } {
+/** Нижний inset только для графика на главной (Home); бот и остальные — `CHART_PLOT_INSET_BOTTOM`. */
+export const CHART_HOME_PLOT_INSET_BOTTOM = 2;
+
+function resolvePlotInsetBottom(raw: number | undefined): number {
+  if (typeof raw !== "number" || !Number.isFinite(raw)) return CHART_PLOT_INSET_BOTTOM;
+  const top = CHART_PLOT_INSET_TOP;
+  const maxBottom = CHART_VIEWBOX_HEIGHT - top - 1;
+  return Math.min(Math.max(0, raw), maxBottom);
+}
+
+function chartPlotVerticalRange(plotInsetBottom: number): { plotTop: number; plotBottom: number; plotH: number } {
   const H = CHART_VIEWBOX_HEIGHT;
   const plotTop = CHART_PLOT_INSET_TOP;
-  const plotBottom = H - CHART_PLOT_INSET_BOTTOM;
+  const plotBottom = H - plotInsetBottom;
   const plotH = Math.max(plotBottom - plotTop, 1);
   return { plotTop, plotBottom, plotH };
 }
 
-function buildStaticYTicks(): Array<{ label: string; ySvg: number }> {
+function buildStaticYTicks(plotInsetBottom: number): Array<{ label: string; ySvg: number }> {
   const emptyMin = -2;
   const emptyMax = 7;
   const range = emptyMax - emptyMin;
-  const { plotBottom, plotH } = chartPlotVerticalRange();
+  const { plotBottom, plotH } = chartPlotVerticalRange(plotInsetBottom);
   return Array.from({ length: 10 }, (_, i) => {
     const v = emptyMax - (i * range) / 9;
     const norm = (v - emptyMin) / range;
@@ -226,7 +241,8 @@ export function buildChartGeom(
   options?: BuildChartGeomOptions,
 ): ChartGeom {
   const W = 325;
-  const { plotBottom, plotH } = chartPlotVerticalRange();
+  const plotInsetBottom = resolvePlotInsetBottom(options?.plotInsetBottom);
+  const { plotBottom, plotH } = chartPlotVerticalRange(plotInsetBottom);
 
   if (points.length === 0) {
     return {
@@ -234,7 +250,7 @@ export function buildChartGeom(
       pathLine: "",
       pathArea: "",
       yLabels: [...STATIC_Y_LABELS],
-      yTicks: buildStaticYTicks(),
+      yTicks: buildStaticYTicks(plotInsetBottom),
       dots: [],
     };
   }
