@@ -183,10 +183,10 @@ export const CHART_VIEWBOX_HEIGHT = 122;
 
 /**
  * Внутренний plot по Y (user space): крайние тики не в y=0 / y=H, чтобы подписи с `translateY(-50%)`
- * не обрезались. Низ не слишком большой — иначе линия визуально «уезжает вниз» и пустая полоса под графиком.
+ * не обрезались. Низ = верху (4px), иначе под нижней сеткой заметно больше «воздуха», чем над верхней.
  */
 export const CHART_PLOT_INSET_TOP = 4;
-export const CHART_PLOT_INSET_BOTTOM = 8;
+export const CHART_PLOT_INSET_BOTTOM = 4;
 
 function chartPlotVerticalRange(): { plotTop: number; plotBottom: number; plotH: number } {
   const H = CHART_VIEWBOX_HEIGHT;
