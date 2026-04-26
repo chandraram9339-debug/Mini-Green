@@ -13,6 +13,7 @@
     "smoke": "node scripts/smoke-miniapp.mjs",
     "verify:trading": "node scripts/verify-miniapp-trading-http.mjs",
     "al:feed-last-hour": "node scripts/al-trade-feed-last-hour.mjs",
+    "reset:qa-user-data": "node scripts/reset-qa-user-data.mjs",
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
