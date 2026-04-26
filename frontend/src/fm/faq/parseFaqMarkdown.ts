@@ -2,12 +2,36 @@
  * Парсинг FAQ в формате Admin → Контент:
  * - секции: строка «# Название» (один #), дальше пары «## Вопрос» + ответ;
  * - без «#» — плоский список «##» / ответ.
+ * В начале допускаются пустые строки и markdown-blockquote (`>`), как в `FAQ.md`,
+ * иначе проверка «документ с секциями» ломается и всё уезжает в один блок «FAQ».
  * Совместимо с `backend/src/domain/faqMarkdown.ts` для блоков `##` …
  */
 
 export type FaqQa = { id: string; q: string; a: string };
 
 export type FaqSection = { heading: string; items: FaqQa[] };
+
+/** Убирает BOM, пустые строки и ведущие blockquote-абзацы до первого «не-quote» контента. */
+function stripLeadingFaqPreamble(markdown: string): string {
+  let s = markdown.replace(/\r\n/g, "\n");
+  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
+
+  const lines = s.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    if (line === "") {
+      i += 1;
+      continue;
+    }
+    if (/^>\s?/.test(line)) {
+      i += 1;
+      continue;
+    }
+    break;
+  }
+  return lines.slice(i).join("\n").trim();
+}
 
 function slugId(q: string, n: number) {
   const slug = q
@@ -39,7 +63,7 @@ function parseFaqItemsFlat(block: string): FaqQa[] {
 }
 
 export function parseFaqMarkdownSections(markdown: string): FaqSection[] {
-  const t = markdown.replace(/\r\n/g, "\n").trim();
+  const t = stripLeadingFaqPreamble(markdown);
   if (!t) return [];
 
   if (!/^\s*#\s+[^#]/.test(t)) {
