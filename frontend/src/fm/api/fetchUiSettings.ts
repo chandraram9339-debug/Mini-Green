@@ -9,6 +9,7 @@ export type UiSettings = {
   public_telegram_bot_username: string;
   miniapp_webapp_url: string;
   faq_markdown: string;
+  faq_markdown_es: string;
 };
 
 const UI_KEYS: (keyof UiSettings)[] = [
@@ -19,6 +20,7 @@ const UI_KEYS: (keyof UiSettings)[] = [
   "public_telegram_bot_username",
   "miniapp_webapp_url",
   "faq_markdown",
+  "faq_markdown_es",
 ];
 
 function parseUiPayload(o: Record<string, unknown>): UiSettings {
@@ -31,6 +33,7 @@ function parseUiPayload(o: Record<string, unknown>): UiSettings {
       typeof o.public_telegram_bot_username === "string" ? o.public_telegram_bot_username : "",
     miniapp_webapp_url: typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : "",
     faq_markdown: typeof o.faq_markdown === "string" ? o.faq_markdown : "",
+    faq_markdown_es: typeof o.faq_markdown_es === "string" ? o.faq_markdown_es : "",
   };
 }
 
@@ -51,6 +54,7 @@ export function mergeUiSettingsFromWallet(
         public_telegram_bot_username: wallet.public_telegram_bot_username,
         miniapp_webapp_url: wallet.miniapp_webapp_url,
         faq_markdown: wallet.faq_markdown,
+        faq_markdown_es: wallet.faq_markdown_es,
       } as Record<string, unknown>)
     : null;
 

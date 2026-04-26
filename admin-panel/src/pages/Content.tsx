@@ -13,6 +13,7 @@ export default function Content() {
   const [miniappWebappUrl, setMiniappWebappUrl] = useState("");
   const [telegramWelcomeText, setTelegramWelcomeText] = useState("");
   const [faq, setFaq] = useState("");
+  const [faqEs, setFaqEs] = useState("");
   const [userAgreement, setUserAgreement] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
@@ -29,6 +30,7 @@ export default function Content() {
         setMiniappWebappUrl(x.miniapp_webapp_url ?? "");
         setTelegramWelcomeText(x.telegram_welcome_text ?? "");
         setFaq(x.faq_markdown);
+        setFaqEs(x.faq_markdown_es ?? "");
         setUserAgreement(x.user_agreement_markdown ?? "");
       })
       .catch((e: Error) => setErr(e.message));
@@ -50,6 +52,7 @@ export default function Content() {
           miniapp_webapp_url: miniappWebappUrl,
           telegram_welcome_text: telegramWelcomeText,
           faq_markdown: faq,
+          faq_markdown_es: faqEs,
           user_agreement_markdown: userAgreement
         })
       });
@@ -167,8 +170,21 @@ export default function Content() {
             </FieldNote>
           </div>
           <div className="row">
-            <label htmlFor="faq">Частые вопросы (Markdown)</label>
+            <label htmlFor="faq">Частые вопросы (Markdown, EN / default)</label>
             <textarea id="faq" value={faq} onChange={(e) => setFaq(e.target.value)} style={{ minHeight: 200 }} />
+          </div>
+          <div className="row">
+            <label htmlFor="faqEs">Частые вопросы (Markdown, ES)</label>
+            <textarea
+              id="faqEs"
+              value={faqEs}
+              onChange={(e) => setFaqEs(e.target.value)}
+              style={{ minHeight: 200 }}
+              placeholder="Пусто — в мини-аппе на испанском показывается встроенный FAQ.es.md из репозитория"
+            />
+            <FieldNote>
+              При языке «Español» в мини-аппе используется это поле; если пусто — бандл из репо (`FAQ.es.md`).
+            </FieldNote>
           </div>
           <div className="row">
             <label htmlFor="ua">Пользовательское соглашение (Markdown, мини-апп)</label>

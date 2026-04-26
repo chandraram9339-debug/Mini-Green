@@ -10,6 +10,8 @@ export type WalletMiniappUiFields = {
   miniapp_webapp_url?: string;
   /** HTML-free Markdown FAQ: ## вопрос + ответ; опционально # секция (admin). */
   faq_markdown?: string;
+  /** Markdown FAQ (es); si vacío en API, la miniapp usa el bundle `FAQ.es.md`. */
+  faq_markdown_es?: string;
 };
 
 export type WalletSeedScreenMeta = {

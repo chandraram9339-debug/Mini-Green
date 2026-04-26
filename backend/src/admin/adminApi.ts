@@ -506,6 +506,7 @@ export function registerAdminApi(app: express.Express) {
       miniapp_webapp_url: g("content_miniapp_webapp_url"),
       telegram_welcome_text: g("content_telegram_welcome_text"),
       faq_markdown: g("content_faq_markdown"),
+      faq_markdown_es: g("content_faq_markdown_es"),
       user_agreement_markdown: g("content_user_agreement_markdown")
     });
   });
@@ -527,6 +528,7 @@ export function registerAdminApi(app: express.Express) {
     if (b.telegram_welcome_text != null)
       ins.run("content_telegram_welcome_text", String(b.telegram_welcome_text), now);
     if (b.faq_markdown != null) ins.run("content_faq_markdown", String(b.faq_markdown), now);
+    if (b.faq_markdown_es != null) ins.run("content_faq_markdown_es", String(b.faq_markdown_es), now);
     if (b.user_agreement_markdown != null)
       ins.run("content_user_agreement_markdown", String(b.user_agreement_markdown), now);
     const g = (k: string) =>
@@ -541,6 +543,7 @@ export function registerAdminApi(app: express.Express) {
       miniapp_webapp_url: g("content_miniapp_webapp_url"),
       telegram_welcome_text: g("content_telegram_welcome_text"),
       faq_markdown: g("content_faq_markdown"),
+      faq_markdown_es: g("content_faq_markdown_es"),
       user_agreement_markdown: g("content_user_agreement_markdown")
     });
   });

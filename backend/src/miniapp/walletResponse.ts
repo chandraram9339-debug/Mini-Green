@@ -67,6 +67,7 @@ export function buildWalletForUser(userId: string) {
     miniapp_webapp_url: ui.miniapp_webapp_url,
     /** Дублирование /wallet ↔ ui-settings (FAQ из админки). */
     faq_markdown: ui.faq_markdown,
+    faq_markdown_es: ui.faq_markdown_es,
     /** Режим экрана сида: без мнемоники (см. mode/reason; слова — только GET /wallet/seed). */
     seedScreen: buildWalletSeedMeta(userId),
   };

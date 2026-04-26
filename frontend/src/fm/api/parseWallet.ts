@@ -89,6 +89,7 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     typeof o.public_telegram_bot_username === "string" ? o.public_telegram_bot_username : undefined;
   const miniapp_webapp_url = typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : undefined;
   const faq_markdown = typeof o.faq_markdown === "string" ? o.faq_markdown : undefined;
+  const faq_markdown_es = typeof o.faq_markdown_es === "string" ? o.faq_markdown_es : undefined;
 
   const rawSeed = (o.seedScreen ?? o.seed_screen) as Record<string, unknown> | undefined;
   let seedScreen: WalletSeedScreenMeta | undefined;
@@ -139,6 +140,7 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     ...(public_telegram_bot_username !== undefined ? { public_telegram_bot_username } : {}),
     ...(miniapp_webapp_url !== undefined ? { miniapp_webapp_url } : {}),
     ...(faq_markdown !== undefined ? { faq_markdown } : {}),
+    ...(faq_markdown_es !== undefined ? { faq_markdown_es } : {}),
     ...(seedScreen !== undefined ? { seedScreen } : {}),
   };
 }

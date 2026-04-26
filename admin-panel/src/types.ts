@@ -138,6 +138,8 @@ export type ContentPayload = {
   /** Plain text: ответ бота на /start (кнопки канал/чат/апп добавляются отдельно). */
   telegram_welcome_text: string;
   faq_markdown: string;
+  /** Markdown FAQ (español); vacío en BD → miniapp usa bundle `FAQ.es.md`. */
+  faq_markdown_es: string;
   user_agreement_markdown: string;
 };
 

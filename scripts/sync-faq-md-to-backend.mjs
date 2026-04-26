@@ -3,6 +3,7 @@
  * Синхронизирует `FAQ.md` (корень) в:
  * - backend/src/db/migrations/faqDefaultPalladiumMarkdown.ts
  * - frontend/src/fm/faq/faqDefaultPalladiumMarkdown.ts
+ * И `FAQ.es.md` → `frontend/src/fm/faq/faqDefaultPalladiumMarkdownEs.ts` (если файл есть).
  * Запуск: `node scripts/sync-faq-md-to-backend.mjs`
  */
 import fs from "node:fs";
@@ -33,3 +34,19 @@ const outFrontend = path.join(
 );
 fs.writeFileSync(outFrontend, body);
 console.log("OK:", outFrontend, `(${c.length} chars)`);
+
+const mdEsPath = path.join(root, "FAQ.es.md");
+if (fs.existsSync(mdEsPath)) {
+  const es = fs.readFileSync(mdEsPath, "utf8");
+  const headEs =
+    "/**\n" +
+    " * FAQ en español: mantener alineado con `FAQ.es.md` (raíz del repo).\n" +
+    " * Admin → Contenido (`content_faq_markdown_es`) lo sobrescribe si está relleno.\n" +
+    " */\n";
+  const bodyEs = `${headEs}export const FAQ_DEFAULT_PALLADIUM_MARKDOWN_ES = ${JSON.stringify(es)};\n`;
+  const outEs = path.join(root, "frontend/src/fm/faq/faqDefaultPalladiumMarkdownEs.ts");
+  fs.writeFileSync(outEs, bodyEs);
+  console.log("OK:", outEs, `(${es.length} chars)`);
+} else {
+  console.log("skip: FAQ.es.md not found");
+}

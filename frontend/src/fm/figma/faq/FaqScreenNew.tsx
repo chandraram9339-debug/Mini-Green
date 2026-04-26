@@ -7,6 +7,7 @@ import { useAppSession } from "../../session/useAppSession";
 import { routes } from "../routes";
 import { parseFaqMarkdownSections } from "../../faq/parseFaqMarkdown";
 import { FAQ_DEFAULT_PALLADIUM_MARKDOWN } from "../../faq/faqDefaultPalladiumMarkdown";
+import { FAQ_DEFAULT_PALLADIUM_MARKDOWN_ES } from "../../faq/faqDefaultPalladiumMarkdownEs";
 
 import s from "./faqScreenNew.module.css";
 
@@ -186,23 +187,26 @@ function BottomTabBar({ active }: { active: string }) {
 
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function FaqScreenNew() {
-  const { t } = useFmLocale();
+  const { t, locale } = useFmLocale();
   const activeNav = useActiveNav();
   const { notificationUnreadCount, uiSettings, wallet } = useAppSession();
 
-  /** Первый непустой текст: ui-settings или wallet (пустая строка в одном не должна блокировать другой). */
+  const bundledDefault = locale === "es" ? FAQ_DEFAULT_PALLADIUM_MARKDOWN_ES : FAQ_DEFAULT_PALLADIUM_MARKDOWN;
+  /** Для `es` — отдельное поле в админке / wallet; иначе общий markdown (EN). */
+  const serverFields =
+    locale === "es"
+      ? [uiSettings?.faq_markdown_es, wallet?.faq_markdown_es]
+      : [uiSettings?.faq_markdown, wallet?.faq_markdown];
   const faqRaw =
-    [uiSettings?.faq_markdown, wallet?.faq_markdown]
-      .map((s) => (typeof s === "string" ? s.trim() : ""))
-      .find((s) => s.length > 0) ?? "";
-  /** Как в FAQ.md / backend: если API не отдал текст — показываем тот же дефолт, не i18n из 3 блоков. */
-  const effectiveFaq = faqRaw || FAQ_DEFAULT_PALLADIUM_MARKDOWN;
+    serverFields.map((s) => (typeof s === "string" ? s.trim() : "")).find((s) => s.length > 0) ?? "";
+  /** FAQ.md / FAQ.es.md в бандле; админка перекрывает по языку. */
+  const effectiveFaq = faqRaw || bundledDefault;
   const sections = useMemo(() => {
     const parsed = parseFaqMarkdownSections(effectiveFaq);
     const ok = parsed.some((sec) => sec.items.length > 0);
     if (ok) return parsed;
-    return parseFaqMarkdownSections(FAQ_DEFAULT_PALLADIUM_MARKDOWN);
-  }, [effectiveFaq]);
+    return parseFaqMarkdownSections(bundledDefault);
+  }, [effectiveFaq, bundledDefault]);
 
   const navigate = useNavigate();
   const [openId, setOpenId] = useState<string>("");

@@ -134,6 +134,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration028FaqSyncToBundledMarkdown(db, now);
   runMigration029PalladiumFeePolicy7AndPercents(db, now);
   runMigration030ReferralPercent8Percent(db, now);
+  runMigration031FaqMarkdownEsKey(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -635,4 +636,12 @@ function runMigration030ReferralPercent8Percent(db: Database, now: string) {
   db
     .prepare("INSERT INTO _migrations (id, name) VALUES (30, '030_referral_percent_8_percent')")
     .run();
+}
+
+/** FAQ en español (opcional): miniapp con locale `es` usa esta clave si está rellena. */
+function runMigration031FaqMarkdownEsKey(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=31").get() as { ok: number } | undefined;
+  if (m) return;
+  setConfigIfMissing(db, "content_faq_markdown_es", "", now);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (31, '031_faq_markdown_es_key')").run();
 }
