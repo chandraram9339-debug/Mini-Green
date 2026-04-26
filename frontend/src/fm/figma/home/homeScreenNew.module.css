@@ -306,8 +306,9 @@
 
 /* ── Секция бота ───────────────────────────────────────────── */
 .botSection {
-  /* Одинаковый вертикальный зазор: после верхней Details → график, и под графиком → блок статуса/цены */
+  /* Сверху секции до графика — 20px; снизу от обёртки графика до «Bot status» — меньше, иначе полоса визуально «не садится» */
   --home-chart-v-rhythm: 20px;
+  --home-chart-gap-below: 10px;
   padding: var(--home-chart-v-rhythm) 16px 0;
 }
 
@@ -320,10 +321,9 @@
 .chartWrap {
   width: 100%;
   overflow: visible;
-  /* Снаружи графика: столько же, сколько padding-top у .botSection (--home-chart-v-rhythm) */
-  margin-bottom: var(--home-chart-v-rhythm);
+  margin-bottom: var(--home-chart-gap-below);
   padding-top: 2px;
-  padding-bottom: 6px;
+  padding-bottom: 0;
 }
 
 .chartPlotRow {
