@@ -161,7 +161,8 @@ export function sendTelegramStartWelcome(
     | { text: string; url: string }
     | { text: string; web_app: { url: string } };
   // Only one "launch pad" button (web_app). Channel/Chat are clickable in text.
-  const rows: IkBtn[][] = urlOk ? [[{ text: "LAUNCH APP", web_app: { url: webRaw } }]] : [];
+  // Inline keyboard button text is plain (no HTML). Use emoji for a nicer “launch” affordance.
+  const rows: IkBtn[][] = urlOk ? [[{ text: "🚀 LAUNCH APP", web_app: { url: webRaw } }]] : [];
 
   const payload: Record<string, unknown> = {
     chat_id: chatId,
