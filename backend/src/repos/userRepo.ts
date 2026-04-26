@@ -85,7 +85,7 @@ export async function createUser(
     const address = tronAddressFromMnemonic(mnemonic, 0);
     const ins = db.prepare(
       `INSERT INTO users (tg_user_id, inviter_tg_id, balance_usdt_minor, has_deposited, deposit_count, deposit_path_index, deposit_tron_address, wallet_mnemonic_encrypted, deposit_private_key_encrypted, last_chain_usdt_balance_minor, last_active_at, blocked_bot_at, created_at)
-       VALUES (?,?,0,0,0,NULL,?,?,NULL,NULL,NULL,?,?,?)`
+       VALUES (?,?,0,0,0,NULL,?,?,NULL,NULL,?,?,?)`
     );
     ins.run(tg, inviterTg, address, encrypted, now, null, now);
     const u = getUserByTg(db, tg);
