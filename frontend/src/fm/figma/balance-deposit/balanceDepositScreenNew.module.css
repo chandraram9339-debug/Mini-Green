@@ -12,18 +12,20 @@
 /* ── Page / container ───────────────────────────────────────── */
 .page {
   width: 100%;
-  min-height: 100dvh;
+  flex: 1 1 0;
+  min-height: 0;
   background: #0a0a0a;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: stretch;
   font-family: "Outfit", sans-serif;
 }
 
 .container {
   width: 100%;
-  max-width: var(--fm-layout-column-max-width, 430px);
-  min-height: 100dvh;
+  max-width: var(--fm-layout-column-max-width, 100%);
+  flex: 1 1 0;
+  min-height: 0;
   background: #0a0a0a;
   display: flex;
   flex-direction: column;
@@ -215,7 +217,7 @@
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding: 20px 20px 0;
+  padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;

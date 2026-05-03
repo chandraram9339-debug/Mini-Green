@@ -23,11 +23,11 @@ export function FigmaTabBar({
 }) {
   const { pathname } = useLocation();
   const { t } = useFmLocale();
-  const active = forceActiveTab ?? getTabBarActive(pathname);
+  const active: TabBarActive = forceActiveTab ?? getTabBarActive(pathname);
   const icons = sharedTabBarIcons;
 
   return (
-    <nav className="fm-abs fm-tabbar" aria-label="Primary" data-active-tab={active ?? undefined}>
+    <nav className="fm-abs fm-tabbar" aria-label="Primary" data-active-tab={active}>
       <div className="fm-tabbar-nav">
         <NavLink
           to={routes.home}

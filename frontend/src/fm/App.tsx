@@ -15,6 +15,7 @@ import WithdrawDoneScreen from "./figma/withdraw/WithdrawDoneScreenNew";
 import TopUpScreenNew from "./figma/top-up/TopUpScreenNew";
 import BotDetailScreenNew from "./figma/bot-detail/BotDetailScreenNew";
 import HomeScreenNew from "./figma/home/HomeScreenNew";
+import { FmMainLayout } from "./figma/layout/FmMainLayout";
 import SeedCodeScreen from "./figma/seed-code/SeedCodeScreenNew";
 import UserAgreementScreen from "./figma/user-agreement/UserAgreementScreenNew";
 import "./figma/home/homeScreen.css";
@@ -46,23 +47,25 @@ export default function App() {
             <OnboardingTourRoot splashDone={!showSplash} />
             <Routes>
               <Route path="/" element={<Navigate to={routes.home} replace />} />
-              <Route path={routes.home} element={<HomeScreenNew />} />
-              <Route path={routes.balanceDeposit} element={<BalanceDepositScreenNew />} />
-              <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />
-              <Route path={routes.bot} element={<BotDetailScreenNew />} />
-              <Route path={routes.social} element={<SocialMediaScreen />} />
-              <Route path={routes.support} element={<SupportScreenNew />} />
-              <Route path={routes.faq} element={<FaqScreenNew />} />
-              <Route path={routes.notifications} element={<NotificationsScreenNew />} />
-              <Route path={routes.settings} element={<SettingsScreenNew />} />
+              <Route element={<FmMainLayout />}>
+                <Route path={routes.home} element={<HomeScreenNew />} />
+                <Route path={routes.balanceDeposit} element={<BalanceDepositScreenNew />} />
+                <Route path={routes.balanceReferral} element={<BalanceReferralScreen />} />
+                <Route path={routes.bot} element={<BotDetailScreenNew />} />
+                <Route path={routes.social} element={<SocialMediaScreen />} />
+                <Route path={routes.support} element={<SupportScreenNew />} />
+                <Route path={routes.faq} element={<FaqScreenNew />} />
+                <Route path={routes.notifications} element={<NotificationsScreenNew />} />
+                <Route path={routes.settings} element={<SettingsScreenNew />} />
+                <Route path={routes.depositTopUp} element={<TopUpScreenNew />} />
+                <Route path={routes.seedCode} element={<SeedCodeScreen />} />
+                <Route path={routes.userAgreement} element={<UserAgreementScreen />} />
+              </Route>
               <Route path={routes.withdraw} element={<WithdrawScreen />} />
               <Route path={routes.withdrawConfirm} element={<WithdrawConfirmScreen />} />
               <Route path={routes.withdrawDone} element={<WithdrawDoneScreen />} />
-              <Route path={routes.depositTopUp} element={<TopUpScreenNew />} />
               <Route path={routes.withdrawRecipient} element={<WithdrawRecipientScreen />} />
               <Route path={routes.withdrawAmount} element={<WithdrawAmountScreen />} />
-              <Route path={routes.seedCode} element={<SeedCodeScreen />} />
-              <Route path={routes.userAgreement} element={<UserAgreementScreen />} />
             </Routes>
           </div>
           {showSplash ? <SplashScreen durationMs={SPLASH_DURATION_MS} /> : null}

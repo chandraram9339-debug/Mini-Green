@@ -173,7 +173,7 @@
   overscroll-behavior-y: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 8px 20px 112px;
+  padding: 8px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;

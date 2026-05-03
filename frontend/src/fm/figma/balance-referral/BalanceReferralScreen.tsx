@@ -7,9 +7,7 @@ import { Link } from "react-router-dom";
 
 import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
-import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
-import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
@@ -23,13 +21,6 @@ const referralStatusAssets: StatusBarAssetUrls = {
   batteryLight: depositAssets.batteryLight,
   indicator: depositAssets.indicator,
   time941: depositAssets.time941,
-};
-
-const referralTabIcons: TabBarIconUrls = {
-  home: depositAssets.group4,
-  wallet: depositAssets.group5,
-  bot: depositAssets.group6,
-  support: depositAssets.group7,
 };
 
 const INVITE_ROWS = [
@@ -176,8 +167,6 @@ export default function BalanceReferralScreen() {
           </div>
         </div>
       </section>
-
-      <FigmaTabBar icons={referralTabIcons} />
     </main>
   );
 }

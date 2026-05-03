@@ -7,7 +7,7 @@
  * Adapt: flex layout, max-width 500px, no position:absolute, safe-area TabBar.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { fetchWalletHistory } from "../../api/fetchWalletHistory";
 import { hasApiBase } from "../../api/env";
@@ -66,15 +66,6 @@ function emptyBundle(): WalletHistoryBundle {
     withdraw: { rows: [], totalAmount: 0, count: 0 },
     referral: { rows: [], totalAmount: 0, count: 0 },
   };
-}
-
-/* ── Tab routing helper ──────────────────────────────────────── */
-function useActiveTab() {
-  const { pathname } = useLocation();
-  if (pathname.startsWith("/bot")) return "bot";
-  if (pathname.startsWith("/balance") || pathname.startsWith("/deposit") || pathname.startsWith("/withdraw")) return "wallet";
-  if (pathname.startsWith("/support") || pathname.startsWith("/faq")) return "support";
-  return "home";
 }
 
 /* ── SVG icons (inlined from Builder.io) ────────────────────── */
@@ -277,78 +268,11 @@ function TransactionRow({ row, tab, t, metaLabel }: RowProps) {
   );
 }
 
-/* ── Bottom TabBar (inline SVG, routing) ─────────────────────── */
-function BottomTabBar({ active }: { active: string }) {
-  const tabs = [
-    {
-      id: "home", to: routes.home, label: "Home",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M20 20H4V10L12 4L20 10V20Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M12 14V20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
-      id: "wallet", to: routes.balanceDeposit, label: "Wallet",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 8H3V20H21V8Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 8V4H17V8" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M16 14H17" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
-      id: "bot", to: routes.bot, label: "Bot",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4V20H20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-          <path d="M9 13L13 9L16 12L20 8" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
-      id: "support", to: routes.support, label: "Support",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill={a ? "#fff" : "#55647B"} />
-          <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-  ] as const;
-
-  return (
-    <nav className={s.tabBar} aria-label="Primary navigation">
-      <div className={s.tabBarInner}>
-        {tabs.map(({ id, to, label, icon }) => {
-          const isActive = active === id;
-          return (
-            <Link
-              key={id}
-              to={to}
-              className={`${s.tabItem}${isActive ? ` ${s.tabItemActive}` : ""}`}
-              aria-label={label}
-              aria-current={isActive ? "page" : undefined}
-              {...(id === "bot" ? { "data-tour-id": "getting-started-tab-bot" } : {})}
-            >
-              {icon(isActive)}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function BalanceDepositScreenNew() {
   const { t } = useFmLocale();
   const { notificationUnreadCount } = useAppSession();
   const { balanceUsdt, depositAddress } = useWalletDisplay();
-  const activeTab = useActiveTab();
-
   const [tab, setTab] = useState<HistoryTab>("deposit");
   const [apiHistory, setApiHistory] = useState<WalletHistoryBundle | null>(null);
   // Start in loading state when API is available — prevents flash of fake data
@@ -470,12 +394,6 @@ export default function BalanceDepositScreenNew() {
           </div>
         </div>
 
-        {/* Bottom navigation */}
-        <BottomTabBar active={activeTab} />
-
-        {/* Bottom glow effect */}
-        <div className={s.bottomGlow} aria-hidden="true" />
-        <div className={s.bottomGlowSmall} aria-hidden="true" />
       </div>
     </div>
   );

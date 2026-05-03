@@ -12,18 +12,20 @@
 /* ── Page / container ───────────────────────────────────────── */
 .page {
   width: 100%;
-  min-height: 100dvh;
+  flex: 1 1 0;
+  min-height: 0;
   background: #0a0a0a;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: stretch;
   font-family: "Outfit", sans-serif;
 }
 
 .container {
   width: 100%;
-  max-width: var(--fm-layout-column-max-width, 430px);
-  min-height: 100dvh;
+  max-width: var(--fm-layout-column-max-width, 100%);
+  flex: 1 1 0;
+  min-height: 0;
   background: #0a0a0a;
   display: flex;
   flex-direction: column;
@@ -222,7 +224,7 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding-bottom: 112px;
+  padding-bottom: 24px;
 }
 
 /* Всё, что уходит вверх до липкого «Your trading history» (вкл. 24h/7d, Total deals, график) */
@@ -553,8 +555,8 @@
 /* ── Trade Feed Section ─────────────────────────────────────── */
 .feedSection {
   padding: 0 20px;
-  /* pb-28 = 112px for safe area above tabbar */
-  padding-bottom: 112px;
+  /* Bottom nav is in FmMainLayout — modest scroll end padding */
+  padding-bottom: 24px;
 }
 
 /* Отступ от блока статов; уезжает при скролле (не входит в sticky) */

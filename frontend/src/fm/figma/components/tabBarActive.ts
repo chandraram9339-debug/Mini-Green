@@ -3,7 +3,7 @@ import { routes } from "../routes";
 export type TabBarActive = "home" | "wallet" | "bot" | "support";
 
 /** Какая вкладка нижней навигации должна быть подсвечена для текущего URL. */
-export function getTabBarActive(pathname: string): TabBarActive | null {
+export function getTabBarActive(pathname: string): TabBarActive {
   if (pathname === routes.home || pathname === "/") return "home";
 
   if (
@@ -23,5 +23,6 @@ export function getTabBarActive(pathname: string): TabBarActive | null {
   )
     return "support";
 
-  return null;
+  /* e.g. /social — keep pill consistent; highlight Home */
+  return "home";
 }

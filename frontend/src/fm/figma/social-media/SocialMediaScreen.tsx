@@ -3,9 +3,7 @@ import "./socialMediaScreen.css";
 
 import { FigmaAppBar } from "../components/FigmaAppBar";
 import { FigmaStatusBar } from "../components/FigmaStatusBar";
-import { FigmaTabBar } from "../components/FigmaTabBar";
 import type { StatusBarAssetUrls } from "../types/statusBarAssets";
-import type { TabBarIconUrls } from "../types/tabBarIcons";
 import {
   SUPPORT_TELEGRAM_URL,
   TELEGRAM_CHANNEL_URL,
@@ -22,13 +20,6 @@ const socialStatusAssets: StatusBarAssetUrls = {
   batteryLight: socialMediaAssets.batteryLight,
   indicator: socialMediaAssets.indicator,
   time941: socialMediaAssets.time941,
-};
-
-const socialTabIcons: TabBarIconUrls = {
-  home: socialMediaAssets.tabHome,
-  wallet: socialMediaAssets.tabWallet,
-  bot: socialMediaAssets.tabBot,
-  support: socialMediaAssets.tabSupport,
 };
 
 /** Экран «1 | Social Media» — node 1:3734, `social-media__full-screen__1-3734.tsx`. */
@@ -124,8 +115,6 @@ export default function SocialMediaScreen() {
           </div>
         </section>
       </div>
-
-      <FigmaTabBar icons={socialTabIcons} forceActiveTab="home" />
     </main>
   );
 }

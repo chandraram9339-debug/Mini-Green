@@ -1,0 +1,46 @@
+.root {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  background: var(--fm-page-bg, #0a0a0a);
+}
+
+.column {
+  width: 100%;
+  max-width: var(--fm-layout-column-max-width, 500px);
+  margin-left: auto;
+  margin-right: auto;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottomNavArea {
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 var(--fm-layout-shell-pad-x, 20px) calc(16px + env(safe-area-inset-bottom, 0px));
+}

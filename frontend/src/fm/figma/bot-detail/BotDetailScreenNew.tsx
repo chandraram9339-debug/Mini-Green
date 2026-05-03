@@ -11,7 +11,7 @@ import "../home/homeScreen.css";
 import "./botDetailScreen.css";
 
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { hasApiBase } from "../../api/env";
 import {
@@ -60,15 +60,6 @@ function botDetailRefreshMs(): number {
   if (raw == null || String(raw).trim() === "") return 5_000;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 2_000 ? n : 5_000;
-}
-
-/* ── Active-tab helper ───────────────────────────────────────── */
-function useActiveNav() {
-  const { pathname } = useLocation();
-  if (pathname.startsWith("/bot")) return "bot";
-  if (pathname.startsWith("/balance") || pathname.startsWith("/deposit") || pathname.startsWith("/withdraw")) return "wallet";
-  if (pathname.startsWith("/support") || pathname.startsWith("/faq")) return "support";
-  return "home";
 }
 
 /* ── График: системная серия % за выбранный период вкладки (время → X, кумулятив → Y) ─ */
@@ -180,77 +171,12 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
   );
 }
 
-/* ── Bottom TabBar ───────────────────────────────────────────── */
-function BottomTabBar({ active }: { active: string }) {
-  const tabs = [
-    {
-      id: "home", to: routes.home, label: "Home",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M20 20H4V10L12 4L20 10V20Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 14V20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-    },
-    {
-      id: "wallet", to: routes.balanceDeposit, label: "Wallet",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 8H3V20H21V8Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M3 8V4H17V8" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M16 14H17" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-    },
-    {
-      id: "bot", to: routes.bot, label: "Bot",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4V20H20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
-          <path d="M9 13L13 9L16 12L20 8" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
-        </svg>
-      ),
-    },
-    {
-      id: "support", to: routes.support, label: "Support",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill={a ? "#fff" : "#55647B"}/>
-          <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
-    },
-  ] as const;
-
-  return (
-    <nav className={s.tabBar} aria-label="Primary navigation">
-      <div className={s.tabBarInner}>
-        {tabs.map(({ id, to, label, icon }) => {
-          const isActive = active === id;
-          return (
-            <Link
-              key={id}
-              to={to}
-              className={`${s.tabItem}${isActive ? ` ${s.tabItemActive}` : ""}`}
-              aria-label={label}
-              aria-current={isActive ? "page" : undefined}
-            >
-              {icon(isActive)}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function BotDetailScreenNew() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
   const { phase, mode, botRunning, refreshWallet, setBotRunning, notificationUnreadCount } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
-  const activeNav = useActiveNav();
 
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
@@ -727,14 +653,6 @@ export default function BotDetailScreenNew() {
         </section>
       </div>
 
-        {/* Bottom glow decoration */}
-        <div className={s.bottomGlow} aria-hidden="true" />
-        <div className={s.bottomGlowSmall} aria-hidden="true" />
-
-        {/* Bottom nav fixed inside container */}
-        <div className={s.tabBarWrap} data-tour-id="trading-tab-bar">
-          <BottomTabBar active={activeNav} />
-        </div>
       </div>
     </div>
   );

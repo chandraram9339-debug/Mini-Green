@@ -7,12 +7,11 @@
  *   BalanceSection (баланс, Top Up, Withdraw, Details)
  *   BotStatusSection (chart, статус бота, цена, Details)
  *   ActionButtons (Chat, Channel)
- *   TabBar
  *
  * Данные: fetchTradingJournal, fetchBotTrading, useAppSession, useWalletDisplay
  */
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useFmLocale } from "../../i18n/useFmLocale";
 
 import { hasApiBase } from "../../api/env";
@@ -39,15 +38,6 @@ import { appBarLogoUrl } from "../assets/appBarShared";
 import { TELEGRAM_CHANNEL_URL, TELEGRAM_CHAT_URL, openTelegramOrExternal } from "../../config/links";
 
 import s from "./homeScreenNew.module.css";
-
-/* ─── Хук активного таба ────────────────────────────────────── */
-function useActiveTab() {
-  const { pathname } = useLocation();
-  if (pathname.startsWith("/bot")) return "bot";
-  if (pathname.startsWith("/balance") || pathname.startsWith("/deposit") || pathname.startsWith("/withdraw")) return "wallet";
-  if (pathname.startsWith("/support") || pathname.startsWith("/faq")) return "support";
-  return "home";
-}
 
 /* ─── AppBar ─────────────────────────────────────────────────── */
 function AppBar({ bellBadge }: { bellBadge?: number }) {
@@ -173,76 +163,8 @@ function PerformanceChart({
   );
 }
 
-/* ─── TabBar ─────────────────────────────────────────────────── */
-function TabBar({ active }: { active: string }) {
-  const { t } = useFmLocale();
-  const tabs = [
-    {
-      id: "home", to: routes.home,
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M20 20H4V10L12 4L20 10V20Z" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M12 14V20" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
-      id: "wallet", to: routes.balanceDeposit,
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 8H3V20H21V8Z" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 8V4H17V8" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M16 14H17" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
-      id: "bot", to: routes.bot,
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4V20H20" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-          <path d="M9 13L13 9L16 12L20 8" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-    {
-      id: "support", to: routes.support,
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill={a ? "#191919" : "#ffffff"} />
-          <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
-    },
-  ] as const;
-
-  return (
-    <nav className={s.tabBar} aria-label={t("common.primaryNav")}>
-      <div className={s.tabBarInner}>
-        {tabs.map(({ id, to, icon }) => {
-          const isActive = active === id;
-          return (
-            <Link
-              key={id}
-              to={to}
-              className={s.tabItem}
-              aria-current={isActive ? "page" : undefined}
-              {...(id === "wallet" ? { "data-tour-id": "getting-started-tab-wallet" } : {})}
-            >
-              <div className={`${s.tabItemIcon}${isActive ? ` ${s.tabItemIconActive}` : ""}`}>
-                {icon(isActive)}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
 /* ─── Главный экран ──────────────────────────────────────────── */
 export default function HomeScreenNew() {
-  const activeTab = useActiveTab();
   const { t } = useFmLocale();
   const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt, cumulativeDepositsUsdt } =
@@ -507,11 +429,6 @@ export default function HomeScreenNew() {
           </div>
         </main>
 
-        <div className={s.tabBarWrapper} data-tour-id="home-tab-bar">
-          <div className={s.tabGlowOuter} aria-hidden="true" />
-          <div className={s.tabGlowInner} aria-hidden="true" />
-          <TabBar active={activeTab} />
-        </div>
       </div>
     </div>
   );

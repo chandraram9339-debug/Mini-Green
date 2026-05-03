@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
@@ -19,20 +19,6 @@ import s from "./topUpScreenNew.module.css";
 /* ── QR URL helper (same as old screen) ──────────────────────── */
 function qrImageUrl(data: string) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}`;
-}
-
-/* ── Active-tab helper ───────────────────────────────────────── */
-function useActiveNav() {
-  const { pathname } = useLocation();
-  if (pathname.startsWith("/bot")) return "bot";
-  if (
-    pathname.startsWith("/balance") ||
-    pathname.startsWith("/deposit") ||
-    pathname.startsWith("/withdraw")
-  )
-    return "wallet";
-  if (pathname.startsWith("/support") || pathname.startsWith("/faq")) return "support";
-  return "home";
 }
 
 /* ── AppBar ──────────────────────────────────────────────────── */
@@ -111,137 +97,10 @@ function AppBar({ title, onBack, bellBadge }: { title: string; onBack: () => voi
   );
 }
 
-/* ── Bottom TabBar ───────────────────────────────────────────── */
-function BottomTabBar({ active }: { active: string }) {
-  const tabs = [
-    {
-      id: "home",
-      to: routes.home,
-      label: "Home",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M20 20H4V10L12 4L20 10V20Z"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M12 14V20"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "wallet",
-      to: routes.balanceDeposit,
-      label: "Wallet",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M21 8H3V20H21V8Z"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M3 8V4H17V8"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M16 14H17"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "bot",
-      to: routes.bot,
-      label: "Bot",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M4 4V20H20"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="square"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M9 13L13 9L16 12L20 8"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="square"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "support",
-      to: routes.support,
-      label: "Support",
-      icon: (a: boolean) => (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z"
-            fill={a ? "#191919" : "#ffffff"}
-          />
-          <path
-            d="M8 11H8.01M12 11H12.01M16 11H16.01"
-            stroke={a ? "#191919" : "#ffffff"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-    },
-  ] as const;
-
-  return (
-    <nav className={s.tabBar} aria-label="Primary navigation">
-      <div className={s.tabBarInner}>
-        {tabs.map(({ id, to, label, icon }) => {
-          const isActive = active === id;
-          return (
-            <Link
-              key={id}
-              to={to}
-              className={s.tabItem}
-              aria-label={label}
-              aria-current={isActive ? "page" : undefined}
-              {...(id === "bot" ? { "data-tour-id": "getting-started-tab-bot" } : {})}
-            >
-              <div className={`${s.tabItemIcon}${isActive ? ` ${s.tabItemIconActive}` : ""}`}>
-                {icon(isActive)}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
-
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function TopUpScreenNew() {
   const navigate = useNavigate();
   const { t } = useFmLocale();
-  const activeNav = useActiveNav();
   const { wallet, confirmDepositPaid, notificationUnreadCount } = useAppSession();
   const { minDepositUsdt, depositFeeBps, depositFeeFixedUsdt } = useWalletDisplay();
 
@@ -390,8 +249,6 @@ export default function TopUpScreenNew() {
           </svg>
         </div>
       )}
-
-      <BottomTabBar active={activeNav} />
     </div>
   );
 }

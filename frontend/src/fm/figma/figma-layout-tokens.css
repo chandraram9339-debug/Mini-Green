@@ -29,12 +29,15 @@
 /* ── Floating bottom nav (pill) — shared geometry for redesigned screens ── */
 :root {
   /*
-   * Колонка мини-приложения (Ready ~430px): на телефоне — min(100%, 430px) по сути full-width,
-   * на планшете/десктопе — ограничение + центрирование через margin/auto у контейнеров.
+   * Максимальная ширина колонки мини-приложения: на телефоне — 100% вьюпорта,
+   * на широком экране — не больше 500px (центрирует FmMainLayout + контейнеры экранов).
    */
-  --fm-layout-column-max-width: 430px;
+  --fm-layout-column-max-width: 500px;
   --fm-pill-nav-bottom: 20px;
+  /** @deprecated for shared shell nav — pill is width:100% inside shell; kept for legacy CSS refs */
   --fm-pill-nav-max-width: 350px;
+  /** Horizontal inset for shell chrome (tab dock + aligned with app gutters / app bar). */
+  --fm-layout-shell-pad-x: var(--fm-appbar-inset-x, 20px);
   --fm-pill-nav-inner-pad-x: 26px;
   --fm-pill-nav-inner-pad-y: 10px;
   --fm-pill-nav-inner-pad-bottom: calc(10px + env(safe-area-inset-bottom, 0px));

@@ -189,7 +189,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 24px 20px calc(24px + 72px + env(safe-area-inset-bottom, 0px));
+  padding: 24px 20px 24px;
 }
 
 /* ── Receive title ───────────────────────────────────────────── */
