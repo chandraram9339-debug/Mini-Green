@@ -10,7 +10,7 @@
   min-height: 0;
   overflow: hidden;
   width: 100%;
-  max-width: 430px;
+  max-width: var(--fm-layout-column-max-width, 430px);
   margin-left: auto;
   margin-right: auto;
   position: relative;

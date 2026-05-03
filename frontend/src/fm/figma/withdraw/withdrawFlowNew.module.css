@@ -12,7 +12,7 @@
   min-height: 0;
   overflow: hidden;
   width: 100%;
-  max-width: 500px;
+  max-width: min(var(--fm-layout-column-max-width, 430px), 500px);
   margin-left: auto;
   margin-right: auto;
   background-color: #ecf1f4;
@@ -417,7 +417,7 @@
 /* ── Withdraw entry screen — Figma dark (Экран вывод), scoped ── */
 .screenWithdrawDark {
   background-color: #0a0a0a;
-  max-width: 430px;
+  max-width: min(var(--fm-layout-column-max-width, 430px), 500px);
 }
 
 .screenWithdrawDark .appBar {
@@ -536,7 +536,7 @@
 /* ── USDT Transfer (confirm) — Figma USDT Transfer, scoped ───── */
 .screenTransferDark {
   background-color: #0a0a0a;
-  max-width: 430px;
+  max-width: min(var(--fm-layout-column-max-width, 430px), 500px);
 }
 
 .screenTransferDark .appBar {
@@ -654,7 +654,7 @@
 /* ── USDT Transfer Done — Figma USDT Transfer Done, scoped ─── */
 .screenDoneDark {
   background-color: #0a0a0a;
-  max-width: 430px;
+  max-width: min(var(--fm-layout-column-max-width, 430px), 500px);
 }
 
 .screenDoneDark .appBar {

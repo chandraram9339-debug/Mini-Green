@@ -28,6 +28,11 @@
 
 /* ── Floating bottom nav (pill) — shared geometry for redesigned screens ── */
 :root {
+  /*
+   * Колонка мини-приложения (Ready ~430px): на телефоне — min(100%, 430px) по сути full-width,
+   * на планшете/десктопе — ограничение + центрирование через margin/auto у контейнеров.
+   */
+  --fm-layout-column-max-width: 430px;
   --fm-pill-nav-bottom: 20px;
   --fm-pill-nav-max-width: 350px;
   --fm-pill-nav-inner-pad-x: 26px;

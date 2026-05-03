@@ -6,6 +6,7 @@
 
 /* ===== ROOT SCREEN ===== */
 .screen {
+  width: 100%;
   background-color: #0a0a0a;
   min-height: 100dvh;
   display: flex;
@@ -16,7 +17,7 @@
 
 .container {
   width: 100%;
-  max-width: 430px;
+  max-width: var(--fm-layout-column-max-width, 430px);
   min-height: 100dvh;
   background-color: #0a0a0a;
   display: flex;
@@ -524,8 +525,8 @@
 
 .tabGlowInner {
   position: fixed;
-  /* Как раньше ~76px от правого края колонки 430px: inset от края вьюпорта */
-  right: calc((100vw - min(430px, 100vw)) / 2 + 76px);
+  /* Колонка max 430px по центру — как раньше, inset от правого края макета */
+  right: calc((100vw - min(var(--fm-layout-column-max-width, 430px), 100vw)) / 2 + 76px);
   bottom: 98px;
   width: 66px;
   height: 9px;

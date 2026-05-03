@@ -11,6 +11,7 @@
 
 /* ── Page / container ───────────────────────────────────────── */
 .page {
+  width: 100%;
   min-height: 100dvh;
   background: #0a0a0a;
   display: flex;
@@ -21,7 +22,7 @@
 
 .container {
   width: 100%;
-  max-width: 430px;
+  max-width: var(--fm-layout-column-max-width, 430px);
   min-height: 100dvh;
   background: #0a0a0a;
   display: flex;
