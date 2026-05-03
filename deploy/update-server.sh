@@ -39,7 +39,7 @@ if [[ -f "$PROJECT_ROOT/package.json" ]]; then
   pnpm install
   pnpm --filter miniapp-backend build
   pnpm --filter miniapp-frontend build
-  pnpm --filter miniapp-admin-panel build
+  pnpm --filter admin-panel build
   echo
   echo "== Frontend dist (index.html) =="
   ls -la "$PROJECT_ROOT/frontend/dist/index.html" || true

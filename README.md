@@ -30,7 +30,8 @@ This repository is a bootstrap for a Telegram Mini App project.
    - `pnpm install`
 
 4. **Поднять бэкенд + миниапп + админку вместе:**
-   - `pnpm dev`
+   - `pnpm dev`  
+   Только админка (порт **5180**, прокси `/admin` и `/health` → `localhost:4000`): `pnpm --filter admin-panel dev`
 
    Локальные адреса по умолчанию:
 

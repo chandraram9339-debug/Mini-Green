@@ -1,0 +1,63 @@
+# Production: admin UI на отдельном поддомене (admin.domain.com).
+# Статика только из /var/www/miniapp-admin — не смешивать с /var/www/miniapp-frontend.
+#
+# Перед включением:
+#   sudo certbot certonly --nginx -d admin.domain.com   # или ваш метод TLS
+# Замените admin.domain.com и пути к сертификатам на свои.
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name admin.domain.com;
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name admin.domain.com;
+
+  ssl_certificate     /etc/letsencrypt/live/admin.domain.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/admin.domain.com/privkey.pem;
+
+  root /var/www/miniapp-admin;
+  index index.html;
+
+  client_max_body_size 10m;
+
+  # Admin API (ключ только в заголовке X-Admin-Key с браузера — не хранить в nginx)
+  location /admin {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /health {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Vite: хешированные ассеты
+  location /assets/ {
+    access_log off;
+    expires 7d;
+    add_header Cache-Control "public, max-age=604800, immutable";
+    try_files $uri =404;
+  }
+
+  location = /index.html {
+    expires -1;
+    add_header Cache-Control "no-store, no-cache, must-revalidate";
+    try_files /index.html =404;
+  }
+
+  # SPA: все прочие пути → index.html (как в требовании: $uri, затем /index.html)
+  location / {
+    try_files $uri /index.html;
+  }
+}

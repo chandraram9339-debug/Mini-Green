@@ -1,6 +1,8 @@
 
 # Production Setup
 
+Сводный сценарий «основной домен + admin поддомен + backend» без поломки текущего прода: **[`deploy/FULL_STACK_PRODUCTION.md`](FULL_STACK_PRODUCTION.md)**.
+
 Этот проект нужно запускать на сервере так:
 
 - `backend` работает как Node.js сервис через `pm2`
@@ -249,6 +251,8 @@ chmod +x ~/miniapp/deploy/server-preflight.sh
 
 Админ-панель — отдельный React/Vite SPA на субдомене `admin.ваш-домен.com`.
 
+Полный чеклист (каталоги, nginx, PM2, curl): **[`deploy/ADMIN_PANEL_PRODUCTION.md`](ADMIN_PANEL_PRODUCTION.md)**. Готовый пример vhost: [`deploy/nginx-admin-domain.conf.example`](nginx-admin-domain.conf.example).
+
 ### Первый деплой
 
 **1. Сертификат для субдомена:**
@@ -277,7 +281,7 @@ systemctl reload nginx
 
 ```bash
 cd ~/miniapp
-pnpm --filter miniapp-admin-panel build
+pnpm --filter admin-panel build
 mkdir -p /var/www/miniapp-admin
 rsync -a --delete ~/miniapp/admin-panel/dist/ /var/www/miniapp-admin/
 ```
@@ -290,7 +294,7 @@ rsync -a --delete ~/miniapp/admin-panel/dist/ /var/www/miniapp-admin/
 
 ### Последующие обновления
 
-Обновление Admin Panel происходит автоматически вместе с `update-server.sh` — скрипт теперь собирает `miniapp-admin-panel` и синхронизирует в `/var/www/miniapp-admin`.
+Обновление Admin Panel происходит автоматически вместе с `update-server.sh` — скрипт собирает workspace `admin-panel` и синхронизирует в `/var/www/miniapp-admin`.
 
 ### VITE_API_BASE (если нужно)
 

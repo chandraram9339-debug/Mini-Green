@@ -1,0 +1,40 @@
+# Admin UI at https://example.com/admin-ui/ — static files only under /admin-ui/;
+# /admin and /health go to backend (same origin as admin UI → no CORS for API calls).
+#
+# Build:  cd admin-panel && VITE_ADMIN_BASE=/admin-ui/ pnpm build
+# Deploy: rsync admin-panel/dist/ → /var/www/sites/example/admin-ui/
+# Vite base must match the URL path (leading slash, trailing slash in env).
+
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name example.com;
+
+  ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+  root /var/www/sites/example;
+  client_max_body_size 10m;
+
+  location /admin {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /health {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /admin-ui/ {
+    try_files $uri $uri/ /admin-ui/index.html;
+  }
+
+  # …остальной сервер (миниапп и т.д.) — отдельными location / root по вашей схеме.
+}
