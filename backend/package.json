@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
+    "rebuild": "pnpm rebuild better-sqlite3",
     "build": "tsc -p tsconfig.json",
     "mock:wallet-create": "node scripts/mock-deposit-wallet-create.mjs",
     "gen:wallet-key": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('hex'))\"",

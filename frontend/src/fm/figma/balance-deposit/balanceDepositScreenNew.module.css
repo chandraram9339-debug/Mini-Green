@@ -1,49 +1,95 @@
 /*
- * Wallet / Balance-Deposit Screen — Builder.io design port
- * Palette: wallet-* tokens (exact HEX from Builder.io tailwind.config.ts)
- * Layout: flex-column, max-width 500px centred, no fixed pixels, safe-area-bottom
+ * Wallet / History screen — minimal UI patch to match latest Figma export
+ * (keep logic intact; only layout/colors/typography)
  */
 
-/* ─── Colour tokens ────────────────────────────────────────────
-   wallet-bg        #ECF1F4
-   wallet-blue      #2D6E93
-   wallet-green     #73C1B1
-   wallet-green-light #B5DDD5
-   wallet-blue-light  #759AC6
-   wallet-grey-dark   #55647B
-   wallet-black       #192B48
-   wallet-grey-medium #8494AF
-   wallet-grey-line   #D3DAE5
-   wallet-inactive    #F4F7F8
-*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-/* ── Screen wrapper ─────────────────────────────────────────── */
-.screen {
+/* ── Page / container ───────────────────────────────────────── */
+.page {
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: "Outfit", sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background: #0a0a0a;
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
-  min-height: 0;
-  /* overflow: hidden prevents outer <main> from scrolling this screen */
-  overflow: hidden;
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  background-color: #ecf1f4;
-  touch-action: pan-y;
-  font-family: "Outfit", sans-serif;
-  box-sizing: border-box;
+  position: relative;
 }
 
-.screen * {
-  box-sizing: border-box;
-}
+/* Backwards-compat (some parents may rely on .screen) */
+.screen {}
 
-/* ── AppBar ─────────────────────────────────────────────────── */
-.appBar {
-  width: 100%;
-  background-color: #ecf1f4;
+/* ── Header (green) + decorative blobs ──────────────────────── */
+.header {
+  position: relative;
+  background: #2edd7d;
+  border-radius: 0 0 48px 48px;
+  overflow: visible;
   flex-shrink: 0;
-  padding: 12px 16px 8px;
+  padding-top: var(--fm-green-header-pad-top);
+  padding-bottom: var(--fm-green-header-pad-bottom, 20px);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.headerBlobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.blobTopLeft {
+  position: absolute;
+  left: -54px;
+  top: 11px;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+}
+
+.blobBottomRight {
+  position: absolute;
+  right: -138px;
+  bottom: -50px;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+}
+
+/* ── AppBar (как Home — см. --fm-appbar-*) ──────────────────── */
+.appBar {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  background: transparent;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: var(--fm-appbar-padding);
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarRow {
@@ -51,26 +97,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarBack {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--fm-appbar-back-size);
+  height: var(--fm-appbar-back-size);
   border-radius: 9999px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   flex-shrink: 0;
   transition: background-color 0.15s;
   text-decoration: none;
-}
-
-.appBarBack:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .appBarLogo {
@@ -79,20 +123,13 @@
   top: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-}
-
-.appBarLogo img {
-  display: block;
-  width: 168px;
-  height: 20px;
-  object-fit: contain;
-  max-width: calc(100vw - 96px);
+  isolation: isolate;
 }
 
 .appBarIcons {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--fm-appbar-icons-gap);
   flex-shrink: 0;
 }
 
@@ -101,8 +138,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -110,9 +152,14 @@
   text-decoration: none;
 }
 
+.appBarBell svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .appBarBellBadge {
   position: absolute;
-  top: -2px;
+  top: 0;
   right: 0;
   display: flex;
   align-items: center;
@@ -120,13 +167,13 @@
   width: 13px;
   height: 13px;
   border-radius: 9999px;
-  background-color: #2d6e93;
+  background: #0a0a0a;
 }
 
 .appBarBellBadge span {
   font-family: "Outfit", sans-serif;
-  color: #ffffff;
-  font-size: 6px;
+  color: #2edd7d;
+  font-size: 7px;
   font-weight: 500;
   line-height: 1;
 }
@@ -135,8 +182,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -144,10 +196,13 @@
   text-decoration: none;
 }
 
+.appBarGear svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .appBarDivider {
-  margin-top: 8px;
-  height: 1px;
-  background-color: #d3dae5;
+  display: none;
 }
 
 /* ── Scrollable body ────────────────────────────────────────── */
@@ -159,12 +214,16 @@
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* ── Balance Section ────────────────────────────────────────── */
+/* ── Balance Section (типографика как Home) ───────────────── */
 .balanceSection {
   width: 100%;
-  padding: 24px 16px 20px;
+  padding: 0 var(--fm-green-header-inset-x);
 }
 
 .balanceInfo {
@@ -172,11 +231,12 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin-bottom: 24px;
+  margin-top: 16px;
+  margin-bottom: 0;
 }
 
 .balanceTitle {
-  color: #192b48;
+  color: var(--fm-balance-amount-fg, #000);
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 20px;
@@ -186,42 +246,43 @@
 
 .balanceAmtRow {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 3px;
   margin-top: 4px;
 }
 
 .balanceAmt {
-  color: #192b48;
+  color: var(--fm-balance-amount-fg, #000);
   font-family: "Outfit", sans-serif;
   font-weight: 600;
-  font-size: 52px;
+  font-size: clamp(38px, 13.3vw, 52px);
   line-height: 1;
 }
 
 .balanceUnit {
-  color: #8494af;
+  color: var(--fm-balance-unit-fg, #000);
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 12px;
   line-height: 1;
-  align-self: flex-end;
-  margin-bottom: 4px;
+  margin-top: 6px;
 }
 
 .balanceAddr {
-  color: #55647b;
+  color: #000;
   font-family: "Inter", sans-serif;
   font-weight: 400;
   font-size: 11px;
-  margin: 4px 0 0;
+  margin: 0;
   word-break: break-all;
+  opacity: 0.75;
 }
 
 .actionRow {
   display: flex;
   gap: 12px;
   width: 100%;
+  margin-top: 20px;
 }
 
 .btnTopUp {
@@ -230,18 +291,15 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #73c1b1;
+  background: #40ff96;
   border-radius: 54px;
   padding: 14px 20px;
   height: 52px;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
   text-decoration: none;
   white-space: nowrap;
 }
-
-.btnTopUp:hover { opacity: 0.9; }
 
 .btnWithdraw {
   flex: 1;
@@ -249,32 +307,33 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #759ac6;
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 54px;
   padding: 14px 20px;
   height: 52px;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.btnWithdraw:hover { opacity: 0.9; }
-
 .btnLabel {
-  color: #ffffff;
+  color: #191919;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 16px;
 }
 
+.btnWithdraw .btnLabel {
+  color: #fff;
+}
+
 /* ── History Section (tabs + list) ─────────────────────────── */
 .historySection {
-  padding: 0 16px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 13px;
+  gap: 10px;
   /* Both children (tabsRow + list) must fill the same width */
   width: 100%;
   box-sizing: border-box;
@@ -290,7 +349,7 @@
 .tabCard {
   flex: 1 1 0;
   min-width: 0;
-  border-radius: 8px;
+  border-radius: 24px;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -300,15 +359,16 @@
   border: none;
   cursor: pointer;
   transition: background-color 0.15s, box-shadow 0.15s;
+  position: relative;
 }
 
 .tabCardActive {
-  background-color: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  background: #131413;
+  box-shadow: none;
 }
 
 .tabCardInactive {
-  background-color: #f4f7f8;
+  background: rgba(19, 20, 19, 0.7);
 }
 
 .tabCardTop {
@@ -319,8 +379,8 @@
 
 .tabCardTitle {
   font-family: "Outfit", sans-serif;
-  color: #2d6e93;
-  font-size: 17px;
+  color: #fff;
+  font-size: 18px;
   line-height: 1.2;
   letter-spacing: 0.18px;
 }
@@ -336,7 +396,7 @@
 }
 
 .tabCardCaption {
-  color: #55647b;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 8px;
@@ -350,7 +410,7 @@
 }
 
 .tabCardAmt {
-  color: #192b48;
+  color: #40ff96;
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 16px;
@@ -358,7 +418,7 @@
 }
 
 .tabCardAmtUnit {
-  color: #8494af;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 9px;
@@ -379,7 +439,7 @@
 }
 
 .tabCardCountCaption {
-  color: #55647b;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 8px;
@@ -394,7 +454,7 @@
 }
 
 .tabCardCountNum {
-  color: #192b48;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 12px;
@@ -402,7 +462,7 @@
 }
 
 .tabCardCountUnit {
-  color: #8494af;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 6px;
@@ -412,6 +472,9 @@
 
 /* Arrow indicator button on tab card */
 .tabCardArrow {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
   width: 28px;
   height: 28px;
   border-radius: 30px;
@@ -425,8 +488,8 @@
   padding: 0;
 }
 
-.tabCardArrowActive   { background-color: #b5ddd5; }
-.tabCardArrowInactive { background-color: #2d6e93; transform: rotate(90deg); }
+.tabCardArrowActive   { background: #40ff96; }
+.tabCardArrowInactive { background: rgba(64, 255, 150, 0.5); transform: rotate(90deg); }
 
 /* ── Transaction List ───────────────────────────────────────── */
 .list {
@@ -439,17 +502,19 @@
   margin: 0;
   padding: 0;
   width: 100%;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
 }
 
 .listItem {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background-color: #ffffff;
-  border-radius: 12px;
+  background: #131413;
+  border-radius: 24px;
   padding: 16px 10px;
   list-style: none;
   width: 100%;
+  min-height: 95px;
 }
 
 .listItemReferral {
@@ -469,9 +534,9 @@
   margin-top: 2px;
 }
 
-.rowIconDeposit  { background-color: #73c1b1; }
-.rowIconWithdraw { background-color: #759ac6; }
-.rowIconReferral { background-color: #8494af; }
+.rowIconDeposit  { background: #40ff96; transform: rotate(-90deg); }
+.rowIconWithdraw { background: #40ff96; transform: rotate(-90deg); }
+.rowIconReferral { background: #ffffff; transform: rotate(-90deg); }
 
 /* Row text (left) */
 .rowText {
@@ -483,7 +548,7 @@
 }
 
 .rowTitle {
-  color: #192b48;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 18px;
@@ -496,7 +561,7 @@
 }
 
 .rowMeta {
-  color: #8494af;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 13px;
@@ -504,6 +569,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  opacity: 0.6;
   margin: 0;
 }
 
@@ -512,7 +578,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 13px;
+  gap: 8px;
   flex-shrink: 0;
   padding-top: 3px;
 }
@@ -524,7 +590,7 @@
 }
 
 .rowAmt {
-  color: #192b48;
+  color: #40ff96;
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 16px;
@@ -533,7 +599,7 @@
 }
 
 .rowFee {
-  color: #8494af;
+  color: #40ff96;
   font-family: "Outfit", sans-serif;
   font-weight: 500;
   font-size: 13px;
@@ -542,15 +608,16 @@
 }
 
 .rowUnit {
-  color: #8494af;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 9px;
   line-height: 1;
+  opacity: 0.6;
 }
 
 .rowDate {
-  color: #8494af;
+  color: #fff;
   font-family: "Outfit", sans-serif;
   font-weight: 400;
   font-size: 10px;
@@ -558,43 +625,63 @@
   line-height: 1;
   text-align: right;
   margin: 4px 0 0;
+  opacity: 0.6;
 }
 
-/* Loading placeholder */
-.loading {
-  padding: 12px 0;
-  font-size: 14px;
-  color: #8494af;
-  text-align: center;
-  opacity: 0.7;
+/* History list: first API fetch (existing historyLoading) */
+.historyLoadingBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  /* 6× listItem min-height 95px + 9px gaps */
+  min-height: min(615px, 78vh);
+  padding: 8px 0 16px;
+  box-sizing: border-box;
 }
 
 /* ── TabBar ──────────────────────────────────────────────────── */
 .tabBar {
-  /* Natural flex child — always sits at the bottom of the bounded .screen */
-  flex-shrink: 0;
-  width: 100%;
-  background-color: #ffffff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  position: fixed;
+  bottom: var(--fm-pill-nav-bottom, 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: var(--fm-pill-nav-max-width, 350px);
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+  z-index: 20;
+  box-sizing: border-box;
 }
 
 .tabBarInner {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 10px 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  justify-content: space-between;
+  min-height: 52px;
+  height: auto;
+  padding: var(--fm-pill-nav-inner-pad-y, 10px) var(--fm-pill-nav-inner-pad-x, 26px);
+  padding-bottom: var(--fm-pill-nav-inner-pad-bottom, calc(10px + env(safe-area-inset-bottom, 0px)));
+  border-radius: 50px;
+  background: var(--fm-pill-nav-bg, rgba(25, 25, 25, 0.55));
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: all;
+  box-sizing: border-box;
 }
 
 .tabItem {
-  flex: 1;
-  max-width: 80px;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
-  border-radius: 9999px;
+  border-radius: 30px;
   background: none;
   border: none;
   cursor: pointer;
@@ -602,13 +689,41 @@
   transition: background-color 0.15s;
 }
 
-.tabItem:hover         { background-color: rgba(0,0,0,0.05); }
-.tabItemActive         { background-color: #2d6e93; }
+.tabItem:hover         { background: rgba(255, 255, 255, 0.06); }
+.tabItemActive         { background: var(--fm-pill-nav-active, #40ff96); }
 .tabItemActive:hover   { opacity: 0.9; }
 
-/* ── Narrow screen overrides ────────────────────────────────── */
+/* ── Bottom glow effects (decorative) ───────────────────────── */
+.bottomGlow {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 322px;
+  height: 35px;
+  max-width: 100%;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.bottomGlowSmall {
+  position: fixed;
+  bottom: 68px;
+  right: calc(50% - 150px);
+  width: 66px;
+  height: 9px;
+  border-radius: 50%;
+  background: #40ff96;
+  filter: blur(15px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Narrow screen overrides (баланс — тот же clamp, что на Home) ─ */
 @media (max-width: 360px) {
-  .balanceAmt { font-size: 40px; }
   .tabCard    { padding: 8px; min-height: 120px; }
   .tabCardTitle { font-size: 14px; }
 }

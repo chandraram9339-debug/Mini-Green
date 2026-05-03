@@ -1,0 +1,281 @@
+/* Root wrapper */
+.root {
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: "Outfit", -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ── Status Bar ── */
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.time {
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── App Bar ── */
+.appBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  height: 56px;
+  background: #0a0a0a;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.appBarTitle {
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.backBtn {
+  left: 16px;
+}
+
+.closeBtn {
+  right: 16px;
+}
+
+/* ── Receipt Section ── */
+.receiptSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 20px 0;
+  flex-shrink: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #131413;
+  border-radius: 24px;
+  padding: 13px 20px;
+  min-height: 49px;
+  box-sizing: border-box;
+}
+
+.itemLabel {
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.itemValue {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  text-align: right;
+}
+
+.valueGreen {
+  color: #40ff96;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.valueLargeGreen {
+  color: #40ff96;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.valueSuffix {
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* ── Disclaimer ── */
+.disclaimer {
+  padding: 16px 20px 0;
+  text-align: right;
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* ── Done Section ── */
+.doneSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 0 20px;
+}
+
+.doneBtn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #40ff96;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.doneBtn:hover {
+  opacity: 0.9;
+}
+
+.doneText {
+  color: #40ff96;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* ── Bottom Nav ── */
+.bottomNavWrapper {
+  padding: 0 20px 24px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.bottomNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 26px;
+  height: 72px;
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-sizing: border-box;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 14px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.2s;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navItemActive {
+  background: #40ff96;
+}
+
+.navItemActive:hover {
+  background: #3be888;
+}
+
+/* ── Glow effects ── */
+.glowOuter {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 322px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glowInner {
+  position: absolute;
+  bottom: 22px;
+  right: 54px;
+  width: 66px;
+  height: 9px;
+  border-radius: 50%;
+  background: #40ff96;
+  filter: blur(15px);
+  pointer-events: none;
+  z-index: 0;
+}

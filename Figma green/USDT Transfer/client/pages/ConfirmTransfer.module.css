@@ -1,0 +1,280 @@
+/* Root wrapper */
+.root {
+  min-height: 100dvh;
+  width: 100%;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ─── Status Bar ─────────────────────────────────────────── */
+.statusBar {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px 0 24px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.statusTime {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #ffffff;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* ─── App Bar ────────────────────────────────────────────── */
+.appBar {
+  width: 100%;
+  height: 56px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.appBarTitle {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  color: #ffffff;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.backBtn {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.closeBtn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ─── Main Content ───────────────────────────────────────── */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 0 20px;
+  box-sizing: border-box;
+  gap: 20px;
+}
+
+/* ─── Cheque / Transaction Details ──────────────────────── */
+.cheque {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.listItem {
+  width: 100%;
+  height: 49px;
+  background: #131413;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.listLabel {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.listValue {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  text-align: right;
+}
+
+.valueGreen {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #40ff96;
+}
+
+.valueWhite {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.recipientAddress {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  color: #40ff96;
+  text-align: right;
+}
+
+/* ─── Disclaimer ─────────────────────────────────────────── */
+.disclaimer {
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: #ffffff;
+  line-height: 18px;
+  text-align: right;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ─── Spacer ─────────────────────────────────────────────── */
+.spacer {
+  flex: 1;
+}
+
+/* ─── Confirm Button ─────────────────────────────────────── */
+.confirmSection {
+  padding: 0 20px 20px 20px;
+  box-sizing: border-box;
+}
+
+.confirmBtn {
+  width: 100%;
+  height: 52px;
+  background: #40ff96;
+  border-radius: 54px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #191919;
+  transition: opacity 0.2s ease;
+}
+
+.confirmBtn:hover {
+  opacity: 0.9;
+}
+
+.confirmBtn:active {
+  opacity: 0.8;
+}
+
+/* ─── Bottom Tab Bar ─────────────────────────────────────── */
+.tabBarWrapper {
+  padding: 0 20px 16px 20px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.tabBar {
+  width: 100%;
+  height: 72px;
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  position: relative;
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+.tabItem.active {
+  background: #40ff96;
+}
+
+/* ─── Glow Effects ───────────────────────────────────────── */
+.glowContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.glowLarge {
+  position: absolute;
+  bottom: 72px;
+  left: 34px;
+  border-radius: 322px;
+}
+
+.glowSmall {
+  position: absolute;
+  bottom: 60px;
+  right: 53px;
+}

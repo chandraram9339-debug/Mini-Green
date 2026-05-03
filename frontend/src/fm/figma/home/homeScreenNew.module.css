@@ -1,28 +1,88 @@
-/* ============================================================
-   HomeScreenNew — CSS-модуль
-   Figma: «Первый экран Home»
-   Адаптив: mobile 100vw / web max-width 500px, centered
-   ============================================================ */
-
-/* ── Обёртка экрана ────────────────────────────────────────── */
-.screen {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  flex: 1 1 0;
-  min-height: 0;
-  max-width: 500px;
-  margin: 0 auto;
-  background: #ECF1F4;
-  overflow: hidden;
-  font-family: "Outfit", sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-/* ── AppBar ────────────────────────────────────────────────── */
-.appBar {
-  flex-shrink: 0;
+/* ===== ROOT SCREEN ===== */
+.screen {
+  background-color: #0a0a0a;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: "Outfit", -apple-system, sans-serif;
+}
+
+.container {
   width: 100%;
-  background: #ECF1F4;
+  max-width: 430px;
+  min-height: 100dvh;
+  background-color: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ===== HEADER (Green) ===== */
+.header {
+  background-color: #2edd7d;
+  border-radius: 0 0 48px 48px;
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
+  padding-top: var(--fm-green-header-pad-top);
+  padding-bottom: var(--fm-green-header-pad-bottom, 20px);
+}
+
+/* Blobs stay clipped to rounded header; app bar icons use overflow:visible — avoids clipping bell stroke */
+.headerBlobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.headerBlurLeft {
+  position: absolute;
+  left: -54px;
+  top: 7px;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.headerBlurRight {
+  position: absolute;
+  right: -54px;
+  bottom: 0;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== APP BAR ===== */
+.appBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: var(--fm-appbar-padding);
+  min-height: var(--fm-appbar-row-height);
+  position: relative;
+  z-index: 1;
+  background: transparent;
 }
 
 .appBarRow {
@@ -30,23 +90,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 56px;
+  width: 100%;
 }
 
 .appBarBack {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: none;
+  width: var(--fm-appbar-back-size);
+  height: var(--fm-appbar-back-size);
+  border-radius: 9999px;
+  background: transparent;
   border: none;
   cursor: pointer;
-  transition: background 0.15s;
+  padding: 4px;
+  flex-shrink: 0;
 }
-.appBarBack:hover { background: rgba(0,0,0,0.05); }
 
 .appBarLogo {
   position: absolute;
@@ -57,257 +116,269 @@
   isolation: isolate;
 }
 
-.appBarLogo img {
-  display: block;
-  width: 168px;
-  height: 20px;
-  object-fit: contain;
-  max-width: calc(100vw - 96px);
-}
-
 .appBarIcons {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  gap: var(--fm-appbar-icons-gap);
+  flex-shrink: 0;
 }
 
-.appBarBell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  text-decoration: none;
-}
-
-.bellBadge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #2D6E93;
-}
-.bellBadge span {
-  font-family: "Outfit", sans-serif;
-  font-size: 7px;
-  font-weight: 500;
-  color: #fff;
-  line-height: 1;
-}
-
+.appBarBell,
 .appBarGear {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   text-decoration: none;
+  position: relative;
 }
 
-.appBarDivider {
-  height: 1px;
-  background: #D3DAE5;
-  margin: 0 16px;
+.appBarBell svg,
+.appBarGear svg {
+  display: block;
+  flex-shrink: 0;
 }
 
-/* ── Основной контент ──────────────────────────────────────── */
-.body {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* оставляем скролл только если контент не помещается */
+.bellBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ── Секция баланса ────────────────────────────────────────── */
+.bellBadge span {
+  font-size: 7px;
+  font-weight: 500;
+  color: #2edd7d;
+  letter-spacing: 0.14px;
+  line-height: 1;
+}
+
+/* ===== BALANCE SECTION ===== */
 .balanceSection {
-  padding: 24px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 var(--fm-green-header-inset-x);
+  position: relative;
+  z-index: 1;
 }
 
 .balanceRow {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
 }
 
 .balanceLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .balanceTitle {
   font-size: 20px;
   font-weight: 500;
-  letter-spacing: 0.04em;
-  color: #192B48;
+  color: var(--fm-balance-amount-fg, #000);
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
 }
 
 .balanceAmount {
   display: flex;
   align-items: flex-start;
-  gap: 4px;
-  margin-top: 8px;
+  gap: 3px;
+  margin-bottom: 10px;
 }
+
 .balanceValue {
-  font-size: 52px;
+  font-size: clamp(38px, 13.3vw, 52px);
   font-weight: 600;
+  color: var(--fm-balance-amount-fg, #000);
   line-height: 1;
-  color: #192B48;
 }
+
 .balanceCurrency {
   font-size: 12px;
   font-weight: 400;
-  color: #8494AF;
-  margin-top: 8px;
-}
-
-.balanceDivider {
-  width: 176px;
-  height: 1px;
-  background: #D3DAE5;
-  margin-top: 12px;
+  color: var(--fm-balance-unit-fg, #000);
+  line-height: 1;
+  margin-top: 6px;
 }
 
 .referralBlock {
-  margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
+
 .referralAmount {
   display: flex;
   align-items: flex-start;
   gap: 4px;
 }
+
 .referralValue {
   font-size: 20px;
   font-weight: 500;
+  color: #000;
   line-height: 1;
-  color: #192B48;
 }
+
 .referralCurrency {
   font-size: 9px;
   font-weight: 400;
-  color: #55647B;
+  color: #000;
   margin-top: 4px;
+  line-height: 1;
 }
+
 .referralCaption {
   font-family: "Inter", sans-serif;
   font-size: 11px;
-  color: #55647B;
+  font-weight: 400;
+  color: #000;
 }
 
-/* Правая колонка кнопок */
+/* Action buttons (Top up / Withdraw) */
 .balanceActions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 6px;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: 12px;
 }
 
-/* Кнопки Top Up / Withdraw */
-.btnTopUp,
+.btnTopUp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px 10px 14px;
+  border-radius: 54px;
+  background: #40ff96;
+  border: none;
+  cursor: pointer;
+  width: 126px;
+  height: 40px;
+  text-decoration: none;
+}
+
+.btnTopUp span {
+  font-size: 12px;
+  font-weight: 400;
+  color: #000;
+}
+
 .btnWithdraw {
   display: flex;
   align-items: center;
-  gap: 12px;
-  border-radius: 9999px;
-  padding: 10px 24px;
-  font-size: 12px;
-  font-family: "Outfit", sans-serif;
-  color: #fff;
-  text-decoration: none;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 54px;
+  background: rgba(255, 255, 255, 0.5);
   border: none;
   cursor: pointer;
-  transition: opacity 0.15s;
-  white-space: nowrap;
+  width: 126px;
+  height: 40px;
+  text-decoration: none;
 }
-.btnTopUp:hover,
-.btnWithdraw:hover { opacity: 0.9; }
-.btnTopUp:active,
-.btnWithdraw:active { opacity: 0.8; }
 
-.btnTopUp  { background: #73C1B1; }
-.btnWithdraw { background: #759AC6; justify-content: center; }
+.btnWithdraw span {
+  font-size: 12px;
+  font-weight: 400;
+  color: #fff;
+}
 
-/* Кнопка Details (синяя, широкая) */
-.btnDetails {
+/* Details Green Button */
+.btnDetailsGreen {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  width: 100%;
-  margin-top: 24px;
-  border-radius: 9999px;
-  padding: 14px 0;
-  background: #2D6E93;
-  font-size: 16px;
-  font-family: "Outfit", sans-serif;
-  color: #fff;
-  text-decoration: none;
+  padding: 14px 20px;
+  border-radius: 54px;
+  background: #40ff96;
   border: none;
   cursor: pointer;
-  transition: opacity 0.15s;
-}
-.btnDetails:hover  { opacity: 0.9; }
-.btnDetails:active { opacity: 0.8; }
-
-/* ── Секция бота ───────────────────────────────────────────── */
-.botSection {
-  /* Сверху секции до графика — 20px; снизу от обёртки графика до «Bot status» — меньше, иначе полоса визуально «не садится» */
-  --home-chart-v-rhythm: 20px;
-  --home-chart-gap-below: 10px;
-  padding: var(--home-chart-v-rhythm) 16px 0;
+  width: 100%;
+  height: 52px;
+  text-decoration: none;
 }
 
-/* Нижняя Details: не 24px как у кнопки в блоке баланса — иначе зазор до графика (20px) и до кнопки разъезжаются */
-.botSection .btnDetails {
-  margin-top: var(--home-chart-v-rhythm);
+.btnDetailsGreen span {
+  font-size: 16px;
+  font-weight: 400;
+  color: #191919;
 }
 
-/* ── График (структура как на 3-м экране) ───────────────────── */
+/* ===== BODY (Dark) ===== */
+.body {
+  flex: 1;
+  padding: 20px 20px 108px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ===== CHART ===== */
+.chartSection {}
+
+.chartWrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  align-items: stretch;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Chart internal (PerformanceChart) */
 .chartWrap {
   width: 100%;
-  overflow: visible;
-  margin-bottom: var(--home-chart-gap-below);
-  padding-top: 2px;
-  padding-bottom: 0;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .chartPlotRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 4px;
   align-items: stretch;
-  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .chartYAxis {
   position: relative;
-  flex: 0 0 24px;
-  flex-shrink: 0;
-  min-height: 0;
 }
 
 .chartYAxisLabel {
   position: absolute;
   left: 0;
-  right: 4px;
+  right: 0;
   transform: translateY(-50%);
-  text-align: right;
   font-size: 6px;
   font-weight: 400;
-  color: #8494AF;
+  color: #3aca7b;
+  text-align: right;
   line-height: 1;
 }
 
 .chartSvgCol {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
@@ -315,128 +386,233 @@
   width: 100%;
   height: auto;
   display: block;
-  vertical-align: top;
 }
 
-/* ── Инфо-блок бота ────────────────────────────────────────── */
-.botInfoGroup {
+/* ===== STATUS + PRICE ===== */
+.statusPriceSection {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
 }
 
-.botStatusRow,
+.statusRow,
 .priceRow {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-.botInfoLabel {
+.statusLabel,
+.priceLabel {
   font-size: 13px;
-  color: #8494AF;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+  min-width: 80px;
 }
 
-.botStatusValue {
+.statusActive {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.botStatusActive   { font-size: 20px; color: #73C1B1; }
-.botStatusInactive { font-size: 20px; color: #8494AF; }
 
-.priceRow {
-  align-items: flex-end;
+.statusText {
+  font-size: 20px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1;
 }
-.priceValueBlock {
+
+.priceAmount {
   display: flex;
   align-items: flex-start;
   gap: 4px;
 }
+
 .priceValue {
   font-size: 20px;
   font-weight: 500;
+  color: #40ff96;
   line-height: 1;
-  color: #192B48;
 }
+
 .priceCurrency {
   font-size: 9px;
-  color: #55647B;
+  font-weight: 400;
+  color: #fff;
   margin-top: 4px;
+  line-height: 1;
 }
 
-/* ── Chat (слева) + Channel (справа) ───────────────────────── */
-.actionRow {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px 16px;
-}
-
-.btnSocial,
-.btnChannel {
-  flex: 1;
+/* ===== DETAILS DARK BUTTON ===== */
+.btnDetailsDark {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 9999px;
-  padding: 14px 0;
-  font-size: 16px;
-  font-family: "Outfit", sans-serif;
-  color: #192B48;
-  text-decoration: none;
+  padding: 14px 20px;
+  border-radius: 54px;
+  background: #191919;
   border: none;
   cursor: pointer;
-  transition: opacity 0.15s;
+  width: 100%;
+  height: 52px;
+  text-decoration: none;
 }
-.btnSocial:hover,
-.btnChannel:hover { opacity: 0.9; }
 
-.btnSocial  { background: #B5DDD5; }
-.btnChannel { background: #73C1B1; }
-
-.actionLabel {
+.btnDetailsDark span {
   font-size: 16px;
-  color: #192B48;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-/* ── TabBar ────────────────────────────────────────────────── */
-.tabBar {
+/* ===== SECONDARY BUTTONS ===== */
+.secondaryButtons {
+  display: flex;
+  gap: 14px;
+}
+
+.btnSocial,
+.btnSupport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border-radius: 54px;
+  background: #191919;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+  height: 52px;
+}
+
+.btnSocial span,
+.btnSupport span {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+/* ===== TAB BAR WRAPPER + GLOW (как FAQ/Support: fixed bar; glow — fixed, не в потоке) ===== */
+.tabBarWrapper {
+  position: relative;
   flex-shrink: 0;
   width: 100%;
-  background: #fff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  height: 0;
+  overflow: visible;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.tabGlowOuter {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 92px;
+  width: calc(100% - 40px);
+  max-width: 350px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 99;
+}
+
+.tabGlowInner {
+  position: fixed;
+  /* Как раньше ~76px от правого края колонки 430px: inset от края вьюпорта */
+  right: calc((100vw - min(430px, 100vw)) / 2 + 76px);
+  bottom: 98px;
+  width: 66px;
+  height: 9px;
+  background: #40ff96;
+  filter: blur(15px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* ===== Bottom TabBar (эталон: faqScreenNew.module.css / supportScreenNew.module.css) ===== */
+.tabBar {
+  flex-shrink: 0;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 350px;
+  z-index: 100;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .tabBarInner {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 10px 16px 16px;
+  justify-content: space-between;
+  padding: 10px 26px;
+  height: 72px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-sizing: border-box;
+  pointer-events: auto;
 }
 
 .tabItem {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px;
-  border-radius: 50%;
+  flex-shrink: 0;
   text-decoration: none;
-  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-.tabItem:hover { background: rgba(0,0,0,0.05); }
 
-.tabItemActive {
-  background: #2D6E93;
+.tabItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
-.tabItemActive:hover { background: #2D6E93; opacity: 0.9; }
 
-/* ── Адаптив: веб-рамка ────────────────────────────────────── */
-@media (min-width: 500px) {
-  .screen {
-    border-radius: 24px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-  }
+.tabItemIconActive {
+  background-color: var(--fm-pill-nav-active, #40ff96);
 }
+
+/* Same hover/active feedback as Balance/Bot (active class was only on inner circle — Link had no :hover) */
+.tabItem:hover .tabItemIcon:not(.tabItemIconActive) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.tabItem:hover .tabItemIconActive {
+  opacity: 0.9;
+}
+
+/* Unused legacy selectors kept intentionally (avoid accidental runtime reliance) */
+.actionRow {}
+.actionLabel {}
+.btnChannel {}
+.btnDetails {}
+.balanceDivider {}
+.botSection {}
+.botInfoGroup {}
+.botInfoLabel {}
+.botStatusValue {}
+.botStatusActive {}
+.botStatusInactive {}
+.priceValueBlock {}
+.appBarDivider {}

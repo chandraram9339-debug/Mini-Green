@@ -1,0 +1,93 @@
+{
+  "_meta": {
+    "purpose": "Illustrative demo data for landing page mockups only.",
+    "disclaimer": "Simulation / demonstration figures — not a promise of returns or live performance. Not financial advice.",
+    "currency": "USDT",
+    "generated_at": "2026-04-28"
+  },
+  "portfolio": {
+    "total_balance": "245,824.00",
+    "daily_change_pct": -0.42,
+    "daily_change_label": "24h session change (demo simulation)",
+    "available_for_operations": "239,101.50"
+  },
+  "automation": {
+    "interface_status": "Active",
+    "active_strategies_display": 3,
+    "active_strategies_note": "Illustrative strategy slots shown for UI composition."
+  },
+  "execution_summary": {
+    "period_label": "30 d (demo)",
+    "executed_trades": 184,
+    "successful_trades": 112,
+    "unsuccessful_trades": 72,
+    "percentage_display": "58.4%",
+    "percentage_note": "Share of closed trades marked successful in demo dataset — not forward-looking."
+  },
+  "chart_series_pct": [
+    { "t": "2026-04-01", "v": 0.0 },
+    { "t": "2026-04-05", "v": 1.1 },
+    { "t": "2026-04-10", "v": -0.6 },
+    { "t": "2026-04-15", "v": 2.4 },
+    { "t": "2026-04-20", "v": 1.8 },
+    { "t": "2026-04-25", "v": 3.2 },
+    { "t": "2026-04-28", "v": 2.9 }
+  ],
+  "execution_logs_demo": [
+    {
+      "timestamp": "28.04.2026 09:42",
+      "pair": "BTC / USDT",
+      "side": "Long",
+      "result_label": "Closed",
+      "pnl_display": "+0.42%"
+    },
+    {
+      "timestamp": "28.04.2026 07:15",
+      "pair": "ETH / USDT",
+      "side": "Short",
+      "result_label": "Closed",
+      "pnl_display": "-0.18%"
+    },
+    {
+      "timestamp": "27.04.2026 22:03",
+      "pair": "SOL / USDT",
+      "side": "Long",
+      "result_label": "Open",
+      "pnl_display": "—"
+    }
+  ],
+  "ai_status": {
+    "headline": "Automation layer: synchronized",
+    "subline": "Interface-ready — illustrative label for marketing composition.",
+    "latency_display_ms": 214
+  },
+  "market_status": {
+    "headline": "Sessions open",
+    "benchmark_pair": "USDT/BTC",
+    "reference_price_display": "96,842.51"
+  },
+  "sample_assets": [
+    {
+      "symbol": "BTC",
+      "allocation_display_pct": 42.5,
+      "delta_24h_pct": -0.31
+    },
+    {
+      "symbol": "ETH",
+      "allocation_display_pct": 28.1,
+      "delta_24h_pct": 0.74
+    },
+    {
+      "symbol": "SOL",
+      "allocation_display_pct": 11.6,
+      "delta_24h_pct": -1.05
+    }
+  ],
+  "demo_performance_panel": {
+    "title": "Simulation preview",
+    "cagr_style_display": "n/a",
+    "volatility_display": "medium (illustrative)",
+    "max_drawdown_style_display": "-12.4% (historical demo curve)",
+    "footnote": "Figures are fabricated for UI staging — replace only with compliant, substantiated metrics approved by legal."
+  }
+}

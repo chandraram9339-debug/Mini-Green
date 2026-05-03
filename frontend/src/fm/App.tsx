@@ -20,6 +20,7 @@ import UserAgreementScreen from "./figma/user-agreement/UserAgreementScreenNew";
 import "./figma/home/homeScreen.css";
 import "./figma/components/appBarLogoShimmer.css";
 import { routes } from "./figma/routes";
+import { OnboardingTourRoot } from "./onboarding-tour/OnboardingTourRoot";
 import { FmLocaleProvider } from "./i18n/FmLocaleContext";
 import { AppSessionProvider } from "./session/AppSessionProvider";
 import { SessionBanner } from "./session/SessionBanner";
@@ -42,6 +43,7 @@ export default function App() {
         <AppSessionProvider>
           <div className={`app-shell${showSplash ? " app-shell--splash-hidden" : ""}`}>
             <SessionBanner />
+            <OnboardingTourRoot splashDone={!showSplash} />
             <Routes>
               <Route path="/" element={<Navigate to={routes.home} replace />} />
               <Route path={routes.home} element={<HomeScreenNew />} />

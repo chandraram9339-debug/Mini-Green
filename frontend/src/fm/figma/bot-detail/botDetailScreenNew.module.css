@@ -1,39 +1,102 @@
 /*
- * Bot Detail Screen — Builder.io "Third Screen" design port
- * Palette (exact HEX from Builder.io global.css HSL tokens):
- *   bg          #ECF1F4   blue        #2D6E93   blue-mid    #759AC6
- *   green       #73C1B1   red         #DF7F7F   grey-dark   #55647B
- *   grey-medium #8494AF   grey-line   #D3DAE5   grey-light  #C8D4E0
- *   black       #192B48   white       #FFFFFF   inactive    #F4F7F8
+ * Bot Detail Screen — minimal UI patch to match latest Figma export (dark theme)
+ * Keep all trading logic, sticky feed behavior, and handlers intact.
  */
 
-/* ── Screen wrapper ─────────────────────────────────────────── */
-.screen {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  min-height: 0;
-  /* НЕ hidden: родитель с overflow hidden ломает position:sticky внутри .body */
-  overflow: visible;
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  background-color: #ecf1f4;
-  touch-action: pan-y;
-  font-family: "Outfit", sans-serif;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-.screen * {
-  box-sizing: border-box;
+/* ── Page / container ───────────────────────────────────────── */
+.page {
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: "Outfit", sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Backwards-compat */
+.screen {}
+
+/* ── Header (green) + blobs ─────────────────────────────────── */
+.header {
+  position: relative;
+  background: #2edd7d;
+  border-radius: 0 0 48px 48px;
+  overflow: visible;
+  flex-shrink: 0;
+  padding-top: var(--fm-green-header-pad-top);
+  padding-bottom: var(--fm-green-header-pad-bottom, 20px);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.headerBlobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.blobTopLeft {
+  position: absolute;
+  left: -54px;
+  top: 7px;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+}
+
+.blobBottomRight {
+  position: absolute;
+  left: 184px;
+  top: 247px;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+}
+
+.headerBody {
+  position: relative;
+  z-index: 1;
+  padding-left: var(--fm-green-header-inset-x);
+  padding-right: var(--fm-green-header-inset-x);
 }
 
 /* ── AppBar ─────────────────────────────────────────────────── */
 .appBar {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  background-color: #ecf1f4;
   flex-shrink: 0;
-  z-index: 10;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: var(--fm-appbar-padding);
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarRow {
@@ -41,28 +104,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 56px;
+  width: 100%;
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarBack {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--fm-appbar-back-size);
+  height: var(--fm-appbar-back-size);
   border-radius: 9999px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   flex-shrink: 0;
   text-decoration: none;
   transition: background-color 0.15s;
-}
-
-.appBarBack:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .appBarLogo {
@@ -71,20 +130,13 @@
   top: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-}
-
-.appBarLogo img {
-  display: block;
-  width: 168px;
-  height: 20px;
-  object-fit: contain;
-  max-width: calc(100vw - 96px);
+  isolation: isolate;
 }
 
 .appBarIcons {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--fm-appbar-icons-gap);
   flex-shrink: 0;
 }
 
@@ -93,8 +145,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -102,9 +159,14 @@
   text-decoration: none;
 }
 
+.appBarBell svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .appBarBellBadge {
   position: absolute;
-  top: -2px;
+  top: 0;
   right: 0;
   display: flex;
   align-items: center;
@@ -112,13 +174,13 @@
   width: 13px;
   height: 13px;
   border-radius: 9999px;
-  background-color: #2d6e93;
+  background: #0a0a0a;
 }
 
 .appBarBellBadge span {
-  font-size: 6px;
+  font-size: 7px;
   font-weight: 500;
-  color: #fff;
+  color: #2edd7d;
   line-height: 1;
 }
 
@@ -126,8 +188,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -135,10 +202,13 @@
   text-decoration: none;
 }
 
+.appBarGear svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .appBarDivider {
-  height: 1px;
-  background-color: #d3dae5;
-  margin: 0 16px;
+  display: none;
 }
 
 /* ── Body: единый скролл; «Your trading history» + чипы — sticky вверху под App Bar ─ */
@@ -151,6 +221,7 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  padding-bottom: 112px;
 }
 
 /* Всё, что уходит вверх до липкого «Your trading history» (вкл. 24h/7d, Total deals, график) */
@@ -161,7 +232,8 @@
 
 /* ── Bot Status Section ─────────────────────────────────────── */
 .statusSection {
-  padding: 24px 16px 8px;
+  padding: 0;
+  margin-top: 0;
 }
 
 .statusRow {
@@ -178,7 +250,7 @@
 }
 
 .statusCaption {
-  color: #8494af;
+  color: #0a0a0a;
   font-family: "Outfit", sans-serif;
   font-size: 13px;
   font-weight: 400;
@@ -198,8 +270,8 @@
   flex-shrink: 0;
 }
 
-.statusDotActive   { background-color: #73c1b1; }
-.statusDotInactive { background-color: #df7f7f; }
+.statusDotActive   { background-color: #0a0a0a; }
+.statusDotInactive { background-color: #0a0a0a; opacity: 0.45; }
 
 .statusLabel {
   font-family: "Outfit", sans-serif;
@@ -210,6 +282,11 @@
 .statusLabelActive   { color: #73c1b1; }
 .statusLabelInactive { color: #df7f7f; }
 
+.statusLabelActive,
+.statusLabelInactive {
+  color: #0a0a0a;
+}
+
 .priceLine {
   display: flex;
   align-items: flex-end;
@@ -218,7 +295,7 @@
 }
 
 .priceCaption {
-  color: #8494af;
+  color: #0a0a0a;
   font-family: "Outfit", sans-serif;
   font-size: 13px;
   font-weight: 400;
@@ -234,7 +311,7 @@
 }
 
 .priceNum {
-  color: #192b48;
+  color: #0a0a0a;
   font-family: "Outfit", sans-serif;
   font-size: 20px;
   font-weight: 500;
@@ -242,7 +319,7 @@
 }
 
 .pricePair {
-  color: #55647b;
+  color: #0a0a0a;
   font-family: "Outfit", sans-serif;
   font-size: 9px;
   font-weight: 400;
@@ -265,16 +342,29 @@
   gap: 8px;
   padding: 14px 20px;
   height: 52px;
-  border-radius: 9999px;
-  background-color: #2d6e93;
+  border-radius: 54px;
+  background: #40ff96;
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
-  color: #ffffff;
+  color: #191919;
   font-family: "Outfit", sans-serif;
   font-size: 16px;
   font-weight: 400;
   text-decoration: none;
+}
+
+/* One-shot emphasis after onboarding completion → “Start bot” (no auto-start) */
+.btnStartCue {
+  box-shadow:
+    0 0 0 2px rgba(64, 255, 150, 0.85),
+    0 0 28px rgba(64, 255, 150, 0.35);
+  transition: box-shadow 0.35s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btnStartCue {
+    transition: none;
+  }
 }
 
 .btnStop {
@@ -285,34 +375,34 @@
   gap: 8px;
   padding: 14px 20px;
   height: 52px;
-  border-radius: 9999px;
-  background-color: #df7f7f;
+  border-radius: 54px;
+  background: rgba(255, 255, 255, 0.5);
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
   font-size: 16px;
   font-weight: 400;
 }
 
-.btnStart:hover,
-.btnStop:hover { opacity: 0.9; }
-
 /* Visual dim — does NOT block pointer events; applyBotState() guards double-clicks */
 .btnDim { opacity: 0.45; cursor: default; }
 
 /* ── Trading Stats Section ──────────────────────────────────── */
 .statsSection {
-  padding: 24px 16px 8px;
+  padding: 20px 20px 0;
+}
+
+.statsSection .sectionTitle {
+  text-align: center;
 }
 
 .sectionTitle {
-  color: #192b48;
+  color: #ffffff;
   font-family: "Outfit", sans-serif;
   font-size: 20px;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.4px;
   margin: 0 0 16px;
 }
 
@@ -320,40 +410,41 @@
 .periodTabs {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
   width: 100%;
 }
 
 .periodTab {
   flex: 1;
   padding: 10px 4px;
-  border-radius: 8px;
+  border-radius: 24px;
   border: none;
   cursor: pointer;
   font-family: "Outfit", sans-serif;
   font-size: 18px;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  color: #2d6e93;
-  transition: background-color 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.18px;
+  color: #40ff96;
+  transition: background-color 0.15s, box-shadow 0.15s, border-color 0.15s;
   text-align: center;
+  background: rgba(25, 25, 25, 0.65);
+  backdrop-filter: blur(6px);
 }
 
 .periodTabActive {
-  background-color: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid rgba(64, 255, 150, 0.4);
 }
 
 .periodTabInactive {
-  background-color: #f4f7f8;
+  border: 1.5px solid transparent;
 }
 
 /* ── Stats Card ─────────────────────────────────────────────── */
 .statsCard {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
+  background: #131413;
+  border-radius: 24px;
+  padding: 16px 10px;
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
@@ -367,14 +458,14 @@
 }
 
 .statsLabel {
-  color: #55647b;
+  color: #ffffff;
   font-family: "Outfit", sans-serif;
   font-size: 16px;
   font-weight: 400;
 }
 
 .statsVal {
-  color: #192b48;
+  color: #ffffff;
   font-family: "Outfit", sans-serif;
   font-size: 16px;
   font-weight: 500;
@@ -384,6 +475,7 @@
 .chartShell {
   width: 100%;
   overflow: hidden;
+  margin-bottom: 16px;
 }
 
 /* Подписи Y и SVG — одна высота (flex); позиция метки = доля от CHART_VIEWBOX_HEIGHT */
@@ -395,7 +487,7 @@
 
 .chartYAxis {
   position: relative;
-  flex: 0 0 24px;
+  flex: 0 0 var(--fm-trading-chart-y-axis-width, 24px);
   flex-shrink: 0;
   min-height: 0;
 }
@@ -406,7 +498,7 @@
   right: 4px;
   transform: translateY(-50%);
   text-align: right;
-  color: #8494af;
+  color: #3aca7b;
   font-family: "Outfit", sans-serif;
   font-size: 6px;
   line-height: 1;
@@ -424,9 +516,42 @@
   vertical-align: top;
 }
 
+/* Chart: optional loading overlay (keeps layout; chart may dim underneath) */
+.chartAreaWrap {
+  position: relative;
+  width: 100%;
+  /* Same width as .chartYAxis — skeleton overlay starts after the % scale */
+  --fm-trading-chart-y-axis-width: 24px;
+}
+
+.chartDimmed {
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+.chartSpinnerOverlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--fm-trading-chart-y-axis-width, 24px);
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.chartSpinnerOverlay > * {
+  width: 100%;
+  align-self: center;
+}
+
 /* ── Trade Feed Section ─────────────────────────────────────── */
 .feedSection {
-  padding: 0 16px;
+  padding: 0 20px;
   /* pb-28 = 112px for safe area above tabbar */
   padding-bottom: 112px;
 }
@@ -444,9 +569,13 @@
   top: 0;
   z-index: 8;
   padding: 0 0 4px;
-  background-color: #ecf1f4;
-  box-shadow: 0 1px 0 #d3dae5;
+  background: #0a0a0a;
+  box-shadow: none;
   align-self: stretch;
+}
+
+.feedStickyHeader .sectionTitle {
+  margin-bottom: 12px;
 }
 
 .feedFilters {
@@ -464,23 +593,29 @@
   font-family: "Outfit", sans-serif;
   font-size: 14px;
   font-weight: 400;
-  transition: background-color 0.15s, color 0.15s;
+  transition: background-color 0.15s, color 0.15s, transform 0.12s ease;
+}
+
+.feedFilter:active {
+  transform: scale(0.97);
 }
 
 .feedFilterActive {
-  background-color: #2d6e93;
-  color: #ffffff;
+  background: rgba(25, 25, 25, 0.65);
+  color: #40ff96;
+  border: 1.5px solid rgba(64, 255, 150, 0.4);
 }
 
 .feedFilterInactive {
-  background-color: #f4f7f8;
-  color: #55647b;
+  background: rgba(25, 25, 25, 0.65);
+  color: #ffffff;
+  border: 1.5px solid transparent;
 }
 
 .feedList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   /* Reset ul defaults */
   list-style: none;
   margin: 0;
@@ -489,7 +624,7 @@
 }
 
 .feedPlaceholder {
-  color: #8494af;
+  color: rgba(255, 255, 255, 0.6);
   font-family: "Outfit", sans-serif;
   font-size: 14px;
   text-align: center;
@@ -498,41 +633,97 @@
   margin: 0;
 }
 
+.feedLoadingBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  /* ~5 trade cards (≈124px) + gaps — close to real list stack to limit jump */
+  min-height: min(668px, 82vh);
+  padding: 8px 0 24px;
+  box-sizing: border-box;
+}
+
+/* ── Bottom nav wrapper (gradient) ──────────────────────────── */
+.tabBarWrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 16px;
+  padding-top: 24px;
+  background: linear-gradient(to top, #0a0a0a 80%, rgba(10, 10, 10, 0.8) 90%, transparent);
+}
+
 /* ── TabBar ─────────────────────────────────────────────────── */
 .tabBar {
-  flex-shrink: 0;
   width: 100%;
-  background-color: #ffffff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 0 20px;
+  background: transparent;
 }
 
 .tabBarInner {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 10px 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  height: 72px;
+  padding: 10px 26px;
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
 }
 
 .tabItem {
-  flex: 1;
-  max-width: 80px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
-  border-radius: 9999px;
-  background: none;
+  border-radius: 30px;
+  background: transparent;
   border: none;
   cursor: pointer;
   text-decoration: none;
   transition: background-color 0.15s;
 }
 
-.tabItem:hover         { background-color: rgba(0,0,0,0.05); }
-.tabItemActive         { background-color: #2d6e93; }
+.tabItem:hover         { background: rgba(255,255,255,0.06); }
+.tabItemActive         { background: #40ff96; }
 .tabItemActive:hover   { opacity: 0.9; }
+
+/* ── Bottom glow ────────────────────────────────────────────── */
+.bottomGlow {
+  position: absolute;
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 322px;
+  height: 35px;
+  max-width: 100%;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.bottomGlowSmall {
+  position: absolute;
+  bottom: 96px;
+  right: 60px;
+  width: 66px;
+  height: 9px;
+  border-radius: 50%;
+  background: #40ff96;
+  filter: blur(15px);
+  pointer-events: none;
+  z-index: 10;
+}
 
 /* ── Narrow screen overrides ────────────────────────────────── */
 @media (max-width: 360px) {

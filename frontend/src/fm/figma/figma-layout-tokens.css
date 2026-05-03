@@ -25,3 +25,152 @@
     --figma-duration: 0.01ms;
   }
 }
+
+/* ── Floating bottom nav (pill) — shared geometry for redesigned screens ── */
+:root {
+  --fm-pill-nav-bottom: 20px;
+  --fm-pill-nav-max-width: 350px;
+  --fm-pill-nav-inner-pad-x: 26px;
+  --fm-pill-nav-inner-pad-y: 10px;
+  --fm-pill-nav-inner-pad-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  --fm-pill-nav-bg: rgba(25, 25, 25, 0.55);
+  --fm-pill-nav-active: #40ff96;
+
+  /*
+   * Единая геометрия app bar (все экраны):
+   * зелёный: header pad + appBar inner pad = offset-top;
+   * тёмный / withdraw: только appBar pad-top = offset-top (без «узкой» 8px — убран скачок к зелёному).
+   */
+  --fm-appbar-inset-x: 20px;
+  --fm-appbar-row-height: 56px;
+  --fm-appbar-icons-gap: 12px;
+  --fm-appbar-back-size: 32px;
+  --fm-appbar-icon-slot: 28px;
+  --fm-appbar-pad-y-inner: 8px;
+  /* Верх зелёного header над app bar (как в макете Home) */
+  --fm-green-header-pad-top: 12px;
+  /* Одинаковое смещение ряда иконок от верха контейнера: 12 + 8 = 20px */
+  --fm-appbar-offset-top: calc(var(--fm-green-header-pad-top) + var(--fm-appbar-pad-y-inner));
+
+  /* Зелёная шапка (Home / Wallet / Bot) — одна сетка и цвет глифов на #2edd7d */
+  --fm-green-header-pad-bottom: 20px;
+  --fm-green-header-inset-x: var(--fm-appbar-inset-x);
+  --fm-appbar-padding: var(--fm-appbar-pad-y-inner) var(--fm-appbar-inset-x);
+  --fm-appbar-icon-on-green: #0a0a0a;
+
+  /* Баланс на зелёном фоне — один цвет с главной */
+  --fm-balance-amount-fg: #000000;
+  --fm-balance-unit-fg: #000000;
+
+  /* Тёмная шапка — тот же offset-top, что и зелёный ряд (без отдельного «12+8» блока) */
+  --fm-dark-appbar-pad-y: var(--fm-appbar-offset-top);
+  --fm-dark-appbar-inset-x: var(--fm-appbar-inset-x);
+}
+
+/* ── Общий hover/active для обычных кнопок (не .fm-tab / не нижний таббар) ── */
+.fm-interactive-pill {
+  transition:
+    filter var(--figma-duration) var(--figma-ease),
+    box-shadow var(--figma-duration) var(--figma-ease),
+    transform var(--figma-duration) var(--figma-ease);
+}
+
+@media (hover: hover) {
+  .fm-interactive-pill:hover:not(:disabled):not([aria-disabled="true"]) {
+    filter: brightness(1.07);
+    box-shadow:
+      0 0 0 1px rgba(64, 255, 150, 0.28),
+      0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.fm-interactive-pill:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  filter: brightness(0.94);
+  box-shadow:
+    0 0 0 1px rgba(64, 255, 150, 0.18),
+    0 2px 10px rgba(0, 0, 0, 0.16);
+}
+
+.fm-interactive-pill:disabled:hover,
+.fm-interactive-pill[aria-disabled="true"]:hover,
+.fm-interactive-pill:disabled:active,
+.fm-interactive-pill[aria-disabled="true"]:active {
+  filter: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Компактные чипы (период / фильтры бота) — без крупной тени */
+.fm-interactive-chip {
+  transition:
+    filter var(--figma-duration) var(--figma-ease),
+    box-shadow var(--figma-duration) var(--figma-ease),
+    transform var(--figma-duration) var(--figma-ease);
+}
+
+@media (hover: hover) {
+  .fm-interactive-chip:hover:not(:disabled):not([aria-disabled="true"]) {
+    filter: brightness(1.1);
+    box-shadow: 0 0 0 1px rgba(64, 255, 150, 0.22);
+  }
+}
+
+.fm-interactive-chip:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  filter: brightness(0.96);
+}
+
+/* ── App bar top controls (добавляйте к back / bell / gear в шапке) ── */
+.fm-appbar-hit-green {
+  border-radius: 9999px;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.12s ease,
+    transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fm-appbar-hit-dark {
+  border-radius: 9999px;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.12s ease,
+    transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Декоративная иконка (колокол на экране уведомлений, шестерёнка на Settings) — без hover/active */
+.fm-appbar-hit-static {
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .fm-appbar-hit-green:hover:not(.fm-appbar-hit-static):not([aria-disabled="true"]) {
+    background-color: rgba(0, 0, 0, 0.07);
+  }
+}
+
+.fm-appbar-hit-green:active:not(.fm-appbar-hit-static):not([aria-disabled="true"]) {
+  transform: scale(0.97);
+  opacity: 0.92;
+}
+
+@media (hover: hover) {
+  .fm-appbar-hit-dark:hover:not(.fm-appbar-hit-static):not([aria-disabled="true"]) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.fm-appbar-hit-dark:active:not(.fm-appbar-hit-static):not([aria-disabled="true"]) {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fm-appbar-hit-green:active:not(.fm-appbar-hit-static):not([aria-disabled="true"]),
+  .fm-appbar-hit-dark:active:not(.fm-appbar-hit-static):not([aria-disabled="true"]) {
+    transform: none;
+  }
+}

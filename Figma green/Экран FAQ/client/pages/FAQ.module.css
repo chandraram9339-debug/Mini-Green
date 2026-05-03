@@ -1,0 +1,310 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap");
+
+/* ── Root & Container ───────────────────────────────────────── */
+.root {
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  font-family: "Outfit", -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ── Status Bar ─────────────────────────────────────────────── */
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 6px;
+  height: 44px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.statusTime {
+  font-family: "Outfit", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── App Bar ────────────────────────────────────────────────── */
+.appBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 16px 16px;
+  height: 56px;
+  flex-shrink: 0;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.appBarLeft {
+  display: flex;
+  align-items: center;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #fff;
+}
+
+.appBarTitle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.appBarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+}
+
+.notifBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 13px;
+  height: 13px;
+  background: #40ff96;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifBadgeText {
+  font-family: "Outfit", sans-serif;
+  font-size: 7px;
+  font-weight: 500;
+  color: #0a0a0a;
+  letter-spacing: 0.14px;
+  line-height: 1;
+}
+
+/* ── Scrollable Content ─────────────────────────────────────── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  padding-bottom: 108px; /* space for bottom nav */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.content::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── FAQ Item ───────────────────────────────────────────────── */
+.faqItem {
+  background: #131413;
+  border-radius: 24px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.faqHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 19px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.faqQuestion {
+  flex: 1;
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.18px;
+}
+
+.faqArrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 30px;
+  background: #40ff96;
+  opacity: 0.7;
+  padding: 4px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+  transform: rotate(-90deg);
+}
+
+.faqArrowOpen {
+  transform: rotate(-180deg);
+  opacity: 1;
+}
+
+.faqBody {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, padding 0.25s ease;
+}
+
+.faqBodyOpen {
+  max-height: 600px;
+}
+
+.faqAnswer {
+  padding: 0 19px 16px;
+  color: #fff;
+  font-family: "Outfit", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.highlight {
+  color: #40ff96;
+}
+
+/* ── Bottom Navigation ──────────────────────────────────────── */
+.bottomNav {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(min(100vw, 430px) - 40px);
+  max-width: 390px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 26px;
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  z-index: 100;
+  box-sizing: border-box;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 14px;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
+}
+
+.navItemActive {
+  background: #40ff96;
+  color: #191919;
+}
+
+.navItemActive svg path,
+.navItemActive svg rect {
+  stroke: #191919;
+  fill: #191919;
+}
+
+/* ── Bottom Glow Effects ────────────────────────────────────── */
+.glowWrap {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw, 430px);
+  pointer-events: none;
+  z-index: 99;
+}
+
+.glowLarge {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 322px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+}
+
+.glowSmall {
+  position: absolute;
+  bottom: 0px;
+  right: 20%;
+  width: 66px;
+  height: 9px;
+  border-radius: 50%;
+  background: #40ff96;
+  filter: blur(15px);
+}

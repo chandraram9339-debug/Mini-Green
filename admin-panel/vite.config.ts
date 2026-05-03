@@ -11,7 +11,7 @@ export default defineConfig({
   // (default-src 'self'; script-src 'self'; connect-src 'self' <api origin>) — Vite dev needs relaxed rules here.
   server: {
     port: 5180,
-    strictPort: true,
+    strictPort: false,
     proxy: {
       "/admin": { target: "http://127.0.0.1:4000", changeOrigin: true },
       "/health": { target: "http://127.0.0.1:4000", changeOrigin: true }
@@ -19,7 +19,7 @@ export default defineConfig({
   },
   preview: {
     port: 5180,
-    strictPort: true,
+    strictPort: false,
     proxy: {
       "/admin": { target: "http://127.0.0.1:4000", changeOrigin: true },
       "/health": { target: "http://127.0.0.1:4000", changeOrigin: true }

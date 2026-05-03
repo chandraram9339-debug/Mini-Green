@@ -124,7 +124,7 @@ export type AppConfig = {
   alTradeFeedSyncTgIds: string[];
   /** Notional position size (minor USDT) when mapping AL opens (price is informational). */
   alPositionNotionalMinor: number;
-  /** Persist full JSON from GET /api/trade-feed into `al_trade_feed_snapshots` on each successful pull. */
+  /** When true, prune `al_trade_feed_snapshots` after each successful pull (retention + max rows). Snapshots are always inserted on success so GET /trading/al-trade-feed works. */
   alTradeFeedStoreSnapshots: boolean;
   /** Drop snapshots older than this many days (after each successful sync). */
   alTradeFeedSnapshotRetentionDays: number;

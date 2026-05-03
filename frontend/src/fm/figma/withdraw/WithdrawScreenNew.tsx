@@ -83,9 +83,10 @@ export default function WithdrawScreenNew() {
   }
 
   return (
-    <div className={s.screen} aria-label={t("withdraw.ariaScreen")}>
+    <div className={`${s.screen} ${s.screenWithdrawDark}`} aria-label={t("withdraw.ariaScreen")}>
       <WithdrawAppBar
         title={t("withdraw.title")}
+        theme="dark"
         onBack={() => navigate(routes.home)}
         onClose={() => navigate(routes.home)}
       />
@@ -107,9 +108,9 @@ export default function WithdrawScreenNew() {
           {/* Scan icon */}
           <button className={s.appBarIconBtn} type="button" aria-label="Scan QR">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M3 16V20H21V16" stroke="#759AC6" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
-              <path d="M3 8V4H21V8" stroke="#759AC6" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
-              <path d="M3 12H21" stroke="#759AC6" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+              <path d="M3 16V20H21V16" stroke="#40FF96" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+              <path d="M3 8V4H21V8" stroke="#40FF96" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
+              <path d="M3 12H21" stroke="#40FF96" strokeWidth="2" strokeLinecap="square" strokeLinejoin="round"/>
             </svg>
           </button>
           <button className={s.inputBtnText} type="button" onClick={() => void pasteAddress()}>
@@ -121,7 +122,7 @@ export default function WithdrawScreenNew() {
         <p className={s.note}>{t("withdraw.noteProcess")}</p>
 
         {/* Amount input */}
-        <div className={s.inputRow}>
+        <div className={`${s.inputRow} ${s.inputRowAmount}`}>
           <input
             className={`${s.input} ${s.inputAmount}`}
             inputMode="decimal"
@@ -164,7 +165,7 @@ export default function WithdrawScreenNew() {
         </button>
       </div>
 
-      <WithdrawTabBar />
+      <WithdrawTabBar theme="dark" />
     </div>
   );
 }

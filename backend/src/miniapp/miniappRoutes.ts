@@ -22,6 +22,8 @@ import { markAllUserNotificationsRead } from "../repos/notificationRepo.js";
 import { getBotTradingEnabled, setBotTradingEnabled } from "../repos/userRepo.js";
 import { sibOnUserStart, sibOnUserStop } from "../services/sibBalance.js";
 import { fireTradingEngineNotify } from "../services/tradingEngineNotify.js";
+import { buildAlTradeFeedReadPayload } from "./alTradeFeedReadPayload.js";
+import { getAlStateMiniappPayload } from "../services/alStatePrice.js";
 
 /**
  * Мини-апп (Figma): JWT + per-user TRC20 (HD / deterministic) + ввод/вывод по ТЗ.
@@ -157,6 +159,30 @@ export function registerMiniappContract(app: express.Express) {
       res.json(await buildTradingSummaryForUser(req.userId!));
     } catch (e) {
       res.status(500).json({ message: e instanceof Error ? e.message : "summary failed" });
+    }
+  });
+
+  /**
+   * Санитизированный снимок AL GET /api/state (Basic только на сервере; общий кэш с `fetchAlLiveTradingPrice`).
+   */
+  app.get("/trading/al-state", requireMiniappAuth, async (_req, res) => {
+    try {
+      res.json(await getAlStateMiniappPayload(config));
+    } catch (e) {
+      res.status(500).json({ message: e instanceof Error ? e.message : "al-state failed" });
+    }
+  });
+
+  /**
+   * Санитизированный снимок внешнего GET /api/trade-feed (из последнего успешного poll бэкенда).
+   * Учётные данные AL только в env бэкенда; фронт использует Bearer JWT.
+   */
+  app.get("/trading/al-trade-feed", requireMiniappAuth, (_req, res) => {
+    const db = getDb();
+    try {
+      res.json(buildAlTradeFeedReadPayload(db, config));
+    } catch (e) {
+      res.status(500).json({ message: e instanceof Error ? e.message : "al-trade-feed failed" });
     }
   });
 

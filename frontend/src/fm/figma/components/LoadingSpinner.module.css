@@ -1,0 +1,47 @@
+/*
+ * Small inline spinner — green accent, subtle track.
+ * Tuned for dark (#0a0a0a) and green (#2edd7d) surfaces.
+ */
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.root.toneDark {
+  --fm-spinner-track: rgba(255, 255, 255, 0.12);
+  --fm-spinner-accent: #2edd7d;
+}
+
+.root.toneLight {
+  --fm-spinner-track: rgba(10, 10, 10, 0.12);
+  --fm-spinner-accent: #1a9d5c;
+}
+
+.ring {
+  display: block;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--fm-spinner-track);
+  border-top-color: var(--fm-spinner-accent);
+  animation: fmSpinnerRotate 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    animation: none;
+    border-top-color: var(--fm-spinner-accent);
+    opacity: 0.92;
+  }
+}
+
+@keyframes fmSpinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,136 @@
+.tabsRow {
+  display: flex;
+  gap: 13px;
+}
+
+.tab {
+  flex: 1;
+  min-width: 0;
+  border-radius: 24px;
+  padding: 10px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 137px;
+}
+
+.tabActive {
+  background: #131413;
+}
+
+.tabInactive {
+  background: rgba(19, 20, 19, 0.70);
+}
+
+.tabTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.18px;
+  margin: 0 0 10px 0;
+  line-height: 1.2;
+}
+
+.tabActive .tabTitle {
+  font-weight: 400;
+}
+
+.totalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.totalLabel {
+  font-family: 'Outfit', sans-serif;
+  font-size: 8px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.amountRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.amount {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #40FF96;
+  line-height: 1;
+}
+
+.currency {
+  font-family: 'Outfit', sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1;
+  padding-bottom: 1px;
+}
+
+.countSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.countLabel {
+  font-family: 'Outfit', sans-serif;
+  font-size: 8px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.countRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.count {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1;
+}
+
+.countUnit {
+  font-family: 'Outfit', sans-serif;
+  font-size: 6px;
+  font-weight: 400;
+  color: #fff;
+  text-transform: uppercase;
+  line-height: 1;
+  padding-bottom: 1px;
+}
+
+.arrowBtn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrowBtnActive {
+  background: #40FF96;
+  border-radius: 30px;
+}
+
+.arrowBtnInactive {
+  background: rgba(64, 255, 150, 0.50);
+  border-radius: 20px;
+}

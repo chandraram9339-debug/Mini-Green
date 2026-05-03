@@ -1,6 +1,5 @@
 /*
- * Support Screen — Builder.io visual design port
- * Fully adaptive: flex layout, max-width 500px centred, no absolute positioning
+ * Support — dark theme (Figma: Экран Support / app-bg, app-card, app-green)
  */
 
 /* ── Screen wrapper ─────────────────────────────────────────── */
@@ -11,10 +10,11 @@
   min-height: 0;
   overflow: hidden;
   width: 100%;
-  max-width: 500px;
+  max-width: 430px;
   margin-left: auto;
   margin-right: auto;
-  background-color: #ecf1f4;
+  position: relative;
+  background-color: #0a0a0a;
   touch-action: pan-y;
   font-family: "Outfit", sans-serif;
   box-sizing: border-box;
@@ -24,12 +24,14 @@
   box-sizing: border-box;
 }
 
-/* ── AppBar ─────────────────────────────────────────────────── */
+/* ── AppBar (токены --fm-dark-appbar-*) ─────────────────────── */
 .appBar {
   width: 100%;
-  background-color: #ecf1f4;
+  background-color: #0a0a0a;
   flex-shrink: 0;
   z-index: 10;
+  box-sizing: border-box;
+  padding-top: var(--fm-dark-appbar-pad-y);
 }
 
 .appBarRow {
@@ -37,8 +39,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 56px;
+  padding: 0 var(--fm-dark-appbar-inset-x);
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarTitle {
@@ -49,36 +51,35 @@
   font-family: "Outfit", sans-serif;
   font-size: 20px;
   font-weight: 500;
-  color: #192b48;
+  color: #ffffff;
   line-height: 1;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .appBarBack {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--fm-appbar-back-size);
+  height: var(--fm-appbar-back-size);
   border-radius: 9999px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   text-decoration: none;
-  transition: background-color 0.15s;
-}
-
-.appBarBack:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .appBarIcons {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--fm-appbar-icons-gap);
   flex-shrink: 0;
 }
 
@@ -87,8 +88,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -96,22 +102,27 @@
   text-decoration: none;
 }
 
+.appBarBell svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .appBarBellBadge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 13px;
   height: 13px;
   border-radius: 9999px;
-  background-color: #2d6e93;
+  background-color: #40ff96;
 }
 
 .appBarBellBadge span {
   font-family: "Outfit", sans-serif;
-  color: #ffffff;
+  color: #0a0a0a;
   font-size: 7px;
   font-weight: 500;
   line-height: 1;
@@ -121,8 +132,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  box-sizing: border-box;
+  min-width: var(--fm-appbar-icon-slot);
+  min-height: var(--fm-appbar-icon-slot);
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -130,10 +146,15 @@
   text-decoration: none;
 }
 
+.appBarGear svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .appBarDivider {
-  margin: 0 16px;
+  margin: 0 var(--fm-dark-appbar-inset-x);
   height: 1px;
-  background-color: #d3dae5;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ── Scrollable body ────────────────────────────────────────── */
@@ -148,54 +169,81 @@
 
 /* ── Support list ────────────────────────────────────────────── */
 .listSection {
-  padding: 20px 20px 0;
+  padding: 24px 20px 128px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 10px;
 }
 
 .listItem {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: #131413;
+  border-radius: 24px;
   padding: 12px 10px;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.15s;
+  transition: opacity 0.15s;
   width: 100%;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
 
 .listItem:hover {
-  background-color: #f5f7f9;
+  opacity: 0.85;
+}
+
+.listItem:active {
+  opacity: 0.65;
 }
 
 .listItemLabel {
   font-family: "Outfit", sans-serif;
   font-size: 18px;
   font-weight: 500;
-  color: #192b48;
+  color: #ffffff;
   letter-spacing: 0.18px;
   line-height: 1.2;
+}
+
+/* FAQ row — dimmed label + icon (Figma ListItem dimmed) */
+.listItemDimmed .listItemLabel {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Bottom TabBar ───────────────────────────────────────────── */
 .tabBar {
   flex-shrink: 0;
-  width: 100%;
-  background-color: #ffffff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 350px;
+  z-index: 100;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .tabBarInner {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 0 16px;
+  justify-content: space-between;
+  padding: 10px 26px;
   height: 72px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-sizing: border-box;
+  pointer-events: auto;
 }
 
 .tabItem {
@@ -204,6 +252,7 @@
   justify-content: center;
   flex-shrink: 0;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tabItemIcon {
@@ -213,9 +262,28 @@
   width: 52px;
   height: 52px;
   border-radius: 9999px;
-  transition: background-color 0.15s;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .tabItemIconActive {
-  background-color: #2d6e93;
+  background-color: var(--fm-pill-nav-active, #40ff96);
+}
+
+.tabItem:hover .tabItemIcon:not(.tabItemIconActive) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.tabItem:hover .tabItemIconActive {
+  opacity: 0.9;
+}
+
+/* FAQ icon muted strokes inside dimmed row */
+.listItemDimmed svg path {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
+.listItemDimmed svg path[fill]:not([fill="none"]) {
+  fill: rgba(255, 255, 255, 0.5);
 }

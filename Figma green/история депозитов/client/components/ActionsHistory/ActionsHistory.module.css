@@ -1,0 +1,333 @@
+/* ─── Page Shell ─────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  background-color: #0b0c0b;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 36px 0 56px;
+  box-sizing: border-box;
+}
+
+.inner {
+  width: 100%;
+  max-width: 430px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.heading {
+  color: #ffffff;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.22px;
+  margin: 0 0 20px 0;
+  line-height: normal;
+}
+
+/* ─── Tabs ───────────────────────────────────────────────── */
+.tabsScroll {
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tabsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.tabsRow {
+  display: flex;
+  gap: 13px;
+}
+
+.tab {
+  width: 108px;
+  min-width: 108px;
+  height: 137px;
+  border-radius: 24px;
+  padding: 10px;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  transition: background 0.15s ease;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.tabActive {
+  background: #131413;
+}
+
+.tabInactive {
+  background: rgba(19, 20, 19, 0.70);
+}
+
+.tabName {
+  color: #ffffff;
+  font-size: 18px;
+  line-height: normal;
+  letter-spacing: 0.18px;
+}
+
+.tabNameActive {
+  font-weight: 400;
+}
+
+.tabNameInactive {
+  font-weight: 500;
+}
+
+.tabTotalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tabLabel {
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.tabAmountRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.tabAmountValue {
+  color: #40FF96;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.tabCurrency {
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 400;
+  line-height: normal;
+  padding-bottom: 1px;
+}
+
+.tabBottomRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.tabCountSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tabCountRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.tabCountNum {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.tabCountUnit {
+  color: #ffffff;
+  font-size: 6px;
+  font-weight: 400;
+  line-height: normal;
+  text-transform: uppercase;
+  padding-bottom: 1px;
+}
+
+.tabBtnActive {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #40FF96;
+  border-radius: 30px;
+}
+
+.tabBtnInactive {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(64, 255, 150, 0.50);
+  border-radius: 20px;
+  transform: rotate(90deg);
+}
+
+/* ─── List ───────────────────────────────────────────────── */
+.list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+/* ─── Transaction Item ───────────────────────────────────── */
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 10px;
+  border-radius: 24px;
+  background: #131413;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.listItemReferral {
+  align-items: center;
+}
+
+.itemIconWrap {
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+}
+
+.itemIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.itemIconDeposit {
+  background: #40FF96;
+}
+
+.itemIconWithdraw {
+  background: #40FF96;
+}
+
+.itemIconReferral {
+  background: #ffffff;
+}
+
+.itemTitles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.itemTitle {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.18px;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.itemSubtitle {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.itemAddress {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: normal;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+/* ─── Right-side details ─────────────────────────────────── */
+.itemDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.itemAmountRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.itemAmountMain {
+  color: #40FF96;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+  text-align: right;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.itemAmountCommission {
+  color: #40FF96;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: normal;
+  text-align: right;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.itemAmountCurrency {
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 400;
+  line-height: normal;
+  padding-bottom: 1px;
+}
+
+.itemDate {
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: normal;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+/* ─── Referral-specific ──────────────────────────────────── */
+.referralName {
+  flex: 1;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.18px;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+  min-width: 0;
+}
+
+.referralAmountRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}

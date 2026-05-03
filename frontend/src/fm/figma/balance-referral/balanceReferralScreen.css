@@ -1,5 +1,12 @@
 /* Detail Balance | Referral — frame 390×915, node 1:3687 (высоту ведёт flex у `.fm-deposit`) */
 
+/* Dark theme overrides (match new app look) */
+.fm-referral {
+  --color-black: #ffffff;
+  --color-grey-dark: rgba(255, 255, 255, 0.6);
+  --color-grey-medium: rgba(255, 255, 255, 0.5);
+}
+
 /* Эталон: метки дат absolute right на фрейме — относительно блока истории */
 .fm-referral-date-marker {
   position: absolute;

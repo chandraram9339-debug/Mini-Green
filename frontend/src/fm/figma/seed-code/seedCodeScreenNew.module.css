@@ -11,10 +11,11 @@
   min-height: 0;
   overflow: hidden;
   width: 100%;
-  max-width: 500px;
+  max-width: 430px;
   margin-left: auto;
   margin-right: auto;
-  background-color: #ecf1f4;
+  position: relative;
+  background-color: #0a0a0a;
   touch-action: pan-y;
   font-family: "Outfit", sans-serif;
   box-sizing: border-box;
@@ -24,19 +25,22 @@
   box-sizing: border-box;
 }
 
-/* ── AppBar ─────────────────────────────────────────────────── */
+/* ── AppBar (токены --fm-dark-appbar-*) ─────────────────────── */
 .appBar {
   width: 100%;
-  background-color: #ecf1f4;
+  background-color: #0a0a0a;
   flex-shrink: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  padding-top: var(--fm-dark-appbar-pad-y);
 }
 
 .appBarRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  height: 56px;
+  padding: 0 var(--fm-dark-appbar-inset-x);
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarTitle {
@@ -45,41 +49,39 @@
   font-family: "Outfit", sans-serif;
   font-size: 20px;
   font-weight: 500;
-  color: #192b48;
+  color: #ffffff;
   line-height: 1;
   white-space: nowrap;
   letter-spacing: 0.4px;
+  pointer-events: none;
 }
 
 .appBarBack {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: var(--fm-appbar-back-size);
+  height: var(--fm-appbar-back-size);
   border-radius: 9999px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   text-decoration: none;
-  transition: background-color 0.15s;
-}
-
-.appBarBack:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .appBarPlaceholder {
-  width: 32px;
+  width: var(--fm-appbar-back-size);
   flex-shrink: 0;
 }
 
 .appBarDivider {
-  margin: 0 16px;
+  margin: 0 var(--fm-dark-appbar-inset-x);
   height: 1px;
-  background-color: #d3dae5;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ── Scrollable body ─────────────────────────────────────────── */
@@ -92,7 +94,7 @@
   overscroll-behavior-y: contain;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding: 20px 16px 24px;
+  padding: 16px 20px 112px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -108,13 +110,13 @@
   font-family: "Outfit", sans-serif;
   font-size: 15px;
   line-height: 1.5;
-  color: #55647b;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ── Seed word grid wrapper (blur overlay) ───────────────────── */
 .gridWrap {
   position: relative;
-  border-radius: 12px;
+  border-radius: 24px;
   overflow: hidden;
 }
 
@@ -126,24 +128,24 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(10, 10, 10, 0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-radius: 12px;
+  border-radius: 24px;
   cursor: pointer;
   z-index: 2;
   transition: opacity 0.25s;
 }
 
 .gridBlurOverlay:hover {
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(10, 10, 10, 0.65);
 }
 
 .revealHint {
   font-family: "Outfit", sans-serif;
   font-size: 14px;
   font-weight: 500;
-  color: #2d6e93;
+  color: rgba(255, 255, 255, 0.8);
   text-align: center;
   pointer-events: none;
   user-select: none;
@@ -152,12 +154,17 @@
 .revealIcon {
   width: 40px;
   height: 40px;
-  background-color: #2d6e93;
+  background-color: #40ff96;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.revealIcon svg path,
+.revealIcon svg circle {
+  stroke: #0a0a0a;
 }
 
 /* ── Seed word grid card ─────────────────────────────────────── */
@@ -168,10 +175,10 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: #131413;
+  border-radius: 24px;
   width: 100%;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: none;
 }
 
 /* ── Individual word ─────────────────────────────────────────── */
@@ -183,7 +190,7 @@
   font-family: "Outfit", sans-serif;
   font-size: 14px;
   font-weight: 500;
-  color: #192b48;
+  color: #ffffff;
 }
 
 .wordIdx {
@@ -192,7 +199,7 @@
   font-family: "Outfit", sans-serif;
   font-size: 11px;
   font-weight: 400;
-  color: #8494af;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* ── Copy button ─────────────────────────────────────────────── */
@@ -205,8 +212,8 @@
   font-family: "Outfit", sans-serif;
   font-size: 16px;
   font-weight: 400;
-  color: #ffffff;
-  background-color: #73c1b1;
+  color: #0a0a0a;
+  background-color: #40ff96;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,31 +223,49 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.copyBtn svg path {
+  stroke: #0a0a0a;
+}
+
 .copyBtn:active {
   opacity: 0.8;
 }
 
 .copyBtn:focus-visible {
-  outline: 2px solid #2d6e93;
+  outline: 2px solid #40ff96;
   outline-offset: 3px;
 }
 
 /* ── Bottom TabBar ───────────────────────────────────────────── */
 .tabBar {
   flex-shrink: 0;
-  width: 100%;
-  background-color: #ffffff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 350px;
+  z-index: 100;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .tabBarInner {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  padding: 0 16px;
+  justify-content: space-between;
+  padding: 10px 26px;
   height: 72px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-sizing: border-box;
+  pointer-events: auto;
 }
 
 .tabItem {
@@ -249,6 +274,7 @@
   justify-content: center;
   flex-shrink: 0;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tabItemIcon {
@@ -258,9 +284,19 @@
   width: 52px;
   height: 52px;
   border-radius: 9999px;
-  transition: background-color 0.15s;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .tabItemIconActive {
-  background-color: #2d6e93;
+  background-color: var(--fm-pill-nav-active, #40ff96);
+}
+
+.tabItem:hover .tabItemIcon:not(.tabItemIconActive) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.tabItem:hover .tabItemIconActive {
+  opacity: 0.9;
 }

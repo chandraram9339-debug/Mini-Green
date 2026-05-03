@@ -152,6 +152,25 @@ export function buildCompoundedChartPoints(rows: TradingJournalItem[]): GraphicP
   });
 }
 
+/** Вкладки периода экрана бота — для фильтра закрытий перед кумулятивным % из AL / журнала. */
+export type BotChartPeriod = "24h" | "7d" | "1m" | "all";
+
+/** Оставляет закрытые сделки с `closed_at` в окне периода; открытые и прочие строки не отбрасывает (игнорируются `buildCompoundedChartPoints`). */
+export function filterJournalRowsForBotChartPeriod(
+  rows: TradingJournalItem[],
+  period: BotChartPeriod,
+): TradingJournalItem[] {
+  if (period === "all") return rows;
+  const now = Date.now();
+  const msDay = 86_400_000;
+  const windowMs = period === "24h" ? msDay : period === "7d" ? 7 * msDay : 30 * msDay;
+  const start = now - windowMs;
+  return rows.filter((r) => {
+    if (r.status !== "closed" || !r.closed_at) return true;
+    return Date.parse(String(r.closed_at)) >= start;
+  });
+}
+
 export type ChartDot = {
   x: number;
   y: number;

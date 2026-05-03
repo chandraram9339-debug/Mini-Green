@@ -1,0 +1,136 @@
+/**
+ * Premium dark skeleton — same family as #131413 cards, green accent only in the sweep.
+ */
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.shimmer {
+  box-sizing: border-box;
+  /* Base matches trade / wallet list cards — not flat gray */
+  background-color: #141514;
+  background-image: linear-gradient(
+    105deg,
+    rgba(20, 21, 20, 0) 0%,
+    rgba(20, 21, 20, 0) 35%,
+    rgba(46, 221, 125, 0.09) 48%,
+    rgba(55, 230, 140, 0.07) 52%,
+    rgba(20, 21, 20, 0) 65%,
+    rgba(20, 21, 20, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeletonShimmer 1.65s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+    background-image: none;
+    background-color: #181a19;
+    /* Slight cool green — still no bright band */
+    box-shadow: inset 0 0 0 1px rgba(46, 221, 125, 0.06);
+  }
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.linesWallet {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+
+/* TradeCard: padding + head + rows ≈ 118–132px; aim mid-range vs real cards */
+.feedRow {
+  min-height: 124px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.metaLine {
+  height: 12px;
+  border-radius: 8px;
+  width: 38%;
+  max-width: 160px;
+  margin-bottom: 10px;
+}
+
+/* Plot-only overlay on Trading screen — width fills SVG column; axis stays uncovered */
+.chartPlotOnlyRoot {
+  width: 100%;
+  min-width: 0;
+  display: block;
+}
+
+/*
+ * Trading chart: mirrors BotDetail TradingChart — Y axis 24px flush to SVG (no gap),
+ * plot uses same aspect as viewBox 325×122 so height tracks narrow viewports (360/390).
+ */
+.chartGrid {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.chartAxis {
+  border-radius: 6px;
+  width: 24px;
+  min-height: 100%;
+}
+
+.chartPlot {
+  border-radius: 12px;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 325 / 122;
+  height: auto;
+  min-height: 0;
+}
+
+.homeChartGrid {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 4px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.homeChartAxis {
+  border-radius: 6px;
+  width: 28px;
+  min-height: 100%;
+}
+
+.homeChartPlot {
+  border-radius: 12px;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 325 / 122;
+  height: auto;
+  min-height: 0;
+}
+
+.walletHistoryRow {
+  min-height: 95px;
+  border-radius: 24px;
+  flex-shrink: 0;
+}

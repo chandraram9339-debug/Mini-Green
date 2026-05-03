@@ -5,6 +5,8 @@ import { appBarLogoUrl } from "../assets/appBarShared";
 import type { AppBarAssetUrls } from "../types/appBarAssets";
 import { routes } from "../routes";
 
+import s from "./figmaAppBar.module.css";
+
 type FigmaAppBarProps = {
   assets: AppBarAssetUrls;
   backTo?: string;
@@ -22,7 +24,7 @@ type FigmaAppBarProps = {
   showLogo?: boolean;
 };
 
-/** Title bar с Back / колокольчик / шестерёнка — эталоны разных экранов задают разные SVG. */
+/** Title bar с Back / колокольчик / шестерёнка — сетка как на *ScreenNew (токены --fm-appbar-*). */
 export function FigmaAppBar({
   assets,
   backTo,
@@ -42,7 +44,7 @@ export function FigmaAppBar({
         : null;
 
   const backInner = (
-    <span className="fm-back-inner">
+    <span className={s.backInner}>
       <img alt="" src={assets.backIcon} />
     </span>
   );
@@ -50,60 +52,72 @@ export function FigmaAppBar({
   const bellInner = (
     <>
       <img alt="" src={assets.bellIcon} className="fm-bell-img" />
-      {resolvedBellBadge ? <span className="fm-notify-badge">{resolvedBellBadge}</span> : null}
+      {resolvedBellBadge ? <span className={s.notifyBadge}>{resolvedBellBadge}</span> : null}
     </>
   );
 
   const settingsImg = <img alt="" src={assets.settingsIcon} />;
 
+  const center =
+    showLogo ? (
+      <div
+        className={`${s.center} ${s.brand} app-bar-logo-shimmer app-bar-logo-wordmark`}
+        aria-label="Palladium"
+      >
+        <img alt="Palladium" src={appBarLogoUrl} />
+      </div>
+    ) : title ? (
+      <p className={`${s.center} ${s.title}`}>{title}</p>
+    ) : null;
+
   return (
     <header className="fm-abs fm-appbar">
-      {settingsStatic ? (
-        <span className="fm-appbar-settings fm-appbar-settings--static" aria-hidden="true">
-          {settingsImg}
-        </span>
-      ) : (
-        <Link to={routes.settings} className="fm-appbar-settings" aria-label="Settings">
-          {settingsImg}
-        </Link>
-      )}
+      <div className={s.shell}>
+        <div className={s.row}>
+          <div className={s.leading}>
+            {backTo ? (
+              <Link to={backTo} className={`${s.backBtn} fm-appbar-hit-dark`} aria-label="Back">
+                {backInner}
+              </Link>
+            ) : onBack ? (
+              <button type="button" className={`${s.backBtn} fm-appbar-hit-dark`} aria-label="Back" onClick={onBack}>
+                {backInner}
+              </button>
+            ) : (
+              <button type="button" className={`${s.backBtn} fm-appbar-hit-dark`} aria-label="Back">
+                {backInner}
+              </button>
+            )}
+          </div>
 
-      {bellStatic ? (
-        <span className="fm-appbar-bell-wrap fm-appbar-bell-wrap--static" aria-hidden="true">
-          {bellInner}
-        </span>
-      ) : (
-        <Link to={routes.notifications} className="fm-appbar-bell-wrap" aria-label="Notifications">
-          {bellInner}
-        </Link>
-      )}
+          {center}
 
-      <div className="fm-appbar-line">
-        <img alt="" src={assets.dividerLine} />
+          <div className={s.trailing}>
+            {bellStatic ? (
+              <span className={`${s.iconSlot} ${s.iconSlotStatic} fm-appbar-hit-static`} aria-hidden="true">
+                {bellInner}
+              </span>
+            ) : (
+              <Link to={routes.notifications} className={`${s.iconSlot} fm-appbar-hit-dark`} aria-label="Notifications">
+                {bellInner}
+              </Link>
+            )}
+
+            {settingsStatic ? (
+              <span className={`${s.iconSlot} ${s.iconSlotStatic} fm-appbar-hit-static`} aria-hidden="true">
+                {settingsImg}
+              </span>
+            ) : (
+              <Link to={routes.settings} className={`${s.iconSlot} fm-appbar-hit-dark`} aria-label="Settings">
+                {settingsImg}
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
 
-      {showLogo ? (
-        <div className="fm-appbar-brand" aria-label="Palladium">
-          <img alt="Palladium" src={appBarLogoUrl} />
-        </div>
-      ) : title ? (
-        <p className="fm-appbar-title">{title}</p>
-      ) : null}
-
-      <div className="fm-back-wrap">
-        {backTo ? (
-          <Link to={backTo} className="fm-back-btn" aria-label="Back">
-            {backInner}
-          </Link>
-        ) : onBack ? (
-          <button type="button" className="fm-back-btn" aria-label="Back" onClick={onBack}>
-            {backInner}
-          </button>
-        ) : (
-          <button type="button" className="fm-back-btn" aria-label="Back">
-            {backInner}
-          </button>
-        )}
+      <div className={s.line}>
+        <img alt="" src={assets.dividerLine} />
       </div>
     </header>
   );

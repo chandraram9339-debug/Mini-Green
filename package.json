@@ -5,7 +5,8 @@
     "dev": "concurrently -k false -n backend,frontend,admin -c blue,green,magenta \"pnpm --filter miniapp-backend dev\" \"pnpm --filter miniapp-frontend dev\" \"pnpm --filter miniapp-admin-panel dev\"",
     "build": "pnpm -r run build",
     "smoke": "pnpm --filter miniapp-backend smoke",
-    "install:all": "pnpm install"
+    "install:all": "pnpm install",
+    "rebuild:backend-native": "pnpm rebuild better-sqlite3 --filter miniapp-backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

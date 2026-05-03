@@ -176,19 +176,20 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
     );
   });
 
-  if (c.alTradeFeedStoreSnapshots) {
-    try {
-      insertAlTradeFeedSnapshot(db, {
-        fetched_at: new Date().toISOString(),
-        opens_n: opensRaw.length,
-        closes_n: closesRaw.length,
-        payload_json: JSON.stringify(raw),
-      });
+  /* GET /trading/al-trade-feed читает только последний снимок из БД — без записи миниапп не получает ленту. */
+  try {
+    insertAlTradeFeedSnapshot(db, {
+      fetched_at: new Date().toISOString(),
+      opens_n: opensRaw.length,
+      closes_n: closesRaw.length,
+      payload_json: JSON.stringify(raw),
+    });
+    if (c.alTradeFeedStoreSnapshots) {
       pruneAlTradeFeedSnapshots(db, c.alTradeFeedSnapshotRetentionDays, c.alTradeFeedSnapshotMaxRows);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      logEvent(trace, "al_trade_feed.snapshot_store_failed", { error: msg.slice(0, 400) });
     }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    logEvent(trace, "al_trade_feed.snapshot_store_failed", { error: msg.slice(0, 400) });
   }
 
   const openMeta = new Map<number, { pair: string; opened_at: string }>();
@@ -292,7 +293,9 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
   logEvent(trace, "al_trade_feed.sync_ok", {
     opens: opens.length,
     closes: closes.length,
-    targets: targetTgIds.length
+    opens_raw: opensRaw.length,
+    closes_raw: closesRaw.length,
+    targets: targetTgIds.length,
   });
 }
 
@@ -301,16 +304,33 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
  * (не теряем тики, если синк дольше интервала). Цикл не останавливается, пока жив процесс.
  */
 export function scheduleAlTradeFeedPoller(db: Database, c: AppConfig): void {
+  const probe = {
+    AL_TRADE_FEED_ENABLED: c.alTradeFeedEnabled,
+    base_url_set: Boolean(c.alTradeFeedBaseUrl.trim()),
+    http_user_set: Boolean(c.alTradeFeedHttpUser.trim()),
+    http_password_set: Boolean(c.alTradeFeedHttpPassword?.length),
+    store_snapshots_flag: c.alTradeFeedStoreSnapshots,
+    poll_interval_ms: c.alTradeFeedPollIntervalMs,
+    explicit_sync_tg_ids_count: c.alTradeFeedSyncTgIds.length,
+  };
+  console.log("[al-trade-feed] boot probe:", JSON.stringify(probe));
+
   if (!isAlTradeFeedConfigured(c)) {
     console.log(
-      "[al-trade-feed] disabled or incomplete env (need AL_TRADE_FEED_ENABLED=1, URL, HTTP user/pass, AL_TRADE_FEED_SYNC_TG_IDS)"
+      "[al-trade-feed] poller NOT started: need AL_TRADE_FEED_ENABLED=1 and AL_TRADE_FEED_BASE_URL, AL_TRADE_FEED_HTTP_USER, AL_TRADE_FEED_HTTP_PASSWORD (AL_TRADE_FEED_SYNC_TG_IDS only affects mirroring to users, not polling)",
     );
     return;
   }
 
+  if (!c.alTradeFeedStoreSnapshots) {
+    console.warn(
+      "[al-trade-feed] AL_TRADE_FEED_STORE_SNAPSHOTS=0: retention pruning disabled; snapshots are still written so GET /trading/al-trade-feed works.",
+    );
+  }
+
   const ms = c.alTradeFeedPollIntervalMs;
   console.log(
-    `[al-trade-feed] chained poll ${c.alTradeFeedBaseUrl}/api/trade-feed: wait ${ms}ms after each sync completes; tg ids: ${c.alTradeFeedSyncTgIds.join(", ")}`
+    `[al-trade-feed] poller started: ${c.alTradeFeedBaseUrl}/api/trade-feed; interval ${ms}ms after each sync; explicit tg ids: ${c.alTradeFeedSyncTgIds.join(", ") || "(none — mirror targets may still come from DB)"}`,
   );
 
   const scheduleNext = (delay: number) => {

@@ -1,0 +1,194 @@
+/*
+ * Legacy FigmaAppBar — та же сетка, что у *ScreenNew.module.css:
+ * inset-x, 32px back, 28px bell/gear, 12px gap, 56px row; без абсолютных left/top в px.
+ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0 var(--fm-appbar-inset-x);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--fm-appbar-row-height);
+}
+
+.leading {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: var(--fm-appbar-back-size);
+  height: var(--fm-appbar-back-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trailing {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--fm-appbar-icons-gap);
+}
+
+.iconSlot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--fm-appbar-icon-slot);
+  height: var(--fm-appbar-icon-slot);
+  overflow: visible;
+  line-height: 0;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+.iconSlotStatic {
+  cursor: default;
+  pointer-events: none;
+}
+
+a.iconSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+span.iconSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconSlot img {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.notifyBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 13px;
+  height: 13px;
+  padding: 2px;
+  border-radius: 10.83px;
+  background-color: var(--color-blue-dark);
+  color: var(--color-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-h1-family), sans-serif;
+  font-weight: 500;
+  font-size: 7px;
+  letter-spacing: 0.14px;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+}
+
+.center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  max-width: min(230px, calc(100vw - 120px));
+}
+
+.brand {
+  width: 220px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.brand img {
+  display: block;
+  width: 168px;
+  height: 20px;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+}
+
+.title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-h1-family), sans-serif;
+  font-size: var(--font-h1-size);
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  color: var(--color-black);
+  text-align: center;
+}
+
+.line {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 0;
+  width: 350px;
+}
+
+.line img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.backBtn {
+  border: none;
+  padding: 4px;
+  border-radius: var(--figma-radius-icon-hit);
+  cursor: pointer;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+a.backBtn {
+  text-decoration: none;
+  color: inherit;
+}
+
+.backInner {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backInner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

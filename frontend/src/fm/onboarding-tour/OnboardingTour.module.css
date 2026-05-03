@@ -1,0 +1,226 @@
+/* Foundation overlay — dark scrim, green accent, mobile-first. No Tailwind. */
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 100050;
+  pointer-events: auto;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  /* Dynamic positions from OnboardingTour.tsx (CSS variables on this node) */
+  --ot-spotlight-top: 0px;
+  --ot-spotlight-left: 0px;
+  --ot-spotlight-w: 0px;
+  --ot-spotlight-h: 0px;
+  --ot-tooltip-top: 50%;
+  --ot-tooltip-left: 50%;
+  --ot-tooltip-translate: translate(-50%, -50%);
+}
+
+/* “Spotlight” cutout: darkens everything except a padded rect around the target */
+.spotlight {
+  position: absolute;
+  top: var(--ot-spotlight-top);
+  left: var(--ot-spotlight-left);
+  width: var(--ot-spotlight-w);
+  height: var(--ot-spotlight-h);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(10, 10, 10, 0.78);
+  pointer-events: none;
+  border: 1px solid rgba(64, 255, 150, 0.45);
+  box-sizing: border-box;
+  transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight {
+    transition: none;
+  }
+}
+
+.rootNoTarget .spotlight {
+  display: none;
+}
+
+/* When there is no target: even dimmed overlay instead of spotlight */
+.rootNoTarget::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.78);
+  pointer-events: none;
+}
+
+.skip {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  padding: 10px 14px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.1);
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.skip:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.skip:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip {
+    transition: none;
+  }
+  .skip:active {
+    transform: none;
+  }
+}
+
+.tooltip {
+  position: absolute;
+  top: var(--ot-tooltip-top);
+  left: var(--ot-tooltip-left);
+  transform: var(--ot-tooltip-translate);
+  width: min(340px, calc(100vw - 32px));
+  max-width: min(340px, calc(100vw - 32px));
+  padding: 16px 18px;
+  border-radius: 16px;
+  /* Slightly denser scrim for readability on green/dark under the cutout */
+  background: rgba(18, 22, 28, 0.97);
+  border: 1px solid rgba(64, 255, 150, 0.38);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+.screenBadge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0a0a0a;
+  background: #40ff96;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.description {
+  margin: 0;
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  white-space: pre-line;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.progress {
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.1s ease,
+    filter 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.btnGhost {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btnGhost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.btnPrimary {
+  color: #0a0a0a;
+  background: #40ff96;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.btnPrimary:active:not(:disabled),
+.btnGhost:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btnPrimary:active:not(:disabled),
+  .btnGhost:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+.hintMissing {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: "Outfit", system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.42);
+}

@@ -1,0 +1,61 @@
+.page {
+  min-height: 100vh;
+  background: #0A0A0A;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  background: #0A0A0A;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.body {
+  flex: 1;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transactionList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 110px;
+}
+
+/* Bottom glow effects (decorative) */
+.bottomGlow {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 322px;
+  height: 35px;
+  max-width: 100%;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.bottomGlowSmall {
+  position: fixed;
+  bottom: 68px;
+  right: calc(50% - 150px);
+  width: 66px;
+  height: 9px;
+  border-radius: 50%;
+  background: #40FF96;
+  filter: blur(15px);
+  pointer-events: none;
+  z-index: 10;
+}

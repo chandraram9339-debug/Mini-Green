@@ -1,0 +1,303 @@
+/* DepositDoneScreen.module.css */
+
+.screen {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Outfit', -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+/* ───────────────────────────────
+   Status Bar
+─────────────────────────────── */
+.statusBar {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px 6px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.statusTime {
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ───────────────────────────────
+   App Bar
+─────────────────────────────── */
+.appBar {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: #0a0a0a;
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.appBarTitle {
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  line-height: normal;
+  margin: 0;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.backBtn {
+  left: 16px;
+}
+
+.closeBtn {
+  right: 16px;
+}
+
+/* ───────────────────────────────
+   Main Content
+─────────────────────────────── */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px 0;
+  box-sizing: border-box;
+  gap: 0;
+}
+
+.receiveTitle {
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: normal;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.qrWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 30px;
+  flex-shrink: 0;
+}
+
+.qrCode {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  display: block;
+}
+
+.addressCard {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 20px;
+  border-radius: 24px;
+  background: #131413;
+  min-height: 76px;
+  box-sizing: border-box;
+  margin-bottom: 40px;
+}
+
+.addressText {
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: normal;
+  text-align: center;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* ───────────────────────────────
+   Action Buttons
+─────────────────────────────── */
+.actionsGroup {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.copyButton {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 54px;
+  background: #191919;
+  border: none;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+}
+
+.copyButton:active {
+  opacity: 0.8;
+}
+
+.paidButton {
+  width: 100%;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 54px;
+  background: #40ff96;
+  border: none;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #191919;
+  box-sizing: border-box;
+}
+
+.paidButton:active {
+  opacity: 0.9;
+}
+
+/* ───────────────────────────────
+   Bottom Glow Effects
+─────────────────────────────── */
+.glowContainer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.glowLarge {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 82%;
+  max-width: 322px;
+  height: 35px;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  border-radius: 50%;
+}
+
+.glowSmall {
+  position: absolute;
+  bottom: 22px;
+  right: 17%;
+  width: 66px;
+  height: 9px;
+  background: #40ff96;
+  filter: blur(15px);
+  border-radius: 50%;
+}
+
+/* ───────────────────────────────
+   Tab Bar
+─────────────────────────────── */
+.tabBarWrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.tabBar {
+  width: 100%;
+  max-width: 350px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 26px;
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  box-sizing: border-box;
+}
+
+.tabItems {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
+  justify-content: center;
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 14px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.tabItemActive {
+  background: #40ff96;
+}

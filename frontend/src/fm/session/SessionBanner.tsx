@@ -1,6 +1,6 @@
 import { useAppSession } from "./useAppSession";
 
-/** Мини-статус сессии API (ошибка / загрузка). Не затрагивает разметку Figma под ним. */
+/** Compact API session status (loading / error). Does not change Figma layout below. */
 export function SessionBanner() {
   const { phase, errorMessage } = useAppSession();
 

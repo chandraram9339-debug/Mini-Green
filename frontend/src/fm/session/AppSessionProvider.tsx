@@ -23,7 +23,7 @@ function devBearerFallback(): string | undefined {
   return t || undefined;
 }
 
-/** StrictMode-safe: один bootstrap на вкладку. */
+/** StrictMode-safe: single bootstrap per tab. */
 let appSessionBootStarted = false;
 const BOT_RUNNING_STORAGE_KEY = "fm.botRunning";
 
@@ -145,7 +145,7 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
         setState({
           phase: "error",
           mode: "live",
-          errorMessage: "Откройте мини-приложение из Telegram (нет initData).",
+          errorMessage: "Open the mini app from Telegram (no initData).",
           notificationUnreadCount: 0,
           botRunning: false,
         });

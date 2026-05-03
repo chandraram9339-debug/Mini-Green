@@ -1,7 +1,7 @@
 /**
  * Блеск на логотипе Palladium в app bar (168×20).
  * Добавь класс `app-bar-logo-shimmer` к обёртке рядом с локальными стилями `.appBarLogo`.
- * Для `FigmaAppBar` уже есть `.fm-appbar-brand::after` в homeScreen.css.
+ * Для `FigmaAppBar` — классы на обёртке в `figmaAppBar.module.css` + `app-bar-logo-shimmer`.
  */
 .app-bar-logo-shimmer {
   isolation: isolate;
@@ -53,4 +53,25 @@
     animation: none;
     opacity: 0.3;
   }
+}
+
+/**
+ * Wordmark в app bar — как на Home: 168×20, адаптивная ширина + тот же шимер.
+ * Разметка: `className={... + ' app-bar-logo-shimmer app-bar-logo-wordmark'}`.
+ */
+.app-bar-logo-wordmark img {
+  display: block;
+  width: min(168px, calc(100vw - 112px));
+  height: auto;
+  max-height: 20px;
+  aspect-ratio: 168 / 20;
+  object-fit: contain;
+}
+
+.app-bar-logo-wordmark.app-bar-logo-shimmer::after {
+  width: min(168px, calc(100vw - 112px));
+  height: calc(min(168px, calc(100vw - 112px)) * 20 / 168);
+  background-size: min(168px, calc(100vw - 112px)) 100%;
+  -webkit-mask-size: min(168px, calc(100vw - 112px)) auto;
+  mask-size: min(168px, calc(100vw - 112px)) auto;
 }

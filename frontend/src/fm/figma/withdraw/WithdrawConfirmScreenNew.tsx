@@ -72,9 +72,10 @@ export default function WithdrawConfirmScreenNew() {
   }
 
   return (
-    <div className={s.screen} aria-label="Confirm withdrawal">
+    <div className={`${s.screen} ${s.screenTransferDark}`} aria-label="Confirm withdrawal">
       <WithdrawAppBar
         title="USDT Transfer"
+        theme="dark"
         onBack={() => navigate(routes.withdraw)}
         onClose={() => navigate(routes.home)}
       />
@@ -99,7 +100,7 @@ export default function WithdrawConfirmScreenNew() {
         </button>
       </div>
 
-      <WithdrawTabBar />
+      <WithdrawTabBar theme="dark" />
     </div>
   );
 }

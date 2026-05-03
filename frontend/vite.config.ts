@@ -6,7 +6,8 @@ export default defineConfig({
   server: {
     host: "127.0.0.1",
     port: 4297,
-    strictPort: true,
+    /** Если порт занят (например старым Vite от Cursor), берём следующий свободный. */
+    strictPort: false,
     open: "/balance/deposit"
   }
 });

@@ -46,3 +46,16 @@ export function countAlTradeFeedSnapshots(db: Database): number {
   const r = db.prepare(`SELECT COUNT(*) as n FROM al_trade_feed_snapshots`).get() as { n: number };
   return r.n;
 }
+
+/** Последний сохранённый JSON ответа GET /api/trade-feed (после успешного poll). */
+export function getLatestAlTradeFeedSnapshot(db: Database): AlTradeFeedSnapshotRow | null {
+  const row = db
+    .prepare(
+      `SELECT id, fetched_at, opens_n, closes_n, payload_json
+       FROM al_trade_feed_snapshots
+       ORDER BY fetched_at DESC
+       LIMIT 1`,
+    )
+    .get() as AlTradeFeedSnapshotRow | undefined;
+  return row ?? null;
+}

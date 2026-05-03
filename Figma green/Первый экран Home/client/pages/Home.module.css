@@ -1,0 +1,572 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ===== ROOT SCREEN ===== */
+.screen {
+  background-color: #0a0a0a;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background-color: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ===== HEADER (Green) ===== */
+.header {
+  background-color: #2edd7d;
+  border-radius: 0 0 48px 48px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding-bottom: 20px;
+}
+
+.headerBlurLeft {
+  position: absolute;
+  left: -54px;
+  top: 7px;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.headerBlurRight {
+  position: absolute;
+  right: -54px;
+  bottom: 0;
+  width: 322px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== STATUS BAR ===== */
+.statusBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 21px 0;
+  height: 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.statusTime {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  line-height: 1;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== APP BAR ===== */
+.appBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  height: 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.logo span {
+  font-family: 'Outfit', monospace, sans-serif;
+  font-size: 19px;
+  font-weight: 400;
+  color: #38df83;
+  letter-spacing: -0.5px;
+}
+
+.appBarActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.notifBtn,
+.settingsBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifIcon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifBadge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 7px;
+  font-weight: 500;
+  color: #2edd7d;
+  letter-spacing: 0.14px;
+}
+
+/* ===== BALANCE SECTION ===== */
+.balanceSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.balanceLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.balanceLabel {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.balanceAmount {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.balanceValue {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(38px, 13.3vw, 52px);
+  font-weight: 600;
+  color: #000;
+  line-height: 1;
+}
+
+.balanceCurrency {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #000;
+  line-height: 1;
+  margin-top: 6px;
+}
+
+.referrals {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.referralAmount {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.referralValue {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #000;
+  line-height: 1;
+}
+
+.referralCurrency {
+  font-family: 'Outfit', sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  color: #000;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+.referralLabel {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #000;
+}
+
+/* Action buttons (Top up / Withdraw) */
+.balanceActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.btnTopUp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px 10px 14px;
+  border-radius: 54px;
+  background: #40ff96;
+  border: none;
+  cursor: pointer;
+  width: 126px;
+  height: 40px;
+}
+
+.btnTopUp span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #000;
+}
+
+.btnWithdraw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 54px;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  width: 126px;
+  height: 40px;
+}
+
+.btnWithdraw span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #fff;
+}
+
+/* Details Green Button */
+.btnDetailsGreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 20px 0;
+  padding: 14px 20px;
+  border-radius: 54px;
+  background: #40ff96;
+  border: none;
+  cursor: pointer;
+  width: calc(100% - 40px);
+  height: 52px;
+  position: relative;
+  z-index: 1;
+}
+
+.btnDetailsGreen span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #191919;
+}
+
+/* ===== BODY (Dark) ===== */
+.body {
+  flex: 1;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== CHART ===== */
+.chartSection {
+  /* contains chart wrapper */
+}
+
+.chartWrapper {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.scaleLabels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0 8px;
+}
+
+.scaleLabels span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 6px;
+  font-weight: 400;
+  color: #3aca7b;
+  text-align: right;
+  display: block;
+  line-height: 1;
+}
+
+.scaleFaded {
+  opacity: 0.25;
+}
+
+.chartGraph {
+  width: 100%;
+}
+
+.chartSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ===== STATUS + PRICE ===== */
+.statusPriceSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statusRow,
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.statusLabel,
+.priceLabel {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.statusActive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusText {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1;
+}
+
+.priceAmount {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.priceValue {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #40ff96;
+  line-height: 1;
+}
+
+.priceCurrency {
+  font-family: 'Outfit', sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  color: #fff;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+/* ===== DETAILS DARK BUTTON ===== */
+.btnDetailsDark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 54px;
+  background: #191919;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  height: 52px;
+}
+
+.btnDetailsDark span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== SOCIAL + SUPPORT BUTTONS ===== */
+.secondaryButtons {
+  display: flex;
+  gap: 14px;
+}
+
+.btnSocial,
+.btnSupport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border-radius: 54px;
+  background: #191919;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+  height: 52px;
+}
+
+.btnSocial span,
+.btnSupport span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+/* ===== TAB BAR ===== */
+.tabBarWrapper {
+  position: sticky;
+  bottom: 0;
+  padding: 8px 20px 20px;
+  background: linear-gradient(to top, #0a0a0a 80%, transparent);
+  z-index: 10;
+}
+
+.tabGlowOuter {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(64, 255, 150, 0.32);
+  filter: blur(32.5px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tabGlowInner {
+  position: absolute;
+  bottom: 26px;
+  right: 76px;
+  width: 66px;
+  height: 9px;
+  background: #40ff96;
+  filter: blur(15px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 26px;
+  border-radius: 50px;
+  background: rgba(25, 25, 25, 0.55);
+  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
+  backdrop-filter: blur(6px);
+  height: 72px;
+  position: relative;
+  z-index: 1;
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.tabItemActive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 30px;
+  background: #40ff96;
+  border: none;
+  cursor: pointer;
+}

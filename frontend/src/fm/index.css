@@ -20,14 +20,15 @@ html.fm-brand-lock {
   --color-app-chrome: #d8dde2;
   /* Неактивные вкладки / мягкие панели — как muted-слои в макетах */
   --color-surface-muted: #f4f7f8;
-  /* Фон — токены Figma; палитру Telegram WebApp в миниапп не подмешиваем. */
-  --fm-page-bg: var(--color-bg);
+  /* Единый тёмный фон мини-приложения (без белой вспышки при overscroll) */
+  --fm-page-bg: #0a0a0a;
+  --color-bg: #0a0a0a;
 }
 
 :root[data-fm-theme="dark"] {
   color-scheme: dark;
-  --fm-page-bg: #141920;
-  --color-bg: #141920;
+  --fm-page-bg: #0a0a0a;
+  --color-bg: #0a0a0a;
   --color-black: #e7edf5;
   --color-white: #1e252e;
   --color-grey-dark: #9aacbf;
@@ -48,6 +49,12 @@ html.fm-brand-lock {
   display: none;               /* Chrome, Safari, Opera */
 }
 
+html {
+  background-color: #0a0a0a;
+  /* Без «белой» резинки при overscroll в WebView (фон остаётся #0a0a0a). */
+  overscroll-behavior-y: none;
+}
+
 html,
 body {
   margin: 0;
@@ -61,6 +68,7 @@ body {
 body {
   /* Для Telegram parity фон страницы не должен отличаться под нижним краем экрана. */
   background: var(--fm-page-bg);
+  background-color: #0a0a0a;
 }
 
 #root {
@@ -73,6 +81,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   overflow-x: hidden;
+  background-color: #0a0a0a;
 }
 
 .app-shell {

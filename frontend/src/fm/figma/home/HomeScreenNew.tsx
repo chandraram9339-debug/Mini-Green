@@ -17,9 +17,12 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 
 import { hasApiBase } from "../../api/env";
 import { fetchTradingJournal, type TradingJournalItem } from "../../api/fetchTradingJournal";
+import { fetchTradeFeedSnapshot, tradeFeedPollIntervalMs } from "../../api/fetchTradeFeed";
+import { mergeTradeFeedPayloadToJournalItems } from "../../api/mergeAlTradeFeed";
 import { fetchBotTrading } from "../../api/fetchBotTrading";
 import {
   buildPersonalBalanceChartPoints,
+  buildCompoundedChartPoints,
   chartPointsSystemOrUserFallback,
   buildChartGeom,
   CHART_HOME_PLOT_INSET_BOTTOM,
@@ -49,45 +52,46 @@ function useActiveTab() {
 /* ─── AppBar ─────────────────────────────────────────────────── */
 function AppBar({ bellBadge }: { bellBadge?: number }) {
   const navigate = useNavigate();
+  const { t } = useFmLocale();
   return (
     <header className={s.appBar}>
       <div className={s.appBarRow}>
         <button
-          className={s.appBarBack}
+          type="button"
+          className={`${s.appBarBack} fm-appbar-hit-green`}
           onClick={() => { if (window.history.length > 1) navigate(-1); }}
-          aria-label="Назад"
+          aria-label={t("common.back")}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M20 12.8H20.8V11.2H20V12V12.8ZM20 12V11.2H4V12V12.8H20V12Z" fill="#55647B" />
-            <path d="M10 18L4 12L10 6" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+            <path d="M20 12.8H20.8V11.2H20V12V12.8ZM20 12V11.2H4V12V12.8H20V12Z" fill="#0A0A0A" />
+            <path d="M10 18L4 12L10 6" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
           </svg>
         </button>
 
         {/* Логотип строго по центру */}
-        <div className={`${s.appBarLogo} app-bar-logo-shimmer`} aria-label="Palladium">
+        <div className={`${s.appBarLogo} app-bar-logo-shimmer app-bar-logo-wordmark`} aria-label="Palladium">
           <img src={appBarLogoUrl} alt="Palladium" />
         </div>
 
         <div className={s.appBarIcons}>
-          <Link to={routes.notifications} className={s.appBarBell} aria-label="Уведомления">
+          <Link to={routes.notifications} className={`${s.appBarBell} fm-appbar-hit-green`} aria-label={t("notifications.title")}>
             <svg width="18" height="19" viewBox="0 0 18 19" fill="none">
-              <path d="M2 15V7C2 5.14348 2.7375 3.36301 4.05025 2.05025C5.36301 0.737498 7.14348 0 9 0C10.8565 0 12.637 0.737498 13.9497 2.05025C15.2625 3.36301 16 5.14348 16 7V15" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-              <path d="M0 15H18" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-              <path d="M7 19H11" stroke="#55647B" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+              <path d="M2 15V7C2 5.14348 2.7375 3.36301 4.05025 2.05025C5.36301 0.737498 7.14348 0 9 0C10.8565 0 12.637 0.737498 13.9497 2.05025C15.2625 3.36301 16 5.14348 16 7V15" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+              <path d="M0 15H18" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+              <path d="M7 19H11" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
             </svg>
             {bellBadge != null && bellBadge > 0 && (
               <span className={s.bellBadge}><span>{bellBadge > 99 ? "99" : bellBadge}</span></span>
             )}
           </Link>
-          <Link to={routes.settings} className={s.appBarGear} aria-label="Настройки">
+          <Link to={routes.settings} className={`${s.appBarGear} fm-appbar-hit-green`} aria-label={t("settings.title")}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M7 5C5.89543 5 5 5.89543 5 7V8.17157C5 8.70201 4.78929 9.21071 4.41421 9.58579L3.41421 10.5858C2.63317 11.3668 2.63316 12.6332 3.41421 13.4142L4.41421 14.4142C4.78929 14.7893 5 15.298 5 15.8284V17C5 18.1046 5.89543 19 7 19H8.17157C8.70201 19 9.21071 19.2107 9.58579 19.5858L10.5858 20.5858C11.3668 21.3668 12.6332 21.3668 13.4142 20.5858L14.4142 19.5858C14.7893 19.2107 15.298 19 15.8284 19H17C18.1046 19 19 18.1046 19 17V15.8284C19 15.298 19.2107 14.7893 19.5858 14.4142L20.5858 13.4142C21.3668 12.6332 21.3668 11.3668 20.5858 10.5858L19.5858 9.58579C19.2107 9.21071 19 8.70201 19 8.17157V7C19 5.89543 18.1046 5 17 5H15.8284C15.298 5 14.7893 4.78929 14.4142 4.41421L13.4142 3.41421C12.6332 2.63317 11.3668 2.63316 10.5858 3.41421L9.58579 4.41421C9.21071 4.78929 8.70201 5 8.17157 5H7Z" stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="#55647B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7 5C5.89543 5 5 5.89543 5 7V8.17157C5 8.70201 4.78929 9.21071 4.41421 9.58579L3.41421 10.5858C2.63317 11.3668 2.63316 12.6332 3.41421 13.4142L4.41421 14.4142C4.78929 14.7893 5 15.298 5 15.8284V17C5 18.1046 5.89543 19 7 19H8.17157C8.70201 19 9.21071 19.2107 9.58579 19.5858L10.5858 20.5858C11.3668 21.3668 12.6332 21.3668 13.4142 20.5858L14.4142 19.5858C14.7893 19.2107 15.298 19 15.8284 19H17C18.1046 19 19 18.1046 19 17V15.8284C19 15.298 19.2107 14.7893 19.5858 14.4142L20.5858 13.4142C21.3668 12.6332 21.3668 11.3668 20.5858 10.5858L19.5858 9.58579C19.2107 9.21071 19 8.70201 19 8.17157V7C19 5.89543 18.1046 5 17 5H15.8284C15.298 5 14.7893 4.78929 14.4142 4.41421L13.4142 3.41421C12.6332 2.63317 11.3668 2.63316 10.5858 3.41421L9.58579 4.41421C9.21071 4.78929 8.70201 5 8.17157 5H7Z" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="#0A0A0A" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
         </div>
       </div>
-      <div className={s.appBarDivider} />
     </header>
   );
 }
@@ -133,7 +137,7 @@ function PerformanceChart({
           >
             <defs>
               <linearGradient id="hnGrad" x1="162.5" y1="0" x2="162.5" y2="122" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#759AC6" stopOpacity="0.5" />
+                <stop stopColor="#2EDD7D" stopOpacity="0.14" />
                 <stop offset="1" stopColor="#ECF1F4" stopOpacity="0" />
               </linearGradient>
             </defs>
@@ -144,7 +148,7 @@ function PerformanceChart({
                 y1={t.ySvg}
                 x2="325"
                 y2={t.ySvg}
-                stroke="#D3DAE5"
+                stroke="rgba(150, 160, 180, 0.14)"
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
@@ -154,8 +158,8 @@ function PerformanceChart({
                 <path d={geom.pathArea} fill="url(#hnGrad)" />
                 <path
                   d={geom.pathLine}
-                  stroke="#55647B"
-                  strokeWidth="1.6"
+                  stroke="#2EDD7D"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
@@ -171,13 +175,14 @@ function PerformanceChart({
 
 /* ─── TabBar ─────────────────────────────────────────────────── */
 function TabBar({ active }: { active: string }) {
+  const { t } = useFmLocale();
   const tabs = [
     {
       id: "home", to: routes.home,
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M20 20H4V10L12 4L20 10V20Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M12 14V20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M20 20H4V10L12 4L20 10V20Z" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 14V20" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },
@@ -185,9 +190,9 @@ function TabBar({ active }: { active: string }) {
       id: "wallet", to: routes.balanceDeposit,
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 8H3V20H21V8Z" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M3 8V4H17V8" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M16 14H17" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M21 8H3V20H21V8Z" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M3 8V4H17V8" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M16 14H17" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },
@@ -195,8 +200,8 @@ function TabBar({ active }: { active: string }) {
       id: "bot", to: routes.bot,
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4V20H20" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-          <path d="M9 13L13 9L16 12L20 8" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+          <path d="M4 4V20H20" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+          <path d="M9 13L13 9L16 12L20 8" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
         </svg>
       ),
     },
@@ -204,15 +209,15 @@ function TabBar({ active }: { active: string }) {
       id: "support", to: routes.support,
       icon: (a: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill={a ? "#fff" : "#55647B"} />
-          <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke={a ? "#fff" : "#55647B"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2c0 .324.195.615.694.739.299.124.637.06.866-.169L3 21ZM6 18V17.2H5.669l-.235.235L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21l.566.566 3-3L6 18l-.435-.435-3 3L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill={a ? "#191919" : "#ffffff"} />
+          <path d="M8 11H8.01M12 11H12.01M16 11H16.01" stroke={a ? "#191919" : "#ffffff"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },
   ] as const;
 
   return (
-    <nav className={s.tabBar} aria-label="Навигация">
+    <nav className={s.tabBar} aria-label={t("common.primaryNav")}>
       <div className={s.tabBarInner}>
         {tabs.map(({ id, to, icon }) => {
           const isActive = active === id;
@@ -220,10 +225,13 @@ function TabBar({ active }: { active: string }) {
             <Link
               key={id}
               to={to}
-              className={`${s.tabItem}${isActive ? ` ${s.tabItemActive}` : ""}`}
+              className={s.tabItem}
               aria-current={isActive ? "page" : undefined}
+              {...(id === "wallet" ? { "data-tour-id": "getting-started-tab-wallet" } : {})}
             >
-              {icon(isActive)}
+              <div className={`${s.tabItemIcon}${isActive ? ` ${s.tabItemIconActive}` : ""}`}>
+                {icon(isActive)}
+              </div>
             </Link>
           );
         })}
@@ -245,6 +253,8 @@ export default function HomeScreenNew() {
 
   const [chartRows, setChartRows] = useState<TradingJournalItem[]>([]);
   const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
+  /** Системная лента AL с бэкенда — те же closes/opens, что на экране бота; для графика «%» на главной при !isBotActive. */
+  const [alFeedJournalRows, setAlFeedJournalRows] = useState<TradingJournalItem[]>([]);
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
 
   useEffect(() => {
@@ -275,6 +285,51 @@ export default function HomeScreenNew() {
     return () => { cancelled = true; window.clearInterval(id); };
   }, [apiSessionReady]);
 
+  useEffect(() => {
+    if (!hasApiBase() || !apiSessionReady) {
+      setAlFeedJournalRows([]);
+      return;
+    }
+    let cancelled = false;
+    let intervalId = 0;
+    let inFlight = false;
+    const pollMs = tradeFeedPollIntervalMs();
+
+    const tick = async () => {
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const r = await fetchTradeFeedSnapshot();
+        if (cancelled) return;
+        if (!r.ok) {
+          if (import.meta.env.DEV) console.debug("[Home][al-trade-feed]", { ok: false, error: r.error });
+          setAlFeedJournalRows([]);
+          return;
+        }
+        const merged = mergeTradeFeedPayloadToJournalItems(r.data.opens, r.data.closes);
+        if (import.meta.env.DEV) {
+          console.debug("[Home][al-trade-feed]", {
+            configured: r.data.configured,
+            fetched_at: r.data.fetched_at,
+            opens: r.data.opens.length,
+            closes: r.data.closes.length,
+            mergedRows: merged.length,
+          });
+        }
+        setAlFeedJournalRows(merged);
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    void tick();
+    intervalId = window.setInterval(() => void tick(), pollMs);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [apiSessionReady]);
+
   /** x: сумма всех подтверждённых пополнений (API); до выката — fallback на баланс. z: balanceUsdt. */
   const depositTotalUsdt = useMemo(() => {
     if (cumulativeDepositsUsdt != null && cumulativeDepositsUsdt > 0) return cumulativeDepositsUsdt;
@@ -290,11 +345,18 @@ export default function HomeScreenNew() {
   );
 
   const chartPoints = useMemo(() => {
-    if (!isBotActive) return chartPointsSystemOrUserFallback(systemChartPoints, chartRows);
+    if (!isBotActive) {
+      if (alFeedJournalRows.length > 0) {
+        const alPts = buildCompoundedChartPoints(alFeedJournalRows);
+        if (alPts.length > 0) return alPts;
+      }
+      return chartPointsSystemOrUserFallback(systemChartPoints, chartRows);
+    }
     if (personalTradePoints.length === 0) return [];
     return prependDepositTotalAnchor(personalTradePoints, depositTotalUsdt, positiveBalanceStartedAt);
   }, [
     isBotActive,
+    alFeedJournalRows,
     systemChartPoints,
     chartRows,
     personalTradePoints,
@@ -307,157 +369,150 @@ export default function HomeScreenNew() {
     return computeDepositBalanceYDomain(depositTotalUsdt, balanceUsdt);
   }, [isBotActive, chartPoints.length, depositTotalUsdt, balanceUsdt]);
 
-  /**
-   * Личный режим: после пополнения график скрыт, пока нет минимум одной закрытой сделки в окне
-   * positiveBalanceStartedAt — нужны **две** точки (якорь x и баланс после сделки z). Системный режим: как раньше.
-   */
-  const showPerformanceChart = !isBotActive ? chartPoints.length > 0 : chartPoints.length >= 2;
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
   return (
     <div className={s.screen}>
-      <AppBar bellBadge={notificationUnreadCount} />
-
-      <main className={s.body}>
-        {/* ── Секция баланса ───────────────────────────── */}
-        <section className={s.balanceSection}>
-          <div className={s.balanceRow}>
-            {/* Левая колонка: баланс + рефералы */}
-            <div className={s.balanceLeft}>
-              <span className={s.balanceTitle}>{t("home.totalBalance")}</span>
-
-              <div className={s.balanceAmount}>
-                <span className={s.balanceValue}>{balanceUsdt.toFixed(2)}</span>
-                <span className={s.balanceCurrency}>USDT</span>
-              </div>
-
-              <div className={s.balanceDivider} />
-
-              <div className={s.referralBlock}>
-                <div className={s.referralAmount}>
-                  <span className={s.referralValue}>{referralReceivedUsdt.toFixed(2)}</span>
-                  <span className={s.referralCurrency}>USDT</span>
-                </div>
-                <span className={s.referralCaption}>{t("home.referralsCaption")}</span>
-              </div>
-            </div>
-
-            {/* Правая колонка: Top Up + Withdraw */}
-            <div className={s.balanceActions}>
-              <Link to={routes.depositTopUp} className={s.btnTopUp}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 5V15" stroke="white" strokeWidth="1.3" strokeLinecap="square" />
-                  <path d="M5 10H15" stroke="white" strokeWidth="1.3" strokeLinecap="square" />
-                </svg>
-                <span>{t("home.topUp")}</span>
-              </Link>
-              <Link to={routes.withdraw} className={s.btnWithdraw}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M9.35 15V15.65H10.65V15H10H9.35ZM10 15H10.65V5H10H9.35V15H10Z" fill="white" />
-                  <path d="M6.25 8.75L10 5L13.75 8.75" stroke="white" strokeWidth="1.3" strokeLinecap="square" />
-                </svg>
-                <span>{t("home.withdraw")}</span>
-              </Link>
-            </div>
+      <div className={s.container}>
+        <header className={s.header}>
+          <div className={s.headerBlobs} aria-hidden="true">
+            <div className={s.headerBlurLeft} />
+            <div className={s.headerBlurRight} />
           </div>
 
-          <Link to={routes.balanceDeposit} className={s.btnDetails}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M21 8H3V20H21V8Z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M3 8V4H17V8" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M16 14H17" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>{t("home.details")}</span>
-          </Link>
-        </section>
+          <AppBar bellBadge={notificationUnreadCount} />
 
-        {/* ── Секция бота ──────────────────────────────── */}
-        <section className={s.botSection}>
-          {showPerformanceChart ? (
-            <PerformanceChart
-              points={chartPoints}
-              yAxis={isBotActive ? "usdt" : "percent"}
-              fixedYDomain={fixedYDomain}
-            />
-          ) : null}
+          <section className={s.balanceSection} aria-label={t("home.balances")} data-tour-id="home-balance">
+            <div className={s.balanceRow}>
+              <div className={s.balanceLeft}>
+                <div className={s.balanceTitle}>{t("home.totalBalance")}</div>
+                <div className={s.balanceAmount}>
+                  <span className={s.balanceValue}>{balanceUsdt.toFixed(2)}</span>
+                  <span className={s.balanceCurrency}>USDT</span>
+                </div>
+                <div className={s.referralBlock}>
+                  <div className={s.referralAmount}>
+                    <span className={s.referralValue}>{referralReceivedUsdt.toFixed(2)}</span>
+                    <span className={s.referralCurrency}>USDT</span>
+                  </div>
+                  <div className={s.referralCaption}>{t("home.referralsCaption")}</div>
+                </div>
+              </div>
 
-          <div className={s.botInfoGroup}>
-            <div className={s.botStatusRow}>
-              <span className={s.botInfoLabel}>{t("home.botStatus")}</span>
-              <div className={s.botStatusValue}>
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <circle cx="5" cy="5" r="5" fill={isBotActive ? "#73C1B1" : "#8494AF"} />
+              <div className={s.balanceActions}>
+                <Link to={routes.depositTopUp} className={`${s.btnTopUp} fm-interactive-pill`} aria-label={t("home.topUp")}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 5V15" stroke="black" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                    <path d="M5 10H15" stroke="black" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                  </svg>
+                  <span>{t("home.topUp")}</span>
+                </Link>
+
+                <Link to={routes.withdraw} className={`${s.btnWithdraw} fm-interactive-pill`} aria-label={t("home.withdraw")}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M10 15V5" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                    <path d="M6.25 8.75L10 5L13.75 8.75" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                  </svg>
+                  <span>{t("home.withdraw")}</span>
+                </Link>
+              </div>
+            </div>
+
+            <Link to={routes.balanceDeposit} className={`${s.btnDetailsGreen} fm-interactive-pill`} aria-label={t("home.details")}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M21 8H3V20H21V8Z" stroke="#191919" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 8V4H17V8" stroke="#191919" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 14H17" stroke="#191919" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{t("home.details")}</span>
+            </Link>
+          </section>
+        </header>
+
+        <main className={s.body}>
+          <section className={s.chartSection} aria-label={t("home.chartBalanceAria")} data-tour-id="home-chart">
+            <div className={s.chartWrapper}>
+              <PerformanceChart
+                points={chartPoints}
+                yAxis={isBotActive ? "usdt" : "percent"}
+                fixedYDomain={fixedYDomain}
+              />
+            </div>
+          </section>
+
+          <section className={s.statusPriceSection} aria-label={t("home.botStatus")} data-tour-id="home-bot-status">
+            <div className={s.statusRow}>
+              <span className={s.statusLabel}>{t("home.botStatus")}</span>
+              <div className={s.statusActive}>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                  <circle cx="5" cy="5" r="5" fill="white" />
                 </svg>
-                <span className={isBotActive ? s.botStatusActive : s.botStatusInactive}>
-                  {isBotActive ? t("home.active") : t("home.inactive")}
-                </span>
+                <span className={s.statusText}>{isBotActive ? t("home.active") : t("home.inactive")}</span>
               </div>
             </div>
 
             <div className={s.priceRow}>
-              <span className={s.botInfoLabel}>{t("home.actualPrice")}</span>
-              <div className={s.priceValueBlock}>
+              <span className={s.priceLabel}>{t("home.actualPrice")}</span>
+              <div className={s.priceAmount}>
                 <span className={s.priceValue}>{priceDisplay}</span>
                 <span className={s.priceCurrency}>{pricePair}</span>
               </div>
             </div>
-          </div>
+          </section>
 
-          <Link to={routes.bot} className={s.btnDetails}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M4 4V20H20" stroke="white" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-              <path d="M9 13L13 9L16 12L20 8" stroke="white" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+          <Link to={routes.bot} className={`${s.btnDetailsDark} fm-interactive-pill`} aria-label={t("home.details")}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 4V20H20" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+              <path d="M9 13L13 9L16 12L20 8" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
             </svg>
             <span>{t("home.details")}</span>
           </Link>
-        </section>
 
-        {/* ── Chat (слева) + Channel (справа) ───────────────────── */}
-        <div className={s.actionRow}>
-          <button
-            type="button"
-            className={s.btnSocial}
-            aria-label={t("home.chatAria")}
-            onClick={() =>
-              openTelegramOrExternal((uiSettings?.chat_url ?? "").trim() || TELEGRAM_CHAT_URL)
-            }
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-              <path d="M12 8H3V14H12L18 19V4L12 8Z" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M10 8V14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M7 14V20H10V14" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M18 14C18.394 14 18.7841 13.9224 19.1481 13.7716C19.512 13.6209 19.8427 13.3999 20.1213 13.1213C20.3999 12.8427 20.6209 12.512 20.7716 12.1481C20.9224 11.7841 21 11.394 21 11C21 10.606 20.9224 10.2159 20.7716 9.85195C20.6209 9.48797 20.3999 9.15726 20.1213 8.87868C19.8427 8.6001 19.512 8.37913 19.1481 8.22836C18.7841 8.0776 18.394 8 18 8" stroke="#192B48" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span className={s.actionLabel}>{t("home.chat")}</span>
-          </button>
+          <div className={s.secondaryButtons}>
+            <button
+              type="button"
+              className={`${s.btnSocial} fm-interactive-pill`}
+              aria-label={t("home.chatAria")}
+              onClick={() =>
+                openTelegramOrExternal((uiSettings?.chat_url ?? "").trim() || TELEGRAM_CHAT_URL)
+              }
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <g opacity="0.5">
+                  <path d="M12 8H3V14H12L18 19V4L12 8Z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M10 8V14" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 14V20H10V14" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M18 14C18.394 14 18.7841 13.9224 19.1481 13.7716C19.512 13.6209 19.8427 13.3999 20.1213 13.1213C20.3999 12.8427 20.6209 12.512 20.7716 12.1481C20.9224 11.7841 21 11.394 21 11C21 10.606 20.9224 10.2159 20.7716 9.85195C20.6209 9.48797 20.3999 9.15726 20.1213 8.87868C19.8427 8.6001 19.512 8.37913 19.1481 8.22836C18.7841 8.0776 18.394 8 18 8" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </g>
+              </svg>
+              <span>{t("home.chat")}</span>
+            </button>
 
-          <button
-            type="button"
-            className={s.btnChannel}
-            aria-label={t("home.channelAria")}
-            onClick={() =>
-              openTelegramOrExternal((uiSettings?.channel_url ?? "").trim() || TELEGRAM_CHANNEL_URL)
-            }
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-              <path
-                d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z"
-                fill="#192B48"
-              />
-              <path
-                d="M8 11H8.01M12 11H12.01M16 11H16.01"
-                stroke="#192B48"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className={s.actionLabel}>{t("home.channel")}</span>
-          </button>
+            <button
+              type="button"
+              className={`${s.btnSupport} fm-interactive-pill`}
+              aria-label={t("home.channelAria")}
+              onClick={() =>
+                openTelegramOrExternal((uiSettings?.channel_url ?? "").trim() || TELEGRAM_CHANNEL_URL)
+              }
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="white" fillOpacity="0.5" />
+                <path d="M8 11H8.01" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12 11H12.01" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 11H16.01" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{t("home.channel")}</span>
+            </button>
+          </div>
+        </main>
+
+        <div className={s.tabBarWrapper} data-tour-id="home-tab-bar">
+          <div className={s.tabGlowOuter} aria-hidden="true" />
+          <div className={s.tabGlowInner} aria-hidden="true" />
+          <TabBar active={activeTab} />
         </div>
-      </main>
-
-      <TabBar active={activeTab} />
+      </div>
     </div>
   );
 }

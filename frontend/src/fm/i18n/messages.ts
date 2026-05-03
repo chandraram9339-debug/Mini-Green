@@ -1,4 +1,4 @@
-/** Ключи переводов — английский источник истины; для ES заполняем все те же ключи. */
+/** Translation keys — English is source of truth; ES fills the same keys. */
 export type MessageKey = keyof typeof messagesEn;
 
 export const messagesEn = {
@@ -20,6 +20,65 @@ export const messagesEn = {
     "Cannot build referral link: set the bot username in Admin → Content, or VITE_TELEGRAM_BOT_USERNAME, and open the app from Telegram.",
   "settings.seedCode": "Seed code",
   "settings.userAgreement": "User Agreement",
+  "settings.replayOnboardingTour": "Replay onboarding tour",
+  "settings.replayGettingStarted": "Replay trading guide",
+
+  "onboarding.transition.title": "You're ready to start",
+  "onboarding.transition.startGuide": "Start trading guide",
+  "onboarding.transition.skip": "Skip",
+
+  "onboarding.completion.title": "You're ready to start 🚀",
+  "onboarding.completion.description":
+    "Your account is ready.\nFund your balance and start the bot to begin trading.",
+  "onboarding.completion.startBot": "Start bot",
+  "onboarding.completion.gotIt": "Got it",
+
+  "onboarding.tour.skip": "Skip",
+  "onboarding.tour.back": "Back",
+  "onboarding.tour.next": "Next",
+  "onboarding.tour.done": "Done",
+  "onboarding.tour.missingTarget":
+    'No element with data-tour-id "{targetId}". Tooltip is centered.',
+
+  "onboarding.tour.quick.homeBalance.title": "Balance",
+  "onboarding.tour.quick.homeBalance.description": "Your current balance and earnings in USDT.",
+  "onboarding.tour.quick.homeChart.title": "Performance",
+  "onboarding.tour.quick.homeChart.description":
+    "Track how the bot performs and grows your balance over time.",
+  "onboarding.tour.quick.walletTopUp.title": "Add funds",
+  "onboarding.tour.quick.walletTopUp.description":
+    "Tap Top Up to generate your personal deposit address.",
+  "onboarding.tour.quick.tradingChart.title": "Trading stats",
+  "onboarding.tour.quick.tradingChart.description":
+    "View recent trades and overall performance.",
+  "onboarding.tour.quick.botStart.title": "Start trading",
+  "onboarding.tour.quick.botStart.description":
+    "Tap “Start” to launch the bot and begin trading.",
+  "onboarding.tour.quick.tabBar.title": "Navigate",
+  "onboarding.tour.quick.tabBar.description":
+    "Switch between Home, Wallet, Trading, and Support.",
+
+  "onboarding.tour.gs.tabWallet.title": "Wallet",
+  "onboarding.tour.gs.tabWallet.description":
+    "Open Wallet to deposit funds and track transfers.",
+  "onboarding.tour.gs.topUp.title": "Top Up",
+  "onboarding.tour.gs.topUp.description":
+    "Tap Top Up to generate your personal USDT (TRC20) deposit address.",
+  "onboarding.tour.gs.depositAddress.title": "Address",
+  "onboarding.tour.gs.depositAddress.description":
+    "Copy the address or scan the QR code. Send only USDT on the TRC20 network.",
+  "onboarding.tour.gs.depositFee.title": "Fees",
+  "onboarding.tour.gs.depositFee.description":
+    "Make sure your transfer covers network fees and the minimum amount.",
+  "onboarding.tour.gs.depositPaid.title": "Paid",
+  "onboarding.tour.gs.depositPaid.description":
+    "After sending funds, tap “Paid”.\nThe system will automatically verify and credit your balance.",
+  "onboarding.tour.gs.tabBot.title": "Trading",
+  "onboarding.tour.gs.tabBot.description":
+    "Open Trading to control the bot and monitor live activity.",
+  "onboarding.tour.gs.botStart.title": "Start trading",
+  "onboarding.tour.gs.botStart.description":
+    "Tap “Start” to launch the bot once your balance is funded.",
 
   "home.title": "Home",
   "home.balances": "Balances",
@@ -69,7 +128,8 @@ export const messagesEn = {
   "seed.unavailableKey": "The server cannot decrypt the stored phrase (check USER_WALLET_ENCRYPTION_KEY matches the one used at creation).",
   "seed.unavailableDecrypt": "Could not unlock the stored recovery phrase. Contact support with your Telegram ID.",
   "seed.unavailableUser": "User record not found. Try re-opening the app from Telegram.",
-
+  "seed.revealPhrase": "Show phrase",
+  "seed.tapToReveal": "Tap to reveal",
 
   "agreement.title": "User Agreement",
 
@@ -120,7 +180,7 @@ export const messagesEn = {
   "bot.chartAriaAlgo": "Your trading performance chart",
   "bot.statsAriaJournal": "Period statistics from trading journal",
   "bot.statsAriaAlgo": "Your period trading statistics",
-  "bot.periodTitle": "Trading bot statistics for the period:",
+  "bot.periodTitle": "Trading bot statistics for the period",
   "bot.periodTabsAria": "Statistics period",
   "bot.period24h": "24 h",
   "bot.period7d": "7 d",
@@ -245,7 +305,7 @@ export const messagesEn = {
   "seed.copied": "Copied",
 } as const;
 
-/** Неполные переводы: в `t()` падаем на `messagesEn`. */
+/** Partial ES overrides; `t()` falls back to `messagesEn`. */
 export const messagesEs: Partial<Record<MessageKey, string>> = {
   "tab.home": "Inicio",
   "tab.wallet": "Cartera",
@@ -265,6 +325,65 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
     "No se puede crear el enlace: configura el nombre del bot en Admin → Contenido, o VITE_TELEGRAM_BOT_USERNAME, y abre la app desde Telegram.",
   "settings.seedCode": "Frase semilla",
   "settings.userAgreement": "Acuerdo de usuario",
+  "settings.replayOnboardingTour": "Volver a ver el tour",
+  "settings.replayGettingStarted": "Repetir guía de trading",
+
+  "onboarding.transition.title": "Ya puedes empezar",
+  "onboarding.transition.startGuide": "Guía para empezar a operar",
+  "onboarding.transition.skip": "Omitir",
+
+  "onboarding.completion.title": "Listo para empezar 🚀",
+  "onboarding.completion.description":
+    "Tu cuenta está lista.\nDeposita saldo e inicia el bot para empezar a operar.",
+  "onboarding.completion.startBot": "Iniciar bot",
+  "onboarding.completion.gotIt": "Entendido",
+
+  "onboarding.tour.skip": "Omitir",
+  "onboarding.tour.back": "Atrás",
+  "onboarding.tour.next": "Siguiente",
+  "onboarding.tour.done": "Listo",
+  "onboarding.tour.missingTarget":
+    'No hay elemento con data-tour-id "{targetId}". La ayuda está centrada.',
+
+  "onboarding.tour.quick.homeBalance.title": "Saldo",
+  "onboarding.tour.quick.homeBalance.description": "Tu saldo actual y las ganancias en USDT.",
+  "onboarding.tour.quick.homeChart.title": "Rendimiento",
+  "onboarding.tour.quick.homeChart.description":
+    "Sigue cómo rinde el bot y cómo crece tu saldo con el tiempo.",
+  "onboarding.tour.quick.walletTopUp.title": "Añadir fondos",
+  "onboarding.tour.quick.walletTopUp.description":
+    "Toca Depositar para generar tu dirección de depósito personal.",
+  "onboarding.tour.quick.tradingChart.title": "Estadísticas",
+  "onboarding.tour.quick.tradingChart.description":
+    "Consulta operaciones recientes y el rendimiento global.",
+  "onboarding.tour.quick.botStart.title": "Empezar a operar",
+  "onboarding.tour.quick.botStart.description":
+    "Toca Iniciar para activar el bot y comenzar a operar.",
+  "onboarding.tour.quick.tabBar.title": "Navegación",
+  "onboarding.tour.quick.tabBar.description":
+    "Cambia entre Inicio, Cartera, Trading y Soporte.",
+
+  "onboarding.tour.gs.tabWallet.title": "Cartera",
+  "onboarding.tour.gs.tabWallet.description":
+    "Abre Cartera para depositar fondos y ver los movimientos.",
+  "onboarding.tour.gs.topUp.title": "Depositar",
+  "onboarding.tour.gs.topUp.description":
+    "Toca Depositar para generar tu dirección USDT (TRC20).",
+  "onboarding.tour.gs.depositAddress.title": "Dirección",
+  "onboarding.tour.gs.depositAddress.description":
+    "Copia la dirección o escanea el código QR. Envía solo USDT en la red TRC20.",
+  "onboarding.tour.gs.depositFee.title": "Comisiones",
+  "onboarding.tour.gs.depositFee.description":
+    "Asegúrate de que la transferencia cubra las comisiones de red y el importe mínimo.",
+  "onboarding.tour.gs.depositPaid.title": "Pagado",
+  "onboarding.tour.gs.depositPaid.description":
+    "Después de enviar fondos, toca Pagado.\nEl sistema verificará automáticamente y acreditará tu saldo.",
+  "onboarding.tour.gs.tabBot.title": "Trading",
+  "onboarding.tour.gs.tabBot.description":
+    "Abre Trading para controlar el bot y ver la actividad en vivo.",
+  "onboarding.tour.gs.botStart.title": "Empezar a operar",
+  "onboarding.tour.gs.botStart.description":
+    "Toca Iniciar para activar el bot cuando tengas saldo disponible.",
 
   "home.title": "Inicio",
   "home.balances": "Saldos",
@@ -364,7 +483,7 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "bot.chartAriaAlgo": "Gráfico de tu rendimiento de trading",
   "bot.statsAriaJournal": "Estadísticas del periodo (diario de trading)",
   "bot.statsAriaAlgo": "Estadísticas de trading del periodo",
-  "bot.periodTitle": "Estadísticas del bot de trading en el periodo:",
+  "bot.periodTitle": "Estadísticas del bot de trading para el periodo",
   "bot.periodTabsAria": "Periodo de estadísticas",
   "bot.period24h": "24 h",
   "bot.period7d": "7 d",
@@ -485,11 +604,13 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
 
   "common.loading": "Cargando…",
   "common.agreementLoadError": "No se pudo cargar el acuerdo. Se muestra el texto predeterminado.",
+  "seed.revealPhrase": "Mostrar frase",
+  "seed.tapToReveal": "Toca para mostrar",
   "seed.copy": "Copiar",
   "seed.copied": "Copiado",
 };
 
-/** Единая подстановка строк (контекст и экраны без расхождений). */
+/** Unified string interpolation for messages. */
 export function resolveFmMessage(
   locale: "en" | "es",
   key: MessageKey,

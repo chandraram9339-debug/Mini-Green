@@ -20,9 +20,10 @@ export default function WithdrawDoneScreenNew() {
   const fee = done?.feeUsdt ?? 0;
 
   return (
-    <div className={s.screen} aria-label="Withdrawal done">
+    <div className={`${s.screen} ${s.screenDoneDark}`} aria-label="Withdrawal done">
       <WithdrawAppBar
         title="USDT Transfer"
+        theme="dark"
         onBack={() => navigate(routes.home)}
         onClose={() => navigate(routes.home)}
       />
@@ -59,7 +60,7 @@ export default function WithdrawDoneScreenNew() {
         </div>
       </div>
 
-      <WithdrawTabBar />
+      <WithdrawTabBar theme="dark" />
     </div>
   );
 }
