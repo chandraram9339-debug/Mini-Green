@@ -4,7 +4,7 @@
  *
  * Структура:
  *   AppBar (back + logo + bell/gear)
- *   BalanceSection (баланс, Top Up, Withdraw, Details)
+ *   BalanceSection (баланс, Top Up, Withdraw)
  *   BotStatusSection (chart, статус бота, цена)
  *   Bot action grid: Start / Stop, Channel / Chat
  *
@@ -356,15 +356,6 @@ export default function HomeScreenNew() {
                 </Link>
               </div>
             </div>
-
-            <Link to={routes.balanceDeposit} className={`${s.btnDetailsGreen} fm-interactive-pill`} aria-label={t("home.details")}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M21 8H3V20H21V8Z" stroke="#191919" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M3 8V4H17V8" stroke="#191919" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 14H17" stroke="#191919" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>{t("home.details")}</span>
-            </Link>
           </section>
         </header>
 

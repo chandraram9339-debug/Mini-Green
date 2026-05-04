@@ -35,8 +35,13 @@
   position: relative;
   overflow: visible;
   flex-shrink: 0;
+  /*
+   * Эталон: Figma green/Первый экран старт стоп — корневой зелёный фон h-[260px] (без рефералки).
+   * У нас под балансом ещё рефералы, поэтому высота по контенту; без min-height шапка не «растягивается» пустотой.
+   */
   padding-top: var(--fm-green-header-pad-top);
-  padding-bottom: var(--fm-green-header-pad-bottom, 20px);
+  /* Воздух под рефералкой до скругления */
+  padding-bottom: 30px;
 }
 
 /* Blobs stay clipped to rounded header; app bar icons use overflow:visible — avoids clipping bell stroke */
@@ -173,8 +178,9 @@
 .balanceSection {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 0 var(--fm-green-header-inset-x);
+  gap: 0;
+  /* ~20px от низа app bar до «Total Balance» в старт-стоп (top 140 vs app bar ~120). */
+  padding: 12px var(--fm-green-header-inset-x) 0;
   position: relative;
   z-index: 1;
 }
@@ -319,28 +325,6 @@
   font-weight: 400;
   line-height: 1;
   color: #fff;
-}
-
-/* Details Green Button */
-.btnDetailsGreen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 20px;
-  border-radius: 54px;
-  background: #40ff96;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  height: 52px;
-  text-decoration: none;
-}
-
-.btnDetailsGreen span {
-  font-size: 16px;
-  font-weight: 400;
-  color: #191919;
 }
 
 /* ===== BODY (Dark) ===== */
