@@ -83,9 +83,15 @@
   object-fit: contain;
   max-width: none;
   max-height: none;
-  filter: brightness(0) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.12));
+  /*
+   * Тот же акцентный зелёный, что на экранах (--fm-pill-nav-active / #40ff96).
+   * Цепочка filter превращает чёрный PNG-силуэт в этот цвет.
+   */
+  filter: brightness(0) invert(79%) sepia(52%) saturate(2876%) hue-rotate(91deg) brightness(103%) contrast(101%)
+    drop-shadow(0 6px 22px rgba(64, 255, 150, 0.38));
 }
 
+/* Тёмный «блик» по маске логотипа — хорошо читается на зелёном (раньше был светлый/серебристый) */
 .fm-splash-logo-shimmer {
   position: absolute;
   left: 50%;
@@ -95,17 +101,19 @@
   transform: translate(-50%, -50%);
   background: linear-gradient(
     105deg,
-    rgba(255, 255, 255, 0) 10%,
-    rgba(255, 255, 255, 0.14) 32%,
-    rgba(255, 255, 255, 0.88) 48%,
-    rgba(181, 214, 255, 0.52) 56%,
-    rgba(255, 255, 255, 0.1) 70%,
-    rgba(255, 255, 255, 0) 88%
+    rgba(0, 0, 0, 0) 6%,
+    rgba(0, 0, 0, 0.08) 22%,
+    rgba(10, 14, 12, 0.52) 44%,
+    rgba(0, 0, 0, 0.62) 50%,
+    rgba(12, 18, 14, 0.45) 56%,
+    rgba(0, 0, 0, 0.12) 74%,
+    rgba(0, 0, 0, 0) 92%
   );
   background-repeat: no-repeat;
   background-size: 196px 100%;
   pointer-events: none;
-  opacity: 0.92;
+  opacity: 1;
+  mix-blend-mode: multiply;
   animation: fm-splash-shimmer var(--fm-splash-duration, 3500ms) both;
   -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
   -webkit-mask-repeat: no-repeat;
@@ -151,17 +159,20 @@
 @keyframes fm-splash-shimmer {
   0% {
     background-position: -230px 50%;
-    opacity: 0.15;
+    opacity: 0.42;
   }
-  18% {
-    opacity: 0.95;
+  10% {
+    opacity: 0.88;
+  }
+  22% {
+    opacity: 0.96;
   }
   70% {
-    opacity: 0.82;
+    opacity: 0.78;
   }
   100% {
     background-position: 230px 50%;
-    opacity: 0.24;
+    opacity: 0.32;
   }
 }
 

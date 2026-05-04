@@ -9,15 +9,21 @@
   box-sizing: border-box;
 }
 
-/* ── Page / container ───────────────────────────────────────── */
+/* ── Page: единственный вертикальный скролл; шапка уезжает, «Your trading history» → sticky top ─ */
 .page {
   width: 100%;
-  flex: 0 0 auto;
-  min-height: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
   background: #0a0a0a;
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
   align-items: stretch;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   font-family: "Outfit", sans-serif;
 }
 
@@ -25,7 +31,6 @@
   width: 100%;
   max-width: var(--fm-layout-column-max-width, 100%);
   flex: 0 0 auto;
-  min-height: 100%;
   background: #0a0a0a;
   display: flex;
   flex-direction: column;
@@ -35,9 +40,10 @@
 /* Backwards-compat */
 .screen {}
 
-/* ── Header (green) + blobs ─────────────────────────────────── */
+/* ── Header (green): не sticky — полностью уезжает вверх при скролле .page ─ */
 .header {
   position: relative;
+  z-index: 1;
   background: #2edd7d;
   border-radius: 0 0 48px 48px;
   overflow: visible;
@@ -214,7 +220,7 @@
   display: none;
 }
 
-/* ── Body: scroll on FmMainLayout; feed title + filters stay sticky in that scroller ─ */
+/* ── Body: контент внутри скроллящегося .page; без второго overflow ─ */
 .body {
   position: relative;
   z-index: 0;
@@ -379,10 +385,36 @@
   background: rgba(255, 255, 255, 0.5);
   border: none;
   cursor: pointer;
+  /* Изначально белый — для иконки (currentColor); подпись с градиентом — .btnStopLabel */
   color: #ffffff;
   font-family: "Outfit", sans-serif;
   font-size: 16px;
-  font-weight: 400;
+  font-weight: 500;
+}
+
+/* Белый текст + едва заметный красноватый блик в градиенте (как раньше по идее, но база — white) */
+.btnStopLabel {
+  display: inline-block;
+  font: inherit;
+  font-weight: 500;
+  background: linear-gradient(
+    102deg,
+    #ffffff 0%,
+    #ffffff 34%,
+    #ffe8e8 48%,
+    #ffffff 58%,
+    #fff5f5 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .btnStopLabel {
+    color: #ffffff;
+    background: none;
+  }
 }
 
 /* Visual dim — does NOT block pointer events; applyBotState() guards double-clicks */
@@ -562,7 +594,7 @@
   flex-shrink: 0;
 }
 
-/* Заголовок + All / Profit / Loss — прилипают к верху скролла (сразу под app bar); z-index > bodyPreFeed */
+/* После ухода зелёного блока заголовок доезжает к верху .page и фиксируется; дальше движется только список */
 .feedStickyHeader {
   position: -webkit-sticky;
   position: sticky;

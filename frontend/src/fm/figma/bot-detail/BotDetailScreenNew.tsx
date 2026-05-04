@@ -481,11 +481,11 @@ export default function BotDetailScreenNew() {
               onClick={() => void applyBotState(false)}
               aria-disabled={!isBotActive || botSwitchLoading}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M5.5 5.5L18.5 18.5" stroke="white" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
-                <path d="M5.5 18.5L18.5 5.5" stroke="white" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M5.5 5.5L18.5 18.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
+                <path d="M5.5 18.5L18.5 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round"/>
               </svg>
-              <span>{t("bot.stop")}</span>
+              <span className={s.btnStopLabel}>{t("bot.stop")}</span>
             </button>
           </div>
         </section>
