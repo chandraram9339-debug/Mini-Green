@@ -520,7 +520,7 @@
 
 .chartYAxis {
   position: relative;
-  flex: 0 0 var(--fm-trading-chart-y-axis-width, 24px);
+  flex: 0 0 var(--fm-trading-chart-y-axis-width, 40px);
   flex-shrink: 0;
   min-height: 0;
 }
@@ -528,13 +528,18 @@
 .chartYAxisLabel {
   position: absolute;
   left: 0;
-  right: 4px;
+  right: 6px;
   transform: translateY(-50%);
   text-align: right;
   color: #3aca7b;
   font-family: "Outfit", sans-serif;
   font-size: 6px;
   line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  /* Одна ширина цифр и выравнивание десятичных при −/+ и разной разрядности */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .chartSvgCol {
@@ -553,8 +558,8 @@
 .chartAreaWrap {
   position: relative;
   width: 100%;
-  /* Same width as .chartYAxis — skeleton overlay starts after the % scale */
-  --fm-trading-chart-y-axis-width: 24px;
+  /* Ширина колонки %: держит строки одной ширины вместе с tabular-nums на подписях */
+  --fm-trading-chart-y-axis-width: 40px;
 }
 
 .chartDimmed {
