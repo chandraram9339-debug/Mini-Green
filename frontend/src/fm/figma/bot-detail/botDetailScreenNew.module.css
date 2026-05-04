@@ -9,21 +9,22 @@
   box-sizing: border-box;
 }
 
-/* ── Page: единственный вертикальный скролл; шапка уезжает, «Your trading history» → sticky top ─ */
+/*
+ * Вертикальный скролл только у FmMainLayout `.scroll` (родитель Outlet).
+ * Внутренний overflow-y на .page давал второй скролл: уезжала вся колонка, sticky не «ловил» верх.
+ * Шапка уезжает первым жестом layout-scroll; «Your trading history» → sticky к верху того же scrollport.
+ */
 .page {
   width: 100%;
-  flex: 1 1 0;
-  min-height: 0;
-  height: 100%;
-  max-height: 100%;
+  flex: 0 0 auto;
+  min-height: 100%;
   background: #0a0a0a;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  /* Не hidden по X — иначе часто ломается position:sticky у потомков относительно fm scroll */
+  overflow-x: clip;
+  overflow-y: visible;
   font-family: "Outfit", sans-serif;
 }
 
@@ -40,7 +41,7 @@
 /* Backwards-compat */
 .screen {}
 
-/* ── Header (green): не sticky — полностью уезжает вверх при скролле .page ─ */
+/* ── Header (green): не sticky — уезжает вверх при скролле fm-layout `.scroll` ─ */
 .header {
   position: relative;
   z-index: 1;
@@ -220,13 +221,13 @@
   display: none;
 }
 
-/* ── Body: контент внутри скроллящегося .page; без второго overflow ─ */
+/* Контент тянется по высоте; скроллит родительский fm-layout `.scroll` */
 .body {
   position: relative;
   z-index: 0;
   flex: 0 0 auto;
   overflow: visible;
-  overflow-x: hidden;
+  overflow-x: clip;
   padding-bottom: 24px;
 }
 
@@ -594,7 +595,7 @@
   flex-shrink: 0;
 }
 
-/* После ухода зелёного блока заголовок доезжает к верху .page и фиксируется; дальше движется только список */
+/* Закрепление к верху scrollport FmMainLayout (не внутреннего .page) */
 .feedStickyHeader {
   position: -webkit-sticky;
   position: sticky;
