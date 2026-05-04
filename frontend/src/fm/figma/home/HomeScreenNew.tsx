@@ -5,12 +5,12 @@
  * Структура:
  *   AppBar (back + logo + bell/gear)
  *   BalanceSection (баланс, Top Up, Withdraw, Details)
- *   BotStatusSection (chart, статус бота, цена, Details)
- *   ActionButtons (Chat, Channel)
+ *   BotStatusSection (chart, статус бота, цена)
+ *   Bot action grid: Start / Stop, Channel / Chat
  *
  * Данные: fetchTradingJournal, fetchBotTrading, useAppSession, useWalletDisplay
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFmLocale } from "../../i18n/useFmLocale";
 
@@ -30,6 +30,7 @@ import {
   prependDepositTotalAnchor,
   type GraphicPoint,
 } from "../components/tradingChartPoints";
+import { useApplyBotTradingState } from "../../hooks/useApplyBotTradingState";
 import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { routes } from "../routes";
@@ -87,6 +88,19 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
 }
 
 /* ─── График производительности ─────────────────────────────── */
+/** Как в `Figma green/Первый экран старт стоп/client/components/PriceChart.tsx`: шкала 24px + gap 4px, линии сетки — border-top по строкам; SVG только заливка + кривая, inset слева 28px. */
+function homeChartGridLineColor(tickIndex: number, tickCount: number): string {
+  if (tickCount === 7) {
+    return tickIndex === 3 || tickIndex === 4 || tickIndex === 5
+      ? "rgba(255,255,255,0.25)"
+      : "rgba(255,255,255,0.15)";
+  }
+  if (tickCount === 10) {
+    return tickIndex >= 4 && tickIndex <= 6 ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.15)";
+  }
+  const mid = Math.floor(tickCount / 2);
+  return tickIndex >= mid - 1 && tickIndex <= mid + 1 ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.15)";
+}
 
 function PerformanceChart({
   points,
@@ -97,27 +111,35 @@ function PerformanceChart({
   yAxis: "percent" | "usdt";
   fixedYDomain?: [number, number];
 }) {
+  const gradId = useId().replace(/:/g, "");
   const geom = buildChartGeom(points, yAxis, {
     plotInsetBottom: CHART_HOME_PLOT_INSET_BOTTOM,
     ...(fixedYDomain ? { fixedYDomain } : {}),
   });
   const yPct = 100 / CHART_VIEWBOX_HEIGHT;
+  const nTicks = geom.yTicks.length;
 
   return (
     <div className={s.chartWrap}>
-      <div className={s.chartPlotRow}>
-        <div className={s.chartYAxis} aria-hidden>
+      <div className={s.chartFrame}>
+        <div className={s.chartGridLayer} aria-hidden>
           {geom.yTicks.map((t, i) => (
-            <span
+            <div
               key={i}
-              className={s.chartYAxisLabel}
+              className={s.chartGridRow}
               style={{ top: `${t.ySvg * yPct}%` }}
             >
-              {t.label}
-            </span>
+              <span className={s.chartScaleLabel}>{t.label}</span>
+              <div
+                className={s.chartGridLine}
+                style={{
+                  borderColor: homeChartGridLineColor(i, nTicks),
+                }}
+              />
+            </div>
           ))}
         </div>
-        <div className={s.chartSvgCol}>
+        <div className={s.chartSvgOverlay}>
           <svg
             viewBox="0 0 325 122"
             fill="none"
@@ -126,31 +148,25 @@ function PerformanceChart({
             preserveAspectRatio="none"
           >
             <defs>
-              <linearGradient id="hnGrad" x1="162.5" y1="0" x2="162.5" y2="122" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#2EDD7D" stopOpacity="0.14" />
-                <stop offset="1" stopColor="#ECF1F4" stopOpacity="0" />
+              <linearGradient
+                id={gradId}
+                x1="162.5"
+                y1="0"
+                x2="162.5"
+                y2="122"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stopColor="#24F180" stopOpacity="0.35" />
+                <stop offset="1" stopColor="white" stopOpacity="0" />
               </linearGradient>
             </defs>
-            {geom.yTicks.map((t, i) => (
-              <line
-                key={`grid-${i}`}
-                x1="0"
-                y1={t.ySvg}
-                x2="325"
-                y2={t.ySvg}
-                stroke="rgba(150, 160, 180, 0.14)"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-              />
-            ))}
             {geom.isEmpty ? null : (
               <>
-                <path d={geom.pathArea} fill="url(#hnGrad)" />
+                <path d={geom.pathArea} fill={`url(#${gradId})`} />
                 <path
                   d={geom.pathLine}
-                  stroke="#2EDD7D"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
+                  stroke="#40FF96"
+                  strokeWidth="1.6"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -167,6 +183,7 @@ function PerformanceChart({
 export default function HomeScreenNew() {
   const { t } = useFmLocale();
   const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
+  const { applyBotState, botSwitchLoading } = useApplyBotTradingState();
   const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt, cumulativeDepositsUsdt } =
     useWalletDisplay();
 
@@ -382,50 +399,84 @@ export default function HomeScreenNew() {
             </div>
           </section>
 
-          <Link to={routes.bot} className={`${s.btnDetailsDark} fm-interactive-pill`} aria-label={t("home.details")}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 4V20H20" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-              <path d="M9 13L13 9L16 12L20 8" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
-            </svg>
-            <span>{t("home.details")}</span>
-          </Link>
+          <div className={s.botActionGrid} aria-label={t("home.botActionsAria")}>
+            <div className={s.botActionRow}>
+              <button
+                type="button"
+                className={`${s.btnStartHome} fm-interactive-pill${isBotActive || botSwitchLoading ? ` ${s.btnHomeDim}` : ""}`}
+                data-tour-id="home-start-button"
+                onClick={() => void applyBotState(true)}
+                aria-disabled={isBotActive || botSwitchLoading}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 17.4C7.8 21 3 21 3 21C3 21 3 16.2 6.6 15" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M21 3C21 3 17.851 3.266 16 4C14.553 4.573 13.133 5.735 11.9 7C9.633 9.326 8 12 8 12L12 16C12 16 14.674 14.367 17 12.1C18.265 10.867 19.427 9.447 20 8C20.733 6.149 21 3 21 3Z" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M12 16L13 21H14L17 18V12.1" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M8 12L3 11V10L6 7H11.9" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+                <span>{t("bot.start")}</span>
+              </button>
 
-          <div className={s.secondaryButtons}>
-            <button
-              type="button"
-              className={`${s.btnSocial} fm-interactive-pill`}
-              aria-label={t("home.chatAria")}
-              onClick={() =>
-                openTelegramOrExternal((uiSettings?.chat_url ?? "").trim() || TELEGRAM_CHAT_URL)
-              }
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <g opacity="0.5">
-                  <path d="M12 8H3V14H12L18 19V4L12 8Z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M10 8V14" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M7 14V20H10V14" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M18 14C18.394 14 18.7841 13.9224 19.1481 13.7716C19.512 13.6209 19.8427 13.3999 20.1213 13.1213C20.3999 12.8427 20.6209 12.512 20.7716 12.1481C20.9224 11.7841 21 11.394 21 11C21 10.606 20.9224 10.2159 20.7716 9.85195C20.6209 9.48797 20.3999 9.15726 20.1213 8.87868C19.8427 8.6001 19.512 8.37913 19.1481 8.22836C18.7841 8.0776 18.394 8 18 8" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </g>
-              </svg>
-              <span>{t("home.chat")}</span>
-            </button>
+              <button
+                type="button"
+                className={`${s.btnStopHome} fm-interactive-pill${!isBotActive || botSwitchLoading ? ` ${s.btnHomeDim}` : ""}`}
+                data-tour-id="home-stop-button"
+                onClick={() => void applyBotState(false)}
+                aria-disabled={!isBotActive || botSwitchLoading}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5.5 5.5L18.5 18.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+                  <path d="M5.5 18.5L18.5 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
+                </svg>
+                <span>{t("bot.stop")}</span>
+              </button>
+            </div>
 
-            <button
-              type="button"
-              className={`${s.btnSupport} fm-interactive-pill`}
-              aria-label={t("home.channelAria")}
-              onClick={() =>
-                openTelegramOrExternal((uiSettings?.channel_url ?? "").trim() || TELEGRAM_CHANNEL_URL)
-              }
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z" fill="white" fillOpacity="0.5" />
-                <path d="M8 11H8.01" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M12 11H12.01" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 11H16.01" stroke="white" strokeOpacity="0.5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>{t("home.channel")}</span>
-            </button>
+            <div className={s.botActionRow}>
+              <button
+                type="button"
+                className={`${s.btnNeutralHome} fm-interactive-pill`}
+                aria-label={t("home.channelAria")}
+                onClick={() =>
+                  openTelegramOrExternal((uiSettings?.channel_url ?? "").trim() || TELEGRAM_CHANNEL_URL)
+                }
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M21 4H21.8V3.2H21V4ZM3 4V3.2H2.2V4H3ZM3 21H2.2C2.2 21.3236 2.39491 21.6153 2.69385 21.7391C2.99279 21.8629 3.33689 21.7945 3.56569 21.5657L3 21ZM6 18V17.2H5.66863L5.43431 17.4343L6 18ZM21 18V18.8H21.8V18H21ZM21 4V3.2H3V4V4.8H21V4ZM3 4H2.2V21H3H3.8V4H3ZM3 21L3.56569 21.5657L6.56569 18.5657L6 18L5.43431 17.4343L2.43431 20.4343L3 21ZM6 18V18.8H21V18V17.2H6V18ZM21 18H21.8V4H21H20.2V18H21Z"
+                    fill="currentColor"
+                    fillOpacity="0.45"
+                  />
+                  <path d="M8 11H8.01" stroke="currentColor" strokeOpacity="0.75" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M12 11H12.01" stroke="currentColor" strokeOpacity="0.75" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M16 11H16.01" stroke="currentColor" strokeOpacity="0.75" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>{t("home.channel")}</span>
+              </button>
+
+              <button
+                type="button"
+                className={`${s.btnNeutralHome} fm-interactive-pill`}
+                aria-label={t("home.chatAria")}
+                onClick={() =>
+                  openTelegramOrExternal((uiSettings?.chat_url ?? "").trim() || TELEGRAM_CHAT_URL)
+                }
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 8H3V14H12L18 19V4L12 8Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M10 8V14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 14V20H10V14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M18 14C18.394 14 18.7841 13.9224 19.1481 13.7716C19.512 13.6209 19.8427 13.3999 20.1213 13.1213C20.3999 12.8427 20.6209 12.512 20.7716 12.1481C20.9224 11.7841 21 11.394 21 11C21 10.606 20.9224 10.2159 20.7716 9.85195C20.6209 9.48797 20.3999 9.15726 20.1213 8.87868C19.8427 8.6001 19.512 8.37913 19.1481 8.22836C18.7841 8.0776 18.394 8 18 8"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span>{t("home.chat")}</span>
+              </button>
+            </div>
           </div>
         </main>
 

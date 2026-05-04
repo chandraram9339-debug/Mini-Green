@@ -66,6 +66,8 @@
   max-height: 20px;
   aspect-ratio: 168 / 20;
   object-fit: contain;
+  /* Same black as balance copy (--fm-balance-amount-fg / #000); shimmer ::after unchanged */
+  filter: brightness(0);
 }
 
 .app-bar-logo-wordmark.app-bar-logo-shimmer::after {

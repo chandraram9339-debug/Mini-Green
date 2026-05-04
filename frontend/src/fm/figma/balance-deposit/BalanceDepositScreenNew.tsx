@@ -355,11 +355,8 @@ export default function BalanceDepositScreenNew() {
           </section>
         </header>
 
-        {/* Scrollable content */}
         <div className={s.body}>
-          {/* History: tabs + list */}
-          <div className={s.historySection} aria-label={t("deposit.historyAria")} data-tour-id="wallet-details-history">
-            {/* Summary tab cards */}
+          <div className={s.cardsWrapper}>
             <div className={s.tabsRow} role="tablist">
               {TAB_META.map((meta) => (
                 <TabCard
@@ -372,8 +369,13 @@ export default function BalanceDepositScreenNew() {
                 />
               ))}
             </div>
+          </div>
 
-            {/* Transaction list */}
+          <div
+            className={s.history}
+            aria-label={t("deposit.historyAria")}
+            data-tour-id="wallet-details-history"
+          >
             {historyLoading && hasApiBase() && !apiHistory ? (
               <div className={s.historyLoadingBlock} role="status" aria-label={t("common.loading")}>
                 <SkeletonWalletHistoryRows count={6} />

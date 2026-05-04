@@ -29,7 +29,6 @@ import { fetchTradeFeedSnapshot, tradeFeedPollIntervalMs } from "../../api/fetch
 import { mergeTradeFeedPayloadToJournalItems } from "../../api/mergeAlTradeFeed";
 import { botTradingStaticFallback, fetchBotTrading } from "../../api/fetchBotTrading";
 import { getStatsForPeriod } from "../../api/parseBotTrading";
-import { setBotTradingState } from "../../api/setBotTradingState";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 import {
   buildChartGeom,
@@ -41,6 +40,7 @@ import {
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { consumePostOnboardingStartHighlight } from "../../onboarding-tour/onboardingStorage";
+import { useApplyBotTradingState } from "../../hooks/useApplyBotTradingState";
 import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { appBarLogoUrl } from "../assets/appBarShared";
@@ -173,10 +173,10 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
 
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function BotDetailScreenNew() {
-  const navigate = useNavigate();
   const { t } = useFmLocale();
-  const { phase, mode, botRunning, refreshWallet, setBotRunning, notificationUnreadCount } = useAppSession();
+  const { phase, botRunning, notificationUnreadCount } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
+  const { applyBotState, botSwitchLoading } = useApplyBotTradingState();
 
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
@@ -186,7 +186,6 @@ export default function BotDetailScreenNew() {
   const [journalLoading, setJournalLoading] = useState(false);
   /** Снимок AL trade-feed с бэкенда (прокси); если непустой — показываем в ленте вместо journal-only. */
   const [alFeedJournalRows, setAlFeedJournalRows] = useState<TradingJournalItem[]>([]);
-  const [botSwitchLoading, setBotSwitchLoading] = useState(false);
   const [period, setPeriod] = useState<BotPeriod>("24h");
   const [tradeResultFilter, setTradeResultFilter] = useState<TradeResultFilter>("all");
   /** Подмена «актуальная цена» из GET /trading/al-state; при ошибке/не настроено/нет сделки — сброс, дальше summary (`fetchBotTrading`). */
@@ -408,28 +407,6 @@ export default function BotDetailScreenNew() {
   const isBotActive = balance > 0 && botRunning;
   const fmtPct = (n: number) => `${n.toFixed(2)} %`;
 
-  async function applyBotState(enabled: boolean) {
-    if (botSwitchLoading) return;                           // prevent double-click while API is in flight
-    if (balance <= 0 && enabled) { navigate(routes.depositTopUp); return; }
-    if (!hasApiBase() || mode === "mock") { setBotRunning(enabled); return; }
-    setBotSwitchLoading(true);
-    try {
-      const result = await setBotTradingState(enabled);
-      if (!result.ok) {
-        // API returned an error — still toggle locally so user sees feedback
-        setBotRunning(enabled);
-        return;
-      }
-      setBotRunning(result.botTradingEnabled ?? enabled);
-      await refreshWallet();
-    } catch {
-      // Network error (Failed to fetch) — toggle locally as fallback
-      setBotRunning(enabled);
-    } finally {
-      setBotSwitchLoading(false);
-    }
-  }
-
   const PERIOD_TABS: BotPeriod[] = ["24h", "7d", "1m", "all"];
 
   function periodTabLabel(tab: BotPeriod): string {
@@ -499,6 +476,7 @@ export default function BotDetailScreenNew() {
             </button>
 
             <button
+              type="button"
               className={`${s.btnStop} fm-interactive-pill${!isBotActive || botSwitchLoading ? ` ${s.btnDim}` : ""}`}
               onClick={() => void applyBotState(false)}
               aria-disabled={!isBotActive || botSwitchLoading}

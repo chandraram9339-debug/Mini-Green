@@ -6,6 +6,7 @@
   z-index: 100050;
   pointer-events: auto;
   box-sizing: border-box;
+  overflow-x: hidden;
   padding-top: env(safe-area-inset-top, 0px);
   padding-right: env(safe-area-inset-right, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -94,9 +95,10 @@
   top: var(--ot-tooltip-top);
   left: var(--ot-tooltip-left);
   transform: var(--ot-tooltip-translate);
-  width: min(340px, calc(100vw - 32px));
-  max-width: min(340px, calc(100vw - 32px));
-  padding: 16px 18px;
+  width: auto;
+  max-width: min(360px, calc(100vw - 32px));
+  min-width: 0;
+  padding: 16px max(12px, min(18px, 4vw));
   border-radius: 16px;
   /* Slightly denser scrim for readability on green/dark under the cutout */
   background: rgba(18, 22, 28, 0.97);
@@ -106,6 +108,8 @@
     0 0 0 1px rgba(255, 255, 255, 0.08);
   box-sizing: border-box;
   pointer-events: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .screenBadge {
@@ -129,6 +133,8 @@
   font-weight: 600;
   color: #ffffff;
   line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .description {
@@ -140,14 +146,19 @@
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
   white-space: pre-line;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
+  row-gap: 12px;
   margin-top: 16px;
+  min-width: 0;
 }
 
 .progress {
@@ -163,6 +174,8 @@
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .btn {
@@ -173,6 +186,10 @@
   font-family: "Outfit", system-ui, sans-serif;
   font-size: 14px;
   font-weight: 500;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
+  box-sizing: border-box;
   transition:
     background-color 0.15s ease,
     opacity 0.15s ease,
@@ -223,4 +240,6 @@
   font-size: 12px;
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.42);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

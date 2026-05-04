@@ -83,7 +83,7 @@
   object-fit: contain;
   max-width: none;
   max-height: none;
-  filter: drop-shadow(0 10px 22px rgba(45, 110, 147, 0.16));
+  filter: brightness(0) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.12));
 }
 
 .fm-splash-logo-shimmer {

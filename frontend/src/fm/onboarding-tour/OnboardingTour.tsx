@@ -4,13 +4,21 @@ import { createPortal } from "react-dom";
 import { useFmLocale } from "../i18n/useFmLocale";
 import type { MessageKey } from "../i18n/messages";
 
-import type { OnboardingScreenId, OnboardingTourStep, TourTooltipPlacement } from "./types";
+import type { OnboardingScreenId, OnboardingTourStep } from "./types";
+import {
+  calculateTooltipPosition,
+  calculateTooltipPositionCentered,
+  readVisualViewportRect,
+  viewportPointToRootLocal,
+} from "./tooltipPosition";
 
 import s from "./OnboardingTour.module.css";
 
-const GAP = 16;
 const SPOTLIGHT_PAD = 8;
 const Z_INDEX = 100050;
+/** Max tooltip width for first-pass vertical fit checks (before measure). */
+const TOOLTIP_MAX_W_EST = 360;
+const TOOLTIP_VW_PAD = 32;
 
 const SCREEN_BADGE_KEY: Record<OnboardingScreenId, MessageKey> = {
   home: "tab.home",
@@ -31,48 +39,6 @@ function setTourCssVars(
   if (!el) return;
   for (const [k, v] of Object.entries(partial)) {
     el.style.setProperty(k, v);
-  }
-}
-
-function positionForPlacement(rect: DOMRect, placement: TourTooltipPlacement): {
-  top: string;
-  left: string;
-  translate: string;
-} {
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-  switch (placement) {
-    case "top":
-      return {
-        top: `${rect.top - GAP}px`,
-        left: `${cx}px`,
-        translate: "translate(-50%, -100%)",
-      };
-    case "left":
-      return {
-        top: `${cy}px`,
-        left: `${rect.left - GAP}px`,
-        translate: "translate(-100%, -50%)",
-      };
-    case "right":
-      return {
-        top: `${cy}px`,
-        left: `${rect.right + GAP}px`,
-        translate: "translate(0, -50%)",
-      };
-    case "bottom":
-      return {
-        top: `${rect.bottom + GAP}px`,
-        left: `${cx}px`,
-        translate: "translate(-50%, 0)",
-      };
-    case "center":
-    default:
-      return {
-        top: "50%",
-        left: "50%",
-        translate: "translate(-50%, -50%)",
-      };
   }
 }
 
@@ -103,9 +69,11 @@ export function OnboardingTour({
   const { t } = useFmLocale();
   const titleId = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [internalStepIndex, setInternalStepIndex] = useState(initialStepIndex);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [hasTarget, setHasTarget] = useState(false);
+  const [tooltipSizeTick, setTooltipSizeTick] = useState(0);
 
   const isControlled =
     controlledStepIndex !== undefined && typeof onControlledStepIndexChange === "function";
@@ -159,7 +127,6 @@ export function OnboardingTour({
     updateGeometry();
   }, [updateGeometry, safeIndex, routeKey]);
 
-  /* After route change / paint, targets may mount next frame — re-measure */
   useEffect(() => {
     if (!isOpen) return;
     const id = window.requestAnimationFrame(() => {
@@ -183,14 +150,34 @@ export function OnboardingTour({
     };
     window.addEventListener("resize", onWin);
     window.addEventListener("scroll", onWin, true);
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener("resize", onWin);
+      vv.addEventListener("scroll", onWin);
+    }
     const el = activeStep ? findTargetEl(activeStep.targetId) : null;
     if (ro && el) ro.observe(el as Element);
     return () => {
       window.removeEventListener("resize", onWin);
       window.removeEventListener("scroll", onWin, true);
+      if (vv) {
+        vv.removeEventListener("resize", onWin);
+        vv.removeEventListener("scroll", onWin);
+      }
       ro?.disconnect();
     };
   }, [activeStep, isOpen, routeKey, updateGeometry]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const tt = tooltipRef.current;
+    if (!tt || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      setTooltipSizeTick((n) => n + 1);
+    });
+    ro.observe(tt);
+    return () => ro.disconnect();
+  }, [isOpen, safeIndex, hasTarget, activeStep?.targetId]);
 
   useLayoutEffect(() => {
     const el = rootRef.current;
@@ -207,28 +194,77 @@ export function OnboardingTour({
         "--ot-tooltip-translate": "translate(-50%, -50%)",
       });
       el.style.zIndex = String(Z_INDEX);
-      return;
+
+      const id = window.requestAnimationFrame(() => {
+        const root = rootRef.current;
+        const tt = tooltipRef.current;
+        if (!root || !tt) return;
+        const v = readVisualViewportRect();
+        const r = tt.getBoundingClientRect();
+        if (r.width <= 0 || r.height <= 0) return;
+        const { top, left } = calculateTooltipPositionCentered(
+          { width: r.width, height: r.height },
+          v,
+        );
+        const local = viewportPointToRootLocal(root, left, top);
+        setTourCssVars(root, {
+          "--ot-tooltip-top": `${local.top}px`,
+          "--ot-tooltip-left": `${local.left}px`,
+          "--ot-tooltip-translate": "translate(0, 0)",
+        });
+      });
+      return () => window.cancelAnimationFrame(id);
     }
 
-    /* Spotlight + tooltip use viewport coordinates (root is fixed). */
     const st = targetRect.top - SPOTLIGHT_PAD;
     const sl = targetRect.left - SPOTLIGHT_PAD;
     const sw = targetRect.width + SPOTLIGHT_PAD * 2;
     const sh = targetRect.height + SPOTLIGHT_PAD * 2;
 
-    const pos = positionForPlacement(targetRect, activeStep.placement);
+    const viewport = readVisualViewportRect();
+    const estW = Math.min(TOOLTIP_MAX_W_EST, Math.max(0, viewport.width - TOOLTIP_VW_PAD));
+    const estH = Math.min(480, Math.max(120, viewport.height * 0.55));
+    const estPos = calculateTooltipPosition(
+      targetRect,
+      { width: estW, height: estH },
+      viewport,
+      activeStep.placement,
+    );
+    const localEst = viewportPointToRootLocal(el, estPos.left, estPos.top);
 
     setTourCssVars(el, {
       "--ot-spotlight-top": `${Math.max(0, st)}px`,
       "--ot-spotlight-left": `${Math.max(0, sl)}px`,
       "--ot-spotlight-w": `${sw}px`,
       "--ot-spotlight-h": `${sh}px`,
-      "--ot-tooltip-top": pos.top,
-      "--ot-tooltip-left": pos.left,
-      "--ot-tooltip-translate": pos.translate,
+      "--ot-tooltip-top": `${localEst.top}px`,
+      "--ot-tooltip-left": `${localEst.left}px`,
+      "--ot-tooltip-translate": "translate(0, 0)",
     });
     el.style.zIndex = String(Z_INDEX);
-  }, [activeStep, hasTarget, isOpen, targetRect]);
+
+    const id = window.requestAnimationFrame(() => {
+      const root = rootRef.current;
+      const tt = tooltipRef.current;
+      if (!root || !tt || !activeStep) return;
+      const r = tt.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) return;
+      const v = readVisualViewportRect();
+      const { top, left } = calculateTooltipPosition(
+        targetRect,
+        { width: r.width, height: r.height },
+        v,
+        activeStep.placement,
+      );
+      const local = viewportPointToRootLocal(root, left, top);
+      setTourCssVars(root, {
+        "--ot-tooltip-top": `${local.top}px`,
+        "--ot-tooltip-left": `${local.left}px`,
+        "--ot-tooltip-translate": "translate(0, 0)",
+      });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [activeStep, hasTarget, isOpen, targetRect, tooltipSizeTick]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -272,7 +308,7 @@ export function OnboardingTour({
         {t("onboarding.tour.skip")}
       </button>
 
-      <div className={s.tooltip}>
+      <div ref={tooltipRef} className={s.tooltip}>
         <span className={s.screenBadge}>{t(SCREEN_BADGE_KEY[activeStep.screen])}</span>
         <h2 id={titleId} className={s.title}>
           {t(activeStep.titleKey)}

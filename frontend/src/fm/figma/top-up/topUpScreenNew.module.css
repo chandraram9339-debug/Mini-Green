@@ -7,9 +7,10 @@
 .screen {
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
+  flex: 0 0 auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
   width: 100%;
   max-width: var(--fm-layout-column-max-width, 430px);
   margin-left: auto;
@@ -180,14 +181,12 @@
 
 /* ── Body ───────────────────────────────────────────────────── */
 .body {
-  flex: 1 1 auto;
-  overflow: hidden;
-  overflow-y: auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0;
   padding: 24px 20px 24px;
 }

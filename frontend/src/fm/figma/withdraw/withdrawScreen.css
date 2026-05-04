@@ -74,6 +74,7 @@
   max-width: none;
   max-height: none;
   object-fit: contain;
+  filter: brightness(0);
   animation: fm-logo-image-pulse 5.8s ease-in-out infinite;
   animation-delay: var(--fm-sync-delay, 0ms);
 }

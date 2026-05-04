@@ -9,23 +9,23 @@
   box-sizing: border-box;
 }
 
-/* ── Page / container ───────────────────────────────────────── */
+/* ── Page: как BotDetail — контент растёт, скролл на FmMainLayout .scroll; тогда position:sticky у карточек работает */
 .page {
   width: 100%;
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: 100%;
   background: #0a0a0a;
   display: flex;
-  justify-content: flex-start;
+  flex-direction: column;
   align-items: stretch;
+  overflow: visible;
   font-family: "Outfit", sans-serif;
 }
 
 .container {
   width: 100%;
   max-width: var(--fm-layout-column-max-width, 100%);
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 0 0 auto;
   background: #0a0a0a;
   display: flex;
   flex-direction: column;
@@ -35,9 +35,10 @@
 /* Backwards-compat (some parents may rely on .screen) */
 .screen {}
 
-/* ── Header (green) + decorative blobs ──────────────────────── */
+/* ── Header (green): не sticky — уезжает вверх вместе со скроллом .page; карточки ниже цепляются sticky */
 .header {
   position: relative;
+  z-index: 1;
   background: #2edd7d;
   border-radius: 0 0 48px 48px;
   overflow: visible;
@@ -208,19 +209,26 @@
   display: none;
 }
 
-/* ── Scrollable body ────────────────────────────────────────── */
+/* ── Body: in-flow inside .page scroll; no nested scrollbar ─ */
 .body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* min-height: 0 is required so flex child can shrink below content size */
-  min-height: 0;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  flex: 0 0 auto;
+  overflow: visible;
   padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* После того как зелёный блок уехал: строка Deposit/Withdraw/Referral липнет к верху .page; дальше скроллится только история под ней */
+.cardsWrapper {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  align-self: stretch;
+  width: 100%;
+  background: #0a0a0a;
+  padding-bottom: 8px;
 }
 
 /* ── Balance Section (типографика как Home) ───────────────── */
@@ -331,15 +339,15 @@
   color: #fff;
 }
 
-/* ── History Section (tabs + list) ─────────────────────────── */
-.historySection {
+/* ── Transaction history (same scroll as .page) ─ */
+.history {
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* Both children (tabsRow + list) must fill the same width */
   width: 100%;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 /* ── Summary Tab Cards ──────────────────────────────────────── */
@@ -347,6 +355,7 @@
   display: flex;
   gap: 13px;
   width: 100%;
+  align-self: stretch;
 }
 
 .tabCard {
@@ -361,17 +370,20 @@
   text-align: left;
   border: none;
   cursor: pointer;
-  transition: background-color 0.15s, box-shadow 0.15s;
+  transition: background-color 0.15s, box-shadow 0.15s, filter 0.15s;
   position: relative;
 }
 
 .tabCardActive {
   background: #131413;
   box-shadow: none;
+  filter: none;
 }
 
+/* Невыбранные вкладки — слегка затемнены относительно активной */
 .tabCardInactive {
-  background: rgba(19, 20, 19, 0.7);
+  background: rgba(15, 16, 15, 0.88);
+  filter: brightness(0.78);
 }
 
 .tabCardTop {
