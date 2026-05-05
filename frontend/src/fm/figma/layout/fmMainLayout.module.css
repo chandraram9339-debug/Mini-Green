@@ -26,14 +26,15 @@
 }
 
 .scroll {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
+  height: auto;
   min-width: 0;
   width: 100%;
-  /* hidden на оси X ломает position:sticky у детей (Wallet карточки, BotDetail лента) */
-  overflow-x: clip;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* hidden на оси X ломает position:sticky у детей (Wallet карточки, BotDetail лента) */
+  overflow-x: clip;
   overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;

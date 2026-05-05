@@ -469,6 +469,7 @@ export default function HomeScreenNew() {
               </button>
             </div>
           </div>
+          <div className={s.spacer} aria-hidden="true" />
         </main>
 
       </div>

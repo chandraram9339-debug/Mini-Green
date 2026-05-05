@@ -8,10 +8,15 @@
 .screen {
   width: 100%;
   flex: 0 0 auto;
-  /* Без min-height: 100% — иначе колонка тянется на всю высоту скролла и под Channel/Chat остаётся пустое поле до таббара (в т.ч. в моб. эмуляторе). */
-  background-color: #0a0a0a;
   display: flex;
   flex-direction: column;
+  height: auto !important;
+  min-height: auto !important;
+  flex-shrink: 0;
+  /* iOS safe-area */
+  box-sizing: border-box;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-color: #0a0a0a;
   justify-content: flex-start;
   align-items: stretch;
   font-family: "Outfit", -apple-system, sans-serif;
@@ -532,6 +537,11 @@
   gap: 14px;
   width: 100%;
   min-width: 0;
+}
+
+.spacer {
+  flex: 1 1 auto;
+  min-height: 16px;
 }
 
 .botActionRow {
