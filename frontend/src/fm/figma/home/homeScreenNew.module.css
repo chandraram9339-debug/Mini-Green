@@ -8,15 +8,9 @@
 .screen {
   width: 100%;
   flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  height: auto !important;
-  min-height: auto !important;
-  flex-shrink: 0;
-  /* iOS safe-area */
-  box-sizing: border-box;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  min-height: 100%;
   background-color: #0a0a0a;
+  display: flex;
   justify-content: flex-start;
   align-items: stretch;
   font-family: "Outfit", -apple-system, sans-serif;
@@ -26,6 +20,7 @@
   width: 100%;
   max-width: var(--fm-layout-column-max-width, 100%);
   flex: 0 0 auto;
+  min-height: 100%;
   background-color: #0a0a0a;
   display: flex;
   flex-direction: column;
@@ -190,7 +185,6 @@
   z-index: 1;
 }
 
-/* Слева блок баланса (+ рефералы), справа столбик Top up / Withdraw — см. Figma green/Первый экран старт стоп/client/components/AppHeader.tsx */
 .balanceRow {
   display: flex;
   justify-content: space-between;
@@ -539,11 +533,6 @@
   min-width: 0;
 }
 
-.spacer {
-  flex: 1 1 auto;
-  min-height: 16px;
-}
-
 .botActionRow {
   display: flex;
   flex-direction: row;
@@ -607,6 +596,101 @@
   line-height: 1.15;
   min-width: 0;
   text-align: center;
+}
+
+/* ===== Mobile / narrow width (первый экран в браузере и в Telegram) ===== */
+@media (max-width: 430px) {
+  .balanceRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .balanceLeft {
+    width: 100%;
+  }
+
+  .balanceActions {
+    flex-direction: row;
+    margin-left: 0;
+    width: 100%;
+    justify-content: stretch;
+    gap: 10px;
+  }
+
+  .btnTopUp,
+  .btnWithdraw {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    justify-content: center;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .balanceSection {
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+  }
+
+  .body {
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+    padding-top: 16px;
+    padding-bottom: 20px;
+    gap: 14px;
+  }
+
+  .botActionRow {
+    gap: 10px;
+  }
+
+  .btnStartHome,
+  .btnStopHome,
+  .btnNeutralHome {
+    font-size: clamp(13px, 3.9vw, 16px);
+    padding-left: 8px;
+    padding-right: 8px;
+    gap: 6px;
+  }
+
+  .btnStartHome svg,
+  .btnStopHome svg,
+  .btnNeutralHome svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 400px) {
+  .balanceTitle {
+    font-size: clamp(17px, 4.8vw, 20px);
+  }
+
+  .referralCaption {
+    font-size: clamp(10px, 2.9vw, 11px);
+  }
+
+  .statusLabel,
+  .priceLabel {
+    min-width: 0;
+  }
+
+  .statusRow,
+  .priceRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .priceAmount {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .statusActive {
+    width: 100%;
+  }
 }
 
 /* Unused legacy selectors kept intentionally (avoid accidental runtime reliance) */
