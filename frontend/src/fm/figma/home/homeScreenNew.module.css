@@ -7,8 +7,7 @@
 /* ===== ROOT SCREEN ===== */
 .screen {
   width: 100%;
-  /* Заполняем высоту .scroll (FmMainLayout): иначе под коротким контентом виден «пол» скролла */
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   background-color: #0a0a0a;
   display: flex;
@@ -21,7 +20,7 @@
 .container {
   width: 100%;
   max-width: var(--fm-layout-column-max-width, 100%);
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   background-color: #0a0a0a;
   display: flex;
@@ -365,12 +364,11 @@
 
 /* ===== BODY (Dark) ===== */
 .body {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
   padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: clamp(12px, 3vw, 16px);
   min-width: 0;
   overflow-x: hidden;
   overflow-y: visible;
@@ -534,7 +532,6 @@
   gap: 14px;
   width: 100%;
   min-width: 0;
-  margin-top: auto;
 }
 
 .botActionRow {
