@@ -324,24 +324,40 @@ export default function HomeScreenNew() {
 
   const journalRowsForPersonalChart = isDemoMode ? demoMirrorJournalRows : chartRows;
 
-  const personalTradePoints = useMemo(
-    () =>
-      isBotActive
-        ? buildPersonalBalanceChartPoints(
-            journalRowsForPersonalChart,
-            balanceUsdt,
-            positiveBalanceStartedAt,
-            isDemoMode ? { ignoreDeltas: true } : undefined,
-          )
-        : [],
-    [
-      isBotActive,
+  const personalTradePoints = useMemo(() => {
+    if (!isBotActive) return [];
+    const pts = buildPersonalBalanceChartPoints(
       journalRowsForPersonalChart,
       balanceUsdt,
       positiveBalanceStartedAt,
-      isDemoMode,
-    ],
-  );
+      isDemoMode ? { ignoreDeltas: true } : undefined,
+    );
+    if (pts.length > 0) return pts;
+
+    /** Сразу после пополнения (в т.ч. демо) закрытых сделок ещё нет — горизонталь от якоря до «сейчас». */
+    const anchor = positiveBalanceStartedAt?.trim();
+    const dep =
+      cumulativeDepositsUsdt != null && cumulativeDepositsUsdt > 0
+        ? cumulativeDepositsUsdt
+        : isDemoMode
+          ? demoTotalDepositedUsdt
+          : balanceUsdt;
+    if (anchor && dep > 0 && Number.isFinite(balanceUsdt)) {
+      return [
+        { occurred_at: anchor, value_pct: dep },
+        { occurred_at: new Date().toISOString(), value_pct: balanceUsdt },
+      ];
+    }
+    return [];
+  }, [
+    isBotActive,
+    journalRowsForPersonalChart,
+    balanceUsdt,
+    positiveBalanceStartedAt,
+    isDemoMode,
+    cumulativeDepositsUsdt,
+    demoTotalDepositedUsdt,
+  ]);
 
   const chartPoints = useMemo(() => {
     if (!isBotActive) {

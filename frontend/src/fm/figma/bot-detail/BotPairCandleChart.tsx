@@ -19,18 +19,34 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 
 import s from "./botPairCandleChart.module.css";
 
+const LONG_COLOR = "#2EDD7D";
+const SHORT_COLOR = "#E85D5D";
+
 function timeFromIso(iso: string): UTCTimestamp {
   const ms = Date.parse(iso);
   return (Number.isFinite(ms) ? Math.floor(ms / 1000) : 0) as UTCTimestamp;
 }
 
+/** Сторона позиции из API (long/short, buy/sell, в т.ч. верхний регистр). */
 function isShortSide(side: string | undefined): boolean {
-  const s = side?.toLowerCase() ?? "";
-  return s.includes("sell") || s.includes("short");
+  const x = side?.trim().toLowerCase() ?? "";
+  if (x.includes("short") || x.includes("sell")) return true;
+  if (x.includes("long") || x.includes("buy")) return false;
+  return false;
 }
 
-/** Entry markers only; no on-canvas text — details in click tooltip. */
-function buildEntryMarkers(trades: TradingJournalItem[], binanceSymbol: string): SeriesMarker<UTCTimestamp>[] {
+const MARKER_ENTRY_SUFFIX = "::e";
+const MARKER_EXIT_SUFFIX = "::x";
+
+function tradeIdFromHoveredMarkerId(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  if (raw.endsWith(MARKER_ENTRY_SUFFIX)) return raw.slice(0, -MARKER_ENTRY_SUFFIX.length);
+  if (raw.endsWith(MARKER_EXIT_SUFFIX)) return raw.slice(0, -MARKER_EXIT_SUFFIX.length);
+  return raw;
+}
+
+/** Вход (стрелка), выход (круг) — без текста; id с суффиксом для клика. */
+function buildPairTradeMarkers(trades: TradingJournalItem[], binanceSymbol: string): SeriesMarker<UTCTimestamp>[] {
   const sym = binanceSymbol.trim().toUpperCase();
   const markers: SeriesMarker<UTCTimestamp>[] = [];
 
@@ -39,18 +55,60 @@ function buildEntryMarkers(trades: TradingJournalItem[], binanceSymbol: string):
     if (!row.opened_at) continue;
 
     const short = isShortSide(row.side);
+    const col = short ? SHORT_COLOR : LONG_COLOR;
+
     markers.push({
       time: timeFromIso(row.opened_at),
       position: short ? "aboveBar" : "belowBar",
-      color: short ? "#E85D5D" : "#2EDD7D",
+      color: col,
       shape: short ? "arrowDown" : "arrowUp",
-      id: row.id,
+      id: `${row.id}${MARKER_ENTRY_SUFFIX}`,
       size: 1,
     });
+
+    if (row.status === "closed" && row.closed_at) {
+      markers.push({
+        time: timeFromIso(row.closed_at),
+        position: "inBar",
+        color: col,
+        shape: "circle",
+        id: `${row.id}${MARKER_EXIT_SUFFIX}`,
+        size: 1,
+      });
+    }
   }
 
   markers.sort((a, b) => (a.time as number) - (b.time as number));
   return markers;
+}
+
+type ConnectorSpec = { data: LineData<UTCTimestamp>[]; color: string };
+
+function buildTradeConnectorSpecs(trades: TradingJournalItem[], binanceSymbol: string): ConnectorSpec[] {
+  const sym = binanceSymbol.trim().toUpperCase();
+  const out: ConnectorSpec[] = [];
+
+  for (const row of trades) {
+    if (journalSymbolToBinanceSymbol(row.symbol) !== sym) continue;
+    if (row.status !== "closed" || !row.closed_at || !row.opened_at) continue;
+    if (row.entry_price == null || row.exit_price == null) continue;
+
+    const tOpen = timeFromIso(row.opened_at);
+    const tClose = timeFromIso(row.closed_at);
+    if ((tClose as number) <= (tOpen as number)) continue;
+
+    const short = isShortSide(row.side);
+    const col = short ? "rgba(232, 93, 93, 0.42)" : "rgba(46, 221, 125, 0.42)";
+    out.push({
+      color: col,
+      data: [
+        { time: tOpen, value: row.entry_price },
+        { time: tClose, value: row.exit_price },
+      ],
+    });
+  }
+
+  return out;
 }
 
 function candlesToLinePoints(candles: CandlestickData[]): LineData[] {
@@ -91,7 +149,8 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
     y: number;
   } | null>(null);
 
-  const markers = useMemo(() => buildEntryMarkers(trades, binanceSymbol), [trades, binanceSymbol]);
+  const markers = useMemo(() => buildPairTradeMarkers(trades, binanceSymbol), [trades, binanceSymbol]);
+  const connectorSpecs = useMemo(() => buildTradeConnectorSpecs(trades, binanceSymbol), [trades, binanceSymbol]);
 
   useEffect(() => {
     const sym = binanceSymbol.trim().toUpperCase();
@@ -108,9 +167,9 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
       setTip(null);
       return;
     }
-    const id = param.hoveredObjectId;
-    if (typeof id === "string") {
-      const tr = tradesByIdRef.current.get(id);
+    const tradeId = tradeIdFromHoveredMarkerId(param.hoveredObjectId);
+    if (tradeId) {
+      const tr = tradesByIdRef.current.get(tradeId);
       if (tr) {
         setTip({ trade: tr, x: param.point.x, y: param.point.y });
         return;
@@ -152,6 +211,18 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
       },
     });
 
+    for (const spec of connectorSpecs) {
+      const conn = chart.addLineSeries({
+        color: spec.color,
+        lineWidth: 1,
+        lineType: LineType.Simple,
+        lastValueVisible: false,
+        priceLineVisible: false,
+        crosshairMarkerVisible: false,
+      });
+      conn.setData(spec.data);
+    }
+
     const series = chart.addLineSeries({
       color: "rgba(94, 234, 184, 0.92)",
       lineWidth: 1,
@@ -162,6 +233,7 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
     });
 
     seriesRef.current = series;
+    series.setMarkers(markers as SeriesMarker<never>[]);
     chart.subscribeClick(onChartClick);
 
     const ro = new ResizeObserver(() => {
@@ -175,17 +247,6 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
     });
     ro.observe(el);
 
-    return () => {
-      ro.disconnect();
-      chart.unsubscribeClick(onChartClick);
-      chart.remove();
-      seriesRef.current = null;
-    };
-  }, [interval, onChartClick]);
-
-  useEffect(() => {
-    const series = seriesRef.current;
-    if (!series) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -193,8 +254,7 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
       try {
         const candles = await fetchBinanceCandles(binanceSymbol, interval);
         if (cancelled) return;
-        const line = candlesToLinePoints(candles);
-        series.setData(line);
+        series.setData(candlesToLinePoints(candles));
       } catch (e) {
         if (cancelled) return;
         const msg = e instanceof Error ? e.message : String(e);
@@ -204,16 +264,15 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
+      ro.disconnect();
+      chart.unsubscribeClick(onChartClick);
+      chart.remove();
+      seriesRef.current = null;
     };
-  }, [binanceSymbol, interval]);
-
-  useEffect(() => {
-    const series = seriesRef.current;
-    if (!series) return;
-    series.setMarkers(markers as SeriesMarker<never>[]);
-  }, [markers]);
+  }, [interval, onChartClick, binanceSymbol, connectorSpecs, markers]);
 
   const tipContent = useMemo(() => {
     if (!tip) return null;
