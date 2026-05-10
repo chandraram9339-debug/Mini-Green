@@ -17,6 +17,40 @@ export function chartPointsSystemOrUserFallback(
 }
 
 /**
+ * Виртуальный баланс демо-счёта: стартовый депозит × произведение (1 + result_percent/100)
+ * по закрытиям **системного зеркала** после `positiveBalanceStartedAt` (та же логика %, что в {@link buildPersonalBalanceChartPoints}).
+ */
+export function computeDemoSimulatedBalanceUsdt(
+  principalUsdt: number,
+  rows: TradingJournalItem[],
+  positiveBalanceStartedAt: string | null | undefined,
+): number {
+  if (!(principalUsdt > 0)) return 0;
+  const closed = rows
+    .filter((row) => row.status === "closed" && row.closed_at)
+    .sort((a, b) => Date.parse(String(a.closed_at)) - Date.parse(String(b.closed_at)));
+  const startMs =
+    positiveBalanceStartedAt != null && String(positiveBalanceStartedAt).trim() !== ""
+      ? Date.parse(positiveBalanceStartedAt)
+      : NaN;
+  const filtered = Number.isFinite(startMs)
+    ? closed.filter((r) => Date.parse(String(r.closed_at)) >= startMs)
+    : closed;
+  let m = 1;
+  for (const r of filtered) {
+    if (r.result_percent != null && Number.isFinite(r.result_percent)) {
+      m *= 1 + Number(r.result_percent) / 100;
+    }
+  }
+  return principalUsdt * m;
+}
+
+export type BuildPersonalBalanceChartOptions = {
+  /** Для демо: не использовать delta_minor зеркального юзера — только % на виртуальный депозит. */
+  ignoreDeltas?: boolean;
+};
+
+/**
  * Баланс в USDT после каждого закрытия (ось Y = деньги).
  * Предпочтительно **delta_minor** из SIB (фактическое изменение баланса в центах USDT);
  * если у всех сделок в окне есть дельты — строим от текущего баланса назад/вперёд по сумме дельт.
@@ -28,6 +62,7 @@ export function buildPersonalBalanceChartPoints(
   rows: TradingJournalItem[],
   endBalanceUsdt: number,
   positiveBalanceStartedAt: string | null | undefined,
+  options?: BuildPersonalBalanceChartOptions,
 ): GraphicPoint[] {
   const closed = rows
     .filter((row) => row.status === "closed" && row.closed_at)
@@ -47,7 +82,7 @@ export function buildPersonalBalanceChartPoints(
   const deltas = filtered.map((r) =>
     r.delta_minor != null && Number.isFinite(r.delta_minor) ? Math.round(r.delta_minor) : null,
   );
-  const allHaveDelta = deltas.every((d) => d != null);
+  const allHaveDelta = !options?.ignoreDeltas && deltas.every((d) => d != null);
 
   if (allHaveDelta) {
     const dArr = deltas as number[];

@@ -12,6 +12,89 @@
   box-sizing: border-box;
 }
 
+.tradeTip {
+  position: absolute;
+  z-index: 6;
+  min-width: 168px;
+  max-width: min(240px, 86vw);
+  padding: 11px 13px;
+  border-radius: 12px;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: linear-gradient(
+    145deg,
+    rgba(22, 26, 34, 0.96) 0%,
+    rgba(14, 16, 22, 0.97) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(0, 0, 0, 0.35) inset;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.tradeTipHeader {
+  margin-bottom: 8px;
+}
+
+.tradeTipSideLong,
+.tradeTipSideShort {
+  display: inline-block;
+  font-family: "Outfit", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tradeTipSideLong {
+  color: #2edd7d;
+}
+
+.tradeTipSideShort {
+  color: #e85d5d;
+}
+
+.tradeTipRows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tradeTipRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  font-family: "Outfit", sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.tradeTipRow dt {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.42);
+  font-weight: 500;
+}
+
+.tradeTipRow dd {
+  margin: 0;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.92);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.tradeTipPos {
+  color: #6fe8a8 !important;
+}
+
+.tradeTipNeg {
+  color: #ff8a8a !important;
+}
+
 .pairLabel {
   position: absolute;
   top: 8px;

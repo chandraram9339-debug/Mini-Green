@@ -15,10 +15,10 @@ export default function DemoTopUpScreen() {
   const creditDemoFunds = useDemoStore((s) => s.creditDemoFunds);
   const resetDemoAccount = useDemoStore((s) => s.resetDemoAccount);
   const setDemoMode = useDemoStore((s) => s.setDemoMode);
-  const demoBalanceUsdt = useDemoStore((s) => s.demoBalanceUsdt);
+  const demoTotalDepositedUsdt = useDemoStore((s) => s.demoTotalDepositedUsdt);
 
   const [selected, setSelected] = useState<number>(PRESET_USD[1]);
-  const presetsLocked = demoBalanceUsdt > 0;
+  const presetsLocked = demoTotalDepositedUsdt > 0;
 
   const formattedPresets = useMemo(
     () => PRESET_USD.map((n) => ({ value: n, label: `$${n.toLocaleString("en-US")}` })),
@@ -26,7 +26,7 @@ export default function DemoTopUpScreen() {
   );
 
   const onBack = () => {
-    if (demoBalanceUsdt <= 0) setDemoMode(false);
+    if (demoTotalDepositedUsdt <= 0) setDemoMode(false);
     navigate(routes.home);
   };
 

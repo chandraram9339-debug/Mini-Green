@@ -112,7 +112,7 @@ function PerformanceChart({
   points: GraphicPoint[];
   yAxis: "percent" | "usdt";
   fixedYDomain?: [number, number];
-  /** В демо линия и заливка — акцентный красный как у Stop. */
+  /** Режим демо — те же цвета, что и live; отличие только в данных (виртуальный депозит + зеркало AL). */
   variant?: "live" | "demo";
 }) {
   const gradId = useId().replace(/:/g, "");
@@ -124,9 +124,9 @@ function PerformanceChart({
   });
   const yPct = 100 / CHART_VIEWBOX_HEIGHT;
   const nTicks = geom.yTicks.length;
-  const lineColor = variant === "demo" ? "#ff0000" : "#40FF96";
-  const gradTop = variant === "demo" ? "#ff0000" : "#24F180";
-  const gradTopOpacity = variant === "demo" ? 0.28 : 0.35;
+  const lineColor = "#40FF96";
+  const gradTop = "#24F180";
+  const gradTopOpacity = variant === "demo" ? 0.3 : 0.35;
 
   return (
     <div className={s.chartWrap}>
@@ -194,7 +194,11 @@ export default function HomeScreenNew() {
   const navigate = useNavigate();
   const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
   const { applyBotState, botSwitchLoading } = useApplyBotTradingState();
-  const demoBalanceUsdt = useDemoStore((s) => s.demoBalanceUsdt);
+  const demoTotalDepositedUsdt = useDemoStore((s) => s.demoTotalDepositedUsdt);
+  const demoMirrorJournalRows = useDemoStore((s) => s.demoMirrorJournalRows);
+  const demoMirrorSystemChartPoints = useDemoStore((s) => s.demoMirrorSystemChartPoints);
+  const setDemoMirrorTradingSnapshot = useDemoStore((s) => s.setDemoMirrorTradingSnapshot);
+  const clearDemoMirrorTradingSnapshot = useDemoStore((s) => s.clearDemoMirrorTradingSnapshot);
   const setDemoMode = useDemoStore((s) => s.setDemoMode);
   const {
     balanceUsdt,
@@ -206,7 +210,7 @@ export default function HomeScreenNew() {
 
   const selectLiveAccount = () => setDemoMode(false);
   const selectDemoAccount = () => {
-    if (demoBalanceUsdt <= 0) {
+    if (demoTotalDepositedUsdt <= 0) {
       navigate(routes.demoTopUp);
       return;
     }
@@ -227,6 +231,7 @@ export default function HomeScreenNew() {
       setChartRows([]);
       setSystemChartPoints([]);
       setTradingFromApi(null);
+      clearDemoMirrorTradingSnapshot();
       return;
     }
     if (!apiSessionReady) return;
@@ -235,11 +240,27 @@ export default function HomeScreenNew() {
     const load = async () => {
       /** Всегда «all»: на главной в ритейле — та же системная серия, что на экране бота за весь период; в личном режиме — все закрытые сделки после окна баланса. */
       const period = "all";
+      if (isDemoMode) {
+        const [jrSys, snap] = await Promise.all([
+          fetchTradingJournal(100, period, "system"),
+          fetchBotTrading(period),
+        ]);
+        if (cancelled) return;
+        setDemoMirrorTradingSnapshot(
+          jrSys.items,
+          jrSys.system_chart.map((p) => ({ occurred_at: p.occurred_at, value_pct: p.value_pct })),
+        );
+        setChartRows([]);
+        setSystemChartPoints([]);
+        if (snap) setTradingFromApi(snap);
+        return;
+      }
       const [jr, snap] = await Promise.all([
         fetchTradingJournal(100, period),
         fetchBotTrading(period),
       ]);
       if (cancelled) return;
+      clearDemoMirrorTradingSnapshot();
       setChartRows(jr.items);
       setSystemChartPoints(jr.system_chart.map((p) => ({ occurred_at: p.occurred_at, value_pct: p.value_pct })));
       if (snap) setTradingFromApi(snap);
@@ -301,16 +322,32 @@ export default function HomeScreenNew() {
     return balanceUsdt;
   }, [cumulativeDepositsUsdt, balanceUsdt]);
 
+  const journalRowsForPersonalChart = isDemoMode ? demoMirrorJournalRows : chartRows;
+
   const personalTradePoints = useMemo(
     () =>
       isBotActive
-        ? buildPersonalBalanceChartPoints(chartRows, balanceUsdt, positiveBalanceStartedAt)
+        ? buildPersonalBalanceChartPoints(
+            journalRowsForPersonalChart,
+            balanceUsdt,
+            positiveBalanceStartedAt,
+            isDemoMode ? { ignoreDeltas: true } : undefined,
+          )
         : [],
-    [isBotActive, chartRows, balanceUsdt, positiveBalanceStartedAt],
+    [
+      isBotActive,
+      journalRowsForPersonalChart,
+      balanceUsdt,
+      positiveBalanceStartedAt,
+      isDemoMode,
+    ],
   );
 
   const chartPoints = useMemo(() => {
     if (!isBotActive) {
+      if (isDemoMode) {
+        return chartPointsSystemOrUserFallback(demoMirrorSystemChartPoints, demoMirrorJournalRows);
+      }
       if (alFeedJournalRows.length > 0) {
         const alPts = buildCompoundedChartPoints(alFeedJournalRows);
         if (alPts.length > 0) return alPts;
@@ -321,9 +358,12 @@ export default function HomeScreenNew() {
     return prependDepositTotalAnchor(personalTradePoints, depositTotalUsdt, positiveBalanceStartedAt);
   }, [
     isBotActive,
+    isDemoMode,
     alFeedJournalRows,
     systemChartPoints,
     chartRows,
+    demoMirrorSystemChartPoints,
+    demoMirrorJournalRows,
     personalTradePoints,
     depositTotalUsdt,
     positiveBalanceStartedAt,

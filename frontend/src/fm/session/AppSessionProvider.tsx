@@ -8,6 +8,7 @@ import { fetchUiSettings, mergeUiSettingsFromWallet } from "../api/fetchUiSettin
 import { fetchWalletSnapshot } from "../api/fetchWallet";
 import { setStoredAccessToken } from "../api/http";
 import { mergeWalletSnapshots } from "../api/mergeWallets";
+import { useDemoSimulatedBalanceUsdt } from "../hooks/useEffectiveWalletDisplay";
 import { useDemoStore } from "../stores/demoStore";
 import {
   AppSessionContext,
@@ -45,7 +46,7 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
   });
 
   const isDemoMode = useDemoStore((s) => s.isDemoMode);
-  const demoBalanceUsdt = useDemoStore((s) => s.demoBalanceUsdt);
+  const demoSimulatedBalanceUsdt = useDemoSimulatedBalanceUsdt();
 
   const refreshWallet = useCallback(async () => {
     if (!hasApiBase()) return;
@@ -100,11 +101,11 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (state.mode === "mock") return; // mock balance is synthetic — don't reset
-    const effectiveBalance = isDemoMode ? demoBalanceUsdt : (state.wallet?.balanceUsdt ?? 0);
+    const effectiveBalance = isDemoMode ? demoSimulatedBalanceUsdt : (state.wallet?.balanceUsdt ?? 0);
     if (effectiveBalance > 0) return;
     if (!state.botRunning) return;
     setState((s) => ({ ...s, botRunning: false }));
-  }, [state.botRunning, state.wallet?.balanceUsdt, state.mode, isDemoMode, demoBalanceUsdt]);
+  }, [state.botRunning, state.wallet?.balanceUsdt, state.mode, isDemoMode, demoSimulatedBalanceUsdt]);
 
   useEffect(() => {
     if (isDemoMode) return;
