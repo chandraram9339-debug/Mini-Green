@@ -37,6 +37,9 @@ if [[ -f "$PROJECT_ROOT/package.json" ]]; then
   corepack enable >/dev/null 2>&1 || true
   corepack prepare pnpm@10.33.0 --activate >/dev/null 2>&1 || true
   pnpm install
+  echo
+  echo "== Rebuild better-sqlite3 (обязательно при смене major Node на сервере) =="
+  pnpm rebuild better-sqlite3 --filter miniapp-backend
   pnpm --filter miniapp-backend build
   pnpm --filter miniapp-frontend build
   pnpm --filter admin-panel build

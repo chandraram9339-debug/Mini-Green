@@ -10,6 +10,7 @@ git pull --ff-only origin main
 corepack enable >/dev/null 2>&1 || true
 corepack prepare pnpm@10.33.0 --activate >/dev/null 2>&1 || true
 pnpm install
+pnpm rebuild better-sqlite3 --filter miniapp-backend
 pnpm --filter miniapp-backend build
 pm2 restart "$PM2_APP_NAME" --update-env
 sleep 1
