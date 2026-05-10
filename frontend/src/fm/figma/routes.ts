@@ -15,6 +15,7 @@ export const routes = {
   withdrawConfirm: "/withdraw/confirm",
   withdrawDone: "/withdraw/done",
   depositTopUp: "/deposit/top-up",
+  demoTopUp: "/demo/top-up",
   seedCode: "/settings/seed-code",
   userAgreement: "/settings/user-agreement",
 } as const;

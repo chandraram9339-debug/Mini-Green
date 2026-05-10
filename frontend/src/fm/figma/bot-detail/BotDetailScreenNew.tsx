@@ -41,8 +41,8 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { consumePostOnboardingStartHighlight } from "../../onboarding-tour/onboardingStorage";
 import { useApplyBotTradingState } from "../../hooks/useApplyBotTradingState";
+import { useEffectiveWalletDisplay } from "../../hooks/useEffectiveWalletDisplay";
 import { useAppSession } from "../../session/useAppSession";
-import { useWalletDisplay } from "../useWalletDisplay";
 import { appBarLogoUrl } from "../assets/appBarShared";
 import { SkeletonChart, SkeletonFeedRows } from "../../components/Skeleton/SkeletonBlock";
 import { BotJournalTradeCard } from "./BotJournalTradeCard";
@@ -175,7 +175,7 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
 export default function BotDetailScreenNew() {
   const { t } = useFmLocale();
   const { phase, botRunning, notificationUnreadCount } = useAppSession();
-  const { balanceUsdt: balance } = useWalletDisplay();
+  const { balanceUsdt: balance } = useEffectiveWalletDisplay();
   const { applyBotState, botSwitchLoading } = useApplyBotTradingState();
 
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
@@ -500,9 +500,7 @@ export default function BotDetailScreenNew() {
           className={s.statsSection}
           aria-label={fromJournal ? t("bot.statsAriaJournal") : t("bot.statsAriaAlgo")}
         >
-          <h2 className={s.sectionTitle}>{t("bot.periodTitle")}</h2>
-
-          {/* Chart comes first — above the period tabs; dim + spinner while period data reloads */}
+          {/* Chart first — title below chart per layout; dim + spinner while period data reloads */}
           <div className={s.chartAreaWrap} data-tour-id="trading-chart">
             <div className={journalLoading ? s.chartDimmed : undefined}>
               <TradingChart points={chartPoints} />
@@ -517,6 +515,8 @@ export default function BotDetailScreenNew() {
               </div>
             ) : null}
           </div>
+
+          <h2 className={s.sectionTitle}>{t("bot.periodTitle")}</h2>
 
           {/* Timeframe tabs */}
           <div className={s.periodTabs} role="tablist" aria-label={t("bot.periodTabsAria")}>

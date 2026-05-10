@@ -8,6 +8,7 @@ import { fetchUiSettings, mergeUiSettingsFromWallet } from "../api/fetchUiSettin
 import { fetchWalletSnapshot } from "../api/fetchWallet";
 import { setStoredAccessToken } from "../api/http";
 import { mergeWalletSnapshots } from "../api/mergeWallets";
+import { useDemoStore } from "../stores/demoStore";
 import {
   AppSessionContext,
   type AppSessionContextValue,
@@ -42,6 +43,9 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
     notificationUnreadCount: 0,
     botRunning: readInitialBotRunning(),
   });
+
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
+  const demoBalanceUsdt = useDemoStore((s) => s.demoBalanceUsdt);
 
   const refreshWallet = useCallback(async () => {
     if (!hasApiBase()) return;
@@ -95,18 +99,20 @@ export function AppSessionProvider({ children }: { children: React.ReactNode }) 
   }, [state.botRunning]);
 
   useEffect(() => {
-    if (state.mode === "mock") return;          // mock balance is synthetic — don't reset
-    if ((state.wallet?.balanceUsdt ?? 0) > 0) return;
+    if (state.mode === "mock") return; // mock balance is synthetic — don't reset
+    const effectiveBalance = isDemoMode ? demoBalanceUsdt : (state.wallet?.balanceUsdt ?? 0);
+    if (effectiveBalance > 0) return;
     if (!state.botRunning) return;
     setState((s) => ({ ...s, botRunning: false }));
-  }, [state.botRunning, state.wallet?.balanceUsdt, state.mode]);
+  }, [state.botRunning, state.wallet?.balanceUsdt, state.mode, isDemoMode, demoBalanceUsdt]);
 
   useEffect(() => {
+    if (isDemoMode) return;
     const enabled = state.wallet?.botTradingEnabled;
     if (typeof enabled !== "boolean") return;
     if (state.botRunning === enabled) return;
     setState((s) => ({ ...s, botRunning: enabled }));
-  }, [state.botRunning, state.wallet?.botTradingEnabled]);
+  }, [isDemoMode, state.botRunning, state.wallet?.botTradingEnabled]);
 
   useEffect(() => {
     if (appSessionBootStarted) return;

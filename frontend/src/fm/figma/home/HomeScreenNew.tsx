@@ -31,8 +31,9 @@ import {
   type GraphicPoint,
 } from "../components/tradingChartPoints";
 import { useApplyBotTradingState } from "../../hooks/useApplyBotTradingState";
+import { useEffectiveWalletDisplay } from "../../hooks/useEffectiveWalletDisplay";
 import { useAppSession } from "../../session/useAppSession";
-import { useWalletDisplay } from "../useWalletDisplay";
+import { useDemoStore } from "../../stores/demoStore";
 import { routes } from "../routes";
 import type { BotTradingSnapshot } from "../../api/typesBotTrading";
 import { appBarLogoUrl } from "../assets/appBarShared";
@@ -106,23 +107,31 @@ function PerformanceChart({
   points,
   yAxis,
   fixedYDomain,
+  variant = "live",
 }: {
   points: GraphicPoint[];
   yAxis: "percent" | "usdt";
   fixedYDomain?: [number, number];
+  /** В демо линия и заливка — акцентный красный как у Stop. */
+  variant?: "live" | "demo";
 }) {
   const gradId = useId().replace(/:/g, "");
+  const suffix = variant === "demo" ? "demo" : "live";
+  const gradIdFull = `${gradId}-${suffix}`;
   const geom = buildChartGeom(points, yAxis, {
     plotInsetBottom: CHART_HOME_PLOT_INSET_BOTTOM,
     ...(fixedYDomain ? { fixedYDomain } : {}),
   });
   const yPct = 100 / CHART_VIEWBOX_HEIGHT;
   const nTicks = geom.yTicks.length;
+  const lineColor = variant === "demo" ? "#ff0000" : "#40FF96";
+  const gradTop = variant === "demo" ? "#ff0000" : "#24F180";
+  const gradTopOpacity = variant === "demo" ? 0.28 : 0.35;
 
   return (
     <div className={s.chartWrap}>
       <div className={s.chartFrame}>
-        <div className={s.chartGridLayer} aria-hidden>
+        <div className={s.chartGridLayer} aria-hidden="true">
           {geom.yTicks.map((t, i) => (
             <div
               key={i}
@@ -149,23 +158,23 @@ function PerformanceChart({
           >
             <defs>
               <linearGradient
-                id={gradId}
+                id={gradIdFull}
                 x1="162.5"
                 y1="0"
                 x2="162.5"
                 y2="122"
                 gradientUnits="userSpaceOnUse"
               >
-                <stop stopColor="#24F180" stopOpacity="0.35" />
+                <stop stopColor={gradTop} stopOpacity={gradTopOpacity} />
                 <stop offset="1" stopColor="white" stopOpacity="0" />
               </linearGradient>
             </defs>
             {geom.isEmpty ? null : (
               <>
-                <path d={geom.pathArea} fill={`url(#${gradId})`} />
+                <path d={geom.pathArea} fill={`url(#${gradIdFull})`} />
                 <path
                   d={geom.pathLine}
-                  stroke="#40FF96"
+                  stroke={lineColor}
                   strokeWidth="2.35"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
@@ -182,10 +191,27 @@ function PerformanceChart({
 /* ─── Главный экран ──────────────────────────────────────────── */
 export default function HomeScreenNew() {
   const { t } = useFmLocale();
+  const navigate = useNavigate();
   const { phase, botRunning, notificationUnreadCount, uiSettings } = useAppSession();
   const { applyBotState, botSwitchLoading } = useApplyBotTradingState();
-  const { balanceUsdt, referralReceivedUsdt, positiveBalanceStartedAt, cumulativeDepositsUsdt } =
-    useWalletDisplay();
+  const demoBalanceUsdt = useDemoStore((s) => s.demoBalanceUsdt);
+  const setDemoMode = useDemoStore((s) => s.setDemoMode);
+  const {
+    balanceUsdt,
+    referralReceivedUsdt,
+    positiveBalanceStartedAt,
+    cumulativeDepositsUsdt,
+    isDemoMode,
+  } = useEffectiveWalletDisplay();
+
+  const selectLiveAccount = () => setDemoMode(false);
+  const selectDemoAccount = () => {
+    if (demoBalanceUsdt <= 0) {
+      navigate(routes.demoTopUp);
+      return;
+    }
+    setDemoMode(true);
+  };
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   const isBotActive = balanceUsdt > 0 && botRunning;
@@ -222,7 +248,7 @@ export default function HomeScreenNew() {
     void load();
     const id = window.setInterval(() => void load(), 5_000);
     return () => { cancelled = true; window.clearInterval(id); };
-  }, [apiSessionReady]);
+  }, [apiSessionReady, isDemoMode]);
 
   useEffect(() => {
     if (!hasApiBase() || !apiSessionReady) {
@@ -267,7 +293,7 @@ export default function HomeScreenNew() {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [apiSessionReady]);
+  }, [apiSessionReady, isDemoMode]);
 
   /** x: сумма всех подтверждённых пополнений (API); до выката — fallback на баланс. z: balanceUsdt. */
   const depositTotalUsdt = useMemo(() => {
@@ -325,6 +351,28 @@ export default function HomeScreenNew() {
             <div className={s.balanceRow}>
               <div className={s.balanceLeft}>
                 <div className={s.balanceTitle}>{t("home.totalBalance")}</div>
+                <div
+                  className={s.accountModeToggle}
+                  role="group"
+                  aria-label={t("demo.modeAria")}
+                >
+                  <button
+                    type="button"
+                    className={`${s.accountModeBtn}${!isDemoMode ? ` ${s.accountModeBtnActiveLive}` : ""}`}
+                    aria-pressed={!isDemoMode}
+                    onClick={selectLiveAccount}
+                  >
+                    {t("demo.realAccount")}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${s.accountModeBtn}${isDemoMode ? ` ${s.accountModeBtnActiveDemo}` : ""}`}
+                    aria-pressed={isDemoMode}
+                    onClick={selectDemoAccount}
+                  >
+                    {t("demo.demoAccount")}
+                  </button>
+                </div>
                 <div className={s.balanceAmount}>
                   <span className={s.balanceValue}>{balanceUsdt.toFixed(2)}</span>
                   <span className={s.balanceCurrency}>USDT</span>
@@ -339,7 +387,11 @@ export default function HomeScreenNew() {
               </div>
 
               <div className={s.balanceActions}>
-                <Link to={routes.depositTopUp} className={`${s.btnTopUp} fm-interactive-pill`} aria-label={t("home.topUp")}>
+                <Link
+                  to={isDemoMode ? routes.demoTopUp : routes.depositTopUp}
+                  className={`${s.btnTopUp} fm-interactive-pill`}
+                  aria-label={t("home.topUp")}
+                >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="M10 5V15" stroke="black" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
                     <path d="M5 10H15" stroke="black" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
@@ -347,6 +399,19 @@ export default function HomeScreenNew() {
                   <span>{t("home.topUp")}</span>
                 </Link>
 
+                {isDemoMode ? (
+                  <span
+                    className={`${s.btnWithdraw} ${s.btnWithdrawDisabled}`}
+                    aria-disabled="true"
+                    title={t("demo.withdrawDisabled")}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M10 15V5" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                      <path d="M6.25 8.75L10 5L13.75 8.75" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                    </svg>
+                    <span>{t("home.withdraw")}</span>
+                  </span>
+                ) : (
                 <Link to={routes.withdraw} className={`${s.btnWithdraw} fm-interactive-pill`} aria-label={t("home.withdraw")}>
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                     <path d="M10 15V5" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
@@ -354,6 +419,7 @@ export default function HomeScreenNew() {
                   </svg>
                   <span>{t("home.withdraw")}</span>
                 </Link>
+                )}
               </div>
             </div>
           </section>
@@ -367,6 +433,7 @@ export default function HomeScreenNew() {
                 points={chartPoints}
                 yAxis={isBotActive ? "usdt" : "percent"}
                 fixedYDomain={fixedYDomain}
+                variant={isDemoMode ? "demo" : "live"}
               />
             </div>
           </section>

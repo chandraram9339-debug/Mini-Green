@@ -1,0 +1,198 @@
+.page {
+  width: 100%;
+  max-width: var(--fm-layout-column-max-width, 500px);
+  margin: 0 auto;
+  padding: 16px 20px max(24px, env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #0a0a0a;
+  color: #fff;
+  font-family: "Outfit", -apple-system, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.backBtn:focus-visible {
+  outline: 2px solid rgba(255, 0, 0, 0.55);
+  outline-offset: 2px;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  cursor: pointer;
+  text-align: start;
+  min-height: 72px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cardSelected {
+  border-color: rgba(255, 0, 0, 0.55);
+  background: rgba(255, 0, 0, 0.1);
+  box-shadow: 0 0 0 1px rgba(255, 0, 0, 0.2);
+}
+
+.cardLocked {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cardLocked.cardSelected {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: none;
+}
+
+.lockedBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.lockedHint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.resetBannerBtn {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 0, 0, 0.45);
+  background: rgba(255, 0, 0, 0.12);
+  color: #ff4d4d;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.resetBannerBtn:hover {
+  background: rgba(255, 0, 0, 0.18);
+}
+
+.resetBannerBtn:focus-visible {
+  outline: 2px solid rgba(255, 80, 80, 0.75);
+  outline-offset: 2px;
+}
+
+.card:focus-visible {
+  outline: 2px solid rgba(255, 0, 0, 0.45);
+  outline-offset: 2px;
+}
+
+.cardAmount {
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardHint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.primaryBtn {
+  margin-top: auto;
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 54px;
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff4d4d;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primaryBtn:hover {
+  background: rgba(255, 0, 0, 0.28);
+}
+
+.primaryBtn:focus-visible {
+  outline: 2px solid rgba(255, 80, 80, 0.8);
+  outline-offset: 2px;
+}
+
+.primaryBtnDisabled,
+.primaryBtn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (min-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

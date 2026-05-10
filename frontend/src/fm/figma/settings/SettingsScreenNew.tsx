@@ -97,6 +97,21 @@ function FileIcon() {
   );
 }
 
+function DemoTopUpIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 3V21M12 3L8 7M12 3L16 7"
+        stroke="#ffffff"
+        strokeWidth="1.6"
+        strokeLinecap="square"
+        strokeLinejoin="round"
+      />
+      <path d="M5 13H19" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="square" />
+    </svg>
+  );
+}
+
 function OnboardingTourIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -319,6 +334,22 @@ export default function SettingsScreenNew() {
             <span className={s.rowLabel} key={`${locale}-settings-vibration`}>{tx("settings.vibration")}</span>
             <Toggle pressed={vibrationOn} onToggle={toggleVibration} ariaLabel={tx("settings.vibration")} />
           </div>
+        </div>
+
+        <div className={s.divider} />
+
+        <div className={s.section}>
+          <Link to={routes.demoTopUp} className={s.row}>
+            <span className={s.rowIcon}>
+              <DemoTopUpIcon />
+            </span>
+            <span className={s.rowLabel} key={`${locale}-settings-demo-topup`}>
+              {tx("demo.settingsTopUp")}
+            </span>
+            <span className={s.rowChevron}>
+              <ChevronRightIcon />
+            </span>
+          </Link>
         </div>
 
         <div className={s.divider} />

@@ -103,6 +103,19 @@ export const messagesEn = {
   "home.channelAria": "Open project channel",
   "home.chatAria": "Open project chat",
 
+  "demo.realAccount": "Live",
+  "demo.demoAccount": "Demo",
+  "demo.modeAria": "Account mode: live or paper trading",
+  "demo.topUpTitle": "Demo funds",
+  "demo.topUpLead": "Pick a virtual amount in USDT. Nothing is charged — for practice only.",
+  "demo.virtualUsdt": "Virtual USDT",
+  "demo.getFunds": "Get demo funds",
+  "demo.withdrawDisabled": "Unavailable in demo",
+  "demo.settingsTopUp": "Demo top-up",
+  "demo.topUpLockedHint":
+    "You already have virtual funds. Reset the demo account to pick a new amount.",
+  "demo.resetDemoOnTopUp": "Reset demo account",
+
   "support.title": "Support",
   "support.chat": "Support Chat",
 
@@ -408,6 +421,19 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "home.chat": "Chat",
   "home.channelAria": "Abrir canal del proyecto",
   "home.chatAria": "Abrir chat del proyecto",
+
+  "demo.realAccount": "Real",
+  "demo.demoAccount": "Demo",
+  "demo.modeAria": "Modo de cuenta: real o paper trading",
+  "demo.topUpTitle": "Fondos demo",
+  "demo.topUpLead": "Elige un importe virtual en USDT. No se cobra nada — solo práctica.",
+  "demo.virtualUsdt": "USDT virtual",
+  "demo.getFunds": "Obtener fondos demo",
+  "demo.withdrawDisabled": "No disponible en demo",
+  "demo.settingsTopUp": "Recarga demo",
+  "demo.topUpLockedHint":
+    "Ya tienes fondos virtuales. Restablece la cuenta demo para elegir otro importe.",
+  "demo.resetDemoOnTopUp": "Restablecer cuenta demo",
 
   "support.title": "Soporte",
   "support.chat": "Chat de soporte",

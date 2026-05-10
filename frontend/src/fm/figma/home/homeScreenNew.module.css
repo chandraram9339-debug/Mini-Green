@@ -226,6 +226,49 @@
   text-align: start;
 }
 
+.accountModeToggle {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  width: 100%;
+  max-width: 248px;
+  margin: 0 0 8px;
+  box-sizing: border-box;
+}
+
+.accountModeBtn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  background: rgba(255, 255, 255, 0.2);
+  color: #000;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.15;
+  min-height: 28px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.accountModeBtn:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.35);
+  outline-offset: 2px;
+}
+
+.accountModeBtnActiveLive {
+  border-color: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.accountModeBtnActiveDemo {
+  border-color: rgba(255, 0, 0, 0.65);
+  background: rgba(255, 0, 0, 0.14);
+  color: #8b0000;
+}
+
 .balanceAmount {
   display: flex;
   align-items: flex-start;
@@ -368,6 +411,12 @@
   font-weight: 400;
   line-height: 1;
   color: #fff;
+}
+
+.btnWithdrawDisabled {
+  opacity: 0.42;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* ===== BODY (Dark) ===== */

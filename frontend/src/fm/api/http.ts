@@ -1,3 +1,5 @@
+import { useDemoStore } from "../stores/demoStore";
+
 const STORAGE_TOKEN_KEY = "fm_api_access_token";
 
 export function getStoredAccessToken(): string | null {
@@ -30,6 +32,10 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   if (token) headers.set("Authorization", `Bearer ${token}`);
   const initData = window.Telegram?.WebApp?.initData;
   if (initData) headers.set("X-Telegram-Init-Data", initData);
+  /** Сервер может отдавать журнал/ленту для paper-аккаунта при том же JWT. */
+  if (useDemoStore.getState().isDemoMode) {
+    headers.set("X-FM-Paper-Trading", "1");
+  }
 
   return fetch(apiUrl(path), {
     ...init,

@@ -5,24 +5,31 @@ import { hasApiBase } from "../api/env";
 import { setBotTradingState } from "../api/setBotTradingState";
 import { routes } from "../figma/routes";
 import { useAppSession } from "../session/useAppSession";
-import { useWalletDisplay } from "../figma/useWalletDisplay";
+import { useEffectiveWalletDisplay } from "./useEffectiveWalletDisplay";
 
 /**
- * Start/Stop бота — единая логика с {@link BotDetailScreenNew} (депозит при нуле, mock/API, refresh кошелька).
+ * Start/Stop бота — единая логика с {@link BotDetailScreenNew}.
+ * В демо-режиме переключение только локальное (без API), баланс берётся из paper store.
  */
 export function useApplyBotTradingState() {
   const navigate = useNavigate();
   const { mode, setBotRunning, refreshWallet } = useAppSession();
-  const { balanceUsdt: balance } = useWalletDisplay();
+  const { balanceUsdt: balance, isDemoMode } = useEffectiveWalletDisplay();
   const [botSwitchLoading, setBotSwitchLoading] = useState(false);
 
   const applyBotState = useCallback(
     async (enabled: boolean) => {
       if (botSwitchLoading) return;
       if (balance <= 0 && enabled) {
-        navigate(routes.depositTopUp);
+        navigate(isDemoMode ? routes.demoTopUp : routes.depositTopUp);
         return;
       }
+
+      if (isDemoMode) {
+        setBotRunning(enabled);
+        return;
+      }
+
       if (!hasApiBase() || mode === "mock") {
         setBotRunning(enabled);
         return;
@@ -42,7 +49,7 @@ export function useApplyBotTradingState() {
         setBotSwitchLoading(false);
       }
     },
-    [balance, botSwitchLoading, mode, navigate, refreshWallet, setBotRunning],
+    [balance, botSwitchLoading, isDemoMode, mode, navigate, refreshWallet, setBotRunning],
   );
 
   return { applyBotState, botSwitchLoading };

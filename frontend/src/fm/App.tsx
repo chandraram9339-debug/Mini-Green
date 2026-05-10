@@ -14,6 +14,7 @@ import WithdrawConfirmScreen from "./figma/withdraw/WithdrawConfirmScreenNew";
 import WithdrawDoneScreen from "./figma/withdraw/WithdrawDoneScreenNew";
 import TopUpScreenNew from "./figma/top-up/TopUpScreenNew";
 import BotDetailScreenNew from "./figma/bot-detail/BotDetailScreenNew";
+import DemoTopUpScreen from "./figma/demo-topup/DemoTopUpScreen";
 import HomeScreenNew from "./figma/home/HomeScreenNew";
 import { FmMainLayout } from "./figma/layout/FmMainLayout";
 import SeedCodeScreen from "./figma/seed-code/SeedCodeScreenNew";
@@ -58,6 +59,7 @@ export default function App() {
                 <Route path={routes.notifications} element={<NotificationsScreenNew />} />
                 <Route path={routes.settings} element={<SettingsScreenNew />} />
                 <Route path={routes.depositTopUp} element={<TopUpScreenNew />} />
+                <Route path={routes.demoTopUp} element={<DemoTopUpScreen />} />
                 <Route path={routes.seedCode} element={<SeedCodeScreen />} />
                 <Route path={routes.userAgreement} element={<UserAgreementScreen />} />
               </Route>

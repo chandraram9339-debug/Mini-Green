@@ -430,6 +430,10 @@
   text-align: center;
 }
 
+.statsSection .chartAreaWrap + .sectionTitle {
+  margin-top: 16px;
+}
+
 .sectionTitle {
   color: #ffffff;
   font-family: "Outfit", sans-serif;
@@ -533,7 +537,7 @@
   text-align: right;
   color: #3aca7b;
   font-family: "Outfit", sans-serif;
-  font-size: 6px;
+  font-size: clamp(7px, 2.1vw, 9px);
   line-height: 1;
   letter-spacing: 0;
   white-space: nowrap;
@@ -549,7 +553,8 @@
 
 .chartSvg {
   width: 100%;
-  height: auto;
+  height: 100%;
+  min-height: clamp(148px, 38vw, 188px);
   display: block;
   vertical-align: top;
 }
