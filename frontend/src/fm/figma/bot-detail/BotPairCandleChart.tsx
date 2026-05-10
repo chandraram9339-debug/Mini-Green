@@ -75,6 +75,8 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
         background: { type: ColorType.Solid, color: "#0a0a0a" },
         textColor: "rgba(255,255,255,0.7)",
         fontFamily: '"Outfit", system-ui, sans-serif',
+        /** Скрыть логотип TradingView на холсте (атрибуция по лицензии — см. https://www.tradingview.com/lightweight-charts/). */
+        attributionLogo: false,
       },
       grid: {
         vertLines: { color: "rgba(255,255,255,0.07)" },
