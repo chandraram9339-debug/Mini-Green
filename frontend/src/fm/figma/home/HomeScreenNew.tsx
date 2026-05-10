@@ -469,6 +469,11 @@ export default function HomeScreenNew() {
               </button>
             </div>
           </div>
+          {/*
+            FmMainLayout: .scroll всегда на всю высоту viewport → под коротким контентом виден «пол» скролла.
+            Хвост забирает лишнюю высоту под #0a0a0a, не трогая gap между ценой и кнопками (только Home).
+          */}
+          <div className={s.scrollTail} aria-hidden="true" />
         </main>
 
       </div>

@@ -7,7 +7,11 @@
 /* ===== ROOT SCREEN ===== */
 .screen {
   width: 100%;
-  flex: 0 0 auto;
+  /*
+   * Родитель — .scroll во FmMainLayout (flex:1, полная высота). flex:1 здесь растягивает экран на всю эту высоту,
+   * иначе под коротким контентом остаётся пустой «пол» скролла над таббаром.
+   */
+  flex: 1 1 auto;
   min-height: 0;
   background-color: #0a0a0a;
   display: flex;
@@ -20,7 +24,7 @@
 .container {
   width: 100%;
   max-width: var(--fm-layout-column-max-width, 100%);
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 0;
   background-color: #0a0a0a;
   display: flex;
@@ -364,7 +368,8 @@
 
 /* ===== BODY (Dark) ===== */
 .body {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
@@ -372,6 +377,13 @@
   min-width: 0;
   overflow-x: hidden;
   overflow-y: visible;
+}
+
+/* Поглощает вертикальный «хвост» под кнопками вместо пустого фона .scroll (только Home). */
+.scrollTail {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 /* ===== CHART ===== */
