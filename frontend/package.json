@@ -12,6 +12,7 @@
     "figma:design-system": "node scripts/figma-export-design-system.mjs"
   },
   "dependencies": {
+    "lightweight-charts": "4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-qr-code": "^2.0.18",

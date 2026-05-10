@@ -1,0 +1,47 @@
+.wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Высота как у линейного графика доходности, чуть запас под шкалу справа */
+.host {
+  width: 100%;
+  min-height: clamp(168px, 42vw, 210px);
+  height: clamp(168px, 42vw, 210px);
+  box-sizing: border-box;
+}
+
+.pairLabel {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 4;
+  font-family: "Outfit", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
+
+.status,
+.error {
+  margin-top: 8px;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.error {
+  color: #ff8888;
+}
+
+.errorDetail {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.85;
+  word-break: break-word;
+}
