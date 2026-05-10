@@ -374,7 +374,7 @@
 .body {
   flex: 1 1 auto;
   min-height: 0;
-  padding: 20px 20px 24px;
+  padding: 20px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -431,8 +431,8 @@
 .chartFrame {
   position: relative;
   width: 100%;
-  /* Было 134px — чуть выше, как на референсе; clamp для мобилки / десктопа */
-  height: clamp(158px, 34vw, 192px);
+  /* Выше референс: больше площадь графика → визуально меньше «пустого» низа экрана */
+  height: clamp(198px, 46vw, 248px);
   min-height: 0;
 }
 
@@ -448,36 +448,39 @@
   right: 0;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   transform: translateY(-50%);
   box-sizing: border-box;
 }
 
 .chartScaleLabel {
-  width: 24px;
-  min-width: 24px;
+  width: 42px;
+  min-width: 42px;
   flex-shrink: 0;
-  font-size: 6px;
-  font-weight: 400;
+  /* Было 6px — мелко; растём без смены числа линий (лейаут те же top:%). */
+  font-size: clamp(9px, 2.5vw, 11px);
+  font-weight: 500;
   color: #3aca7b;
   text-align: right;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1;
 }
 
 .chartGridLine {
   flex: 1;
   min-width: 0;
-  border-top-width: 0.6px;
+  border-top-width: 1px;
   border-top-style: solid;
 }
 
 .chartSvgOverlay {
   position: absolute;
-  left: 28px;
+  /* 42px подпись + 6px gap — как раньше 24+4 под шкалу */
+  left: 48px;
   top: 0;
   right: 0;
   bottom: 0;

@@ -88,7 +88,7 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
 }
 
 /* ─── График производительности ─────────────────────────────── */
-/** Как в `Figma green/Первый экран старт стоп/client/components/PriceChart.tsx`: шкала 24px + gap 4px, линии сетки — border-top по строкам; SVG только заливка + кривая, inset слева 28px. */
+/** Как в старт/стоп: шкала слева + gap; подписи шире (homeScreenNew .chartScaleLabel), overlay left синхронизирован в CSS. */
 function homeChartGridLineColor(tickIndex: number, tickCount: number): string {
   if (tickCount === 7) {
     return tickIndex === 3 || tickIndex === 4 || tickIndex === 5
@@ -166,7 +166,7 @@ function PerformanceChart({
                 <path
                   d={geom.pathLine}
                   stroke="#40FF96"
-                  strokeWidth="1.6"
+                  strokeWidth="2.35"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
                 />
