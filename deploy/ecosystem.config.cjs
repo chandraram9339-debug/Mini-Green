@@ -1,8 +1,13 @@
+const path = require("path");
+
+/** Абсолютный cwd: иначе при другом месте вызова `pm2 start` относительный `./backend` может быть неверным. */
+const backendDir = path.join(__dirname, "..", "backend");
+
 module.exports = {
   apps: [
     {
       name: "miniapp-backend",
-      cwd: "./backend",
+      cwd: backendDir,
       script: "dist/index.js",
       interpreter: "node",
       exec_mode: "fork",
