@@ -45,7 +45,7 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
   const navigate = useNavigate();
   const { t } = useFmLocale();
   return (
-    <header className={s.appBar}>
+    <div className={s.appBar}>
       <div className={s.appBarRow}>
         <button
           type="button"
@@ -83,7 +83,7 @@ function AppBar({ bellBadge }: { bellBadge?: number }) {
           </Link>
         </div>
       </div>
-    </header>
+    </div>
   );
 }
 
@@ -360,7 +360,8 @@ export default function HomeScreenNew() {
         </header>
 
         <main className={s.body}>
-          <section className={s.chartSection} aria-label={t("home.chartBalanceAria")} data-tour-id="home-chart">
+          <div className={s.bodyStack}>
+            <section className={s.chartSection} aria-label={t("home.chartBalanceAria")} data-tour-id="home-chart">
             <div className={s.chartWrapper}>
               <PerformanceChart
                 points={chartPoints}
@@ -469,6 +470,8 @@ export default function HomeScreenNew() {
               </button>
             </div>
           </div>
+          </div>
+
           {/*
             FmMainLayout: .scroll всегда на всю высоту viewport → под коротким контентом виден «пол» скролла.
             Хвост забирает лишнюю высоту под #0a0a0a, не трогая gap между ценой и кнопками (только Home).

@@ -30,7 +30,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-x: hidden;
+  /* hidden ломает position:sticky у app bar; clip — нет */
+  overflow-x: clip;
 }
 
 /* ===== HEADER (Green) ===== */
@@ -87,15 +88,18 @@
 
 /* ===== APP BAR ===== */
 .appBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
   padding: var(--fm-appbar-padding);
   min-height: var(--fm-appbar-row-height);
-  position: relative;
-  z-index: 1;
-  background: transparent;
+  /* При скролле шапка с балансом уезжает — полоса остаётся на зелёном фоне */
+  background-color: #2edd7d;
+  box-shadow: 0 1px 0 rgba(10, 10, 10, 0.08);
 }
 
 .appBarRow {
@@ -373,10 +377,19 @@
   padding: 20px 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 3vw, 16px);
+  gap: 0;
   min-width: 0;
   overflow-x: hidden;
   overflow-y: visible;
+}
+
+/* График + статус + кнопки: общий row-gap без зазора перед .scrollTail */
+.bodyStack {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 3.2vw, 18px);
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 /* Поглощает вертикальный «хвост» под кнопками вместо пустого фона .scroll (только Home). */
@@ -418,8 +431,9 @@
 .chartFrame {
   position: relative;
   width: 100%;
-  height: 134px;
-  min-width: 0;
+  /* Было 134px — чуть выше, как на референсе; clamp для мобилки / десктопа */
+  height: clamp(158px, 34vw, 192px);
+  min-height: 0;
 }
 
 .chartGridLayer {
@@ -541,7 +555,7 @@
 .botActionGrid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
   width: 100%;
   min-width: 0;
 }
@@ -549,7 +563,7 @@
 .botActionRow {
   display: flex;
   flex-direction: row;
-  gap: 14px;
+  gap: 17px;
   width: 100%;
   min-width: 0;
 }
@@ -651,11 +665,14 @@
     padding-right: max(14px, env(safe-area-inset-right, 0px));
     padding-top: 16px;
     padding-bottom: 20px;
-    gap: 14px;
+  }
+
+  .bodyStack {
+    gap: clamp(12px, 3.5vw, 16px);
   }
 
   .botActionRow {
-    gap: 10px;
+    gap: 15px;
   }
 
   .btnStartHome,
