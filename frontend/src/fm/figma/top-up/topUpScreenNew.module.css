@@ -32,12 +32,13 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  margin-top: 4px;
 }
 
 /* Policy line — matches backend fee snapshot */
 .feeNote {
   width: 100%;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   padding: 0;
   font-size: 12px;
   line-height: 1.5;
@@ -185,31 +186,186 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: flex-start;
   gap: 0;
-  padding: 24px 20px 24px;
+  padding: 20px 20px 32px;
+  width: 100%;
 }
 
-/* ── Receive title ───────────────────────────────────────────── */
-.receiveTitle {
+/* ── Method chooser (step 1) ─────────────────────────────────── */
+.methodChooser {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.heroTitle {
   font-family: "Outfit", sans-serif;
-  font-size: 20px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 600;
   color: #ffffff;
   text-align: center;
-  margin: 0 0 20px;
+  margin: 0 0 10px;
   line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.52);
+  text-align: center;
+  margin: 0 0 28px;
+  line-height: 1.45;
+}
+
+.methodGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.methodCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  padding: 22px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  cursor: pointer;
+  font-family: "Outfit", sans-serif;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.methodCard:active {
+  transform: scale(0.99);
+}
+
+.methodCard:focus-visible {
+  outline: 2px solid #40ff96;
+  outline-offset: 3px;
+}
+
+.methodCardPrimary {
+  border-color: rgba(64, 255, 150, 0.45);
+  background: linear-gradient(145deg, rgba(64, 255, 150, 0.12) 0%, rgba(25, 40, 32, 0.55) 100%);
+  box-shadow: 0 0 0 1px rgba(64, 255, 150, 0.08) inset;
+}
+
+.methodIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  color: #40ff96;
+}
+
+.methodCard:not(.methodCardPrimary) .methodIcon {
+  color: rgba(94, 234, 212, 0.95);
+}
+
+.methodCardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 6px;
+}
+
+.methodCardDesc {
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── TRC20 / TON steps ─────────────────────────────────────── */
+.stepSection {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.stepBack {
+  align-self: flex-start;
+  margin: 0 0 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(64, 255, 150, 0.9);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.stepBack:focus-visible {
+  outline: 2px solid #40ff96;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.stepTitle {
+  font-family: "Outfit", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.stepHint {
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.48);
+  margin: 0 0 22px;
+}
+
+.tonIntro {
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 20px;
+}
+
+.tonPanel {
+  width: 100%;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(19, 20, 19, 0.85);
+  box-sizing: border-box;
 }
 
 /* ── QR code ─────────────────────────────────────────────────── */
 .qrWrap {
-  width: 200px;
-  height: 200px;
+  width: 240px;
+  height: 240px;
   flex-shrink: 0;
-  margin: 0 0 30px;
-  border-radius: 12px;
-  background-color: transparent;
+  margin: 0 auto 24px;
+  border-radius: 16px;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,8 +373,8 @@
 }
 
 .qrImg {
-  width: 200px;
-  height: 200px;
+  width: 240px;
+  height: 240px;
   display: block;
   object-fit: contain;
 }
@@ -227,7 +383,7 @@
 .addressCard {
   width: 100%;
   background-color: #131413;
-  border-radius: 24px;
+  border-radius: 20px;
   padding: 15px 20px;
   min-height: 76px;
   margin: 0 0 12px;
@@ -287,7 +443,7 @@
 .btnCopy {
   background-color: #191919;
   color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 /* Paid button */
@@ -296,22 +452,30 @@
   color: #191919;
 }
 
-.tonActions {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
 .tonActionsInner {
   width: 100%;
 }
 
-.btnTon {
-  background-color: transparent;
-  color: #5eead4;
-  border: 1.5px solid rgba(94, 234, 212, 0.75);
+.btnTonPrimary {
+  background: linear-gradient(180deg, #40ff96 0%, #2edd7d 100%);
+  color: #0a0a0a;
+  border: none;
+  font-weight: 600;
 }
 
-.btnTon:disabled {
+.btnTonPrimary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btnTonSecondary {
+  background: transparent;
+  color: rgba(94, 234, 212, 0.95);
+  border: 1.5px solid rgba(94, 234, 212, 0.55);
+  font-weight: 500;
+}
+
+.btnTonSecondary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }

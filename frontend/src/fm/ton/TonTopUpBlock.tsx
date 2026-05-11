@@ -6,6 +6,9 @@ import { hapticError, hapticLight, hapticSuccess } from "../telegram/uiFeedback"
 export type TonTopUpBlockProps = {
   wrapClassName?: string;
   buttonClassName?: string;
+  /** Если заданы — первая/вторая кнопка со своими стилями (иначе обе через `buttonClassName`). */
+  primaryButtonClassName?: string;
+  secondaryButtonClassName?: string;
   tonCentralAddress?: string | null;
   jettonMaster?: string | null;
   /** Telegram numeric id as string (comment / memo). */
@@ -20,6 +23,8 @@ export type TonTopUpBlockProps = {
 export function TonTopUpBlock({
   wrapClassName,
   buttonClassName,
+  primaryButtonClassName,
+  secondaryButtonClassName,
   tonCentralAddress,
   jettonMaster,
   tgComment,
@@ -32,6 +37,8 @@ export function TonTopUpBlock({
   const central = tonCentralAddress?.trim() ?? "";
   const master = jettonMaster?.trim() ?? "";
   const disabled = !central || busy;
+  const btnPrimary = primaryButtonClassName ?? buttonClassName;
+  const btnSecondary = secondaryButtonClassName ?? buttonClassName;
 
   async function onTon(): Promise<void> {
     if (!central) {
@@ -97,10 +104,10 @@ export function TonTopUpBlock({
       {demoHint ? (
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 8px", lineHeight: 1.4 }}>{t("topup.tonDemoHint")}</p>
       ) : null}
-      <button type="button" className={buttonClassName} disabled={disabled} onClick={() => void onTon()}>
+      <button type="button" className={btnPrimary} disabled={disabled} onClick={() => void onTon()}>
         {t("topup.tonWalletPrimary")}
       </button>
-      <button type="button" className={buttonClassName} style={{ marginTop: 8 }} disabled={disabled || !master} onClick={() => void onJetton()}>
+      <button type="button" className={btnSecondary} style={{ marginTop: 10 }} disabled={disabled || !master} onClick={() => void onJetton()}>
         {t("topup.tonWalletJetton")}
       </button>
     </div>
