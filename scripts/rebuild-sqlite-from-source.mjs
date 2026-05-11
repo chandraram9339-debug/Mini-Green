@@ -70,16 +70,28 @@ if (fs.existsSync(buildDir)) {
 }
 
 const nodedir = resolveNodedir();
+/** На проде без `build-essential` нужен prebuild-бинарник, а не сборка из исходников. Сборка из исходников — только с `FORCE_SQLITE_FROM_SOURCE=1` (или уже выставленным npm_config). */
+const forceFromSource =
+  process.env.FORCE_SQLITE_FROM_SOURCE === "1" ||
+  process.env.npm_config_build_from_source === "true";
+
 console.log(
   `[rebuild-sqlite] Node ${versions.node} NODE_MODULE_VERSION=${versions.modules} execPath=${execPath}`,
 );
 console.log(`[rebuild-sqlite] npm_config_nodedir=${nodedir || "(не задан — node-gyp по умолчанию)"}`);
+console.log(
+  forceFromSource
+    ? "[rebuild-sqlite] режим: сборка из исходников (FORCE_SQLITE_FROM_SOURCE / npm_config_build_from_source)"
+    : "[rebuild-sqlite] режим: prebuild (без make); для from-source: FORCE_SQLITE_FROM_SOURCE=1 pnpm rebuild better-sqlite3 --filter miniapp-backend",
+);
 
 const env = {
   ...process.env,
   PATH: pathWithPreferredNodeBin(),
-  npm_config_build_from_source: "true",
 };
+if (forceFromSource) {
+  env.npm_config_build_from_source = "true";
+}
 if (nodedir) env.npm_config_nodedir = nodedir;
 
 const r = spawnSync(

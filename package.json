@@ -9,7 +9,7 @@
     "build": "pnpm -r run build",
     "smoke": "pnpm --filter miniapp-backend smoke",
     "install:all": "pnpm install",
-    "rebuild:backend-native": "node scripts/rebuild-sqlite-from-source.mjs"
+    "rebuild:backend-native": "FORCE_SQLITE_FROM_SOURCE=1 node scripts/rebuild-sqlite-from-source.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
