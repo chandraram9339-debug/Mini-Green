@@ -5,6 +5,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
+import { useDemoStore } from "../../stores/demoStore";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatDepositFeeFootnote } from "../withdraw/withdrawDraft";
 import {
@@ -112,6 +113,7 @@ export default function TopUpScreenNew() {
   const { t } = useFmLocale();
   const { wallet, confirmDepositPaid, notificationUnreadCount } = useAppSession();
   const { minDepositUsdt, depositFeeBps, depositFeeFixedUsdt } = useWalletDisplay();
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
 
   const [method, setMethod] = useState<TopMethod>("choose");
 
@@ -133,6 +135,10 @@ export default function TopUpScreenNew() {
     const id = window.setTimeout(() => setPaidSuccessVisible(false), 3000);
     return () => window.clearTimeout(id);
   }, [paidSuccessVisible]);
+
+  useEffect(() => {
+    if (isDemoMode && method === "ton") setMethod("trc20");
+  }, [isDemoMode, method]);
 
   function handleAppBarBack(): void {
     if (method !== "choose") {
@@ -202,21 +208,23 @@ export default function TopUpScreenNew() {
                 <span className={s.methodCardDesc}>{t("topup.methodTrc20Subtitle")}</span>
               </button>
 
-              <button type="button" className={s.methodCard} onClick={() => selectMethod("ton")}>
-                <span className={s.methodIcon} aria-hidden>
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <path
-                      d="M20 6L8 12v8l12 6 12-6v-8L20 6z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                    />
-                    <path d="M20 20v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                </span>
-                <span className={s.methodCardTitle}>{t("topup.methodTonTitle")}</span>
-                <span className={s.methodCardDesc}>{t("topup.methodTonSubtitle")}</span>
-              </button>
+              {!isDemoMode ? (
+                <button type="button" className={s.methodCard} onClick={() => selectMethod("ton")}>
+                  <span className={s.methodIcon} aria-hidden>
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                      <path
+                        d="M20 6L8 12v8l12 6 12-6v-8L20 6z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                      />
+                      <path d="M20 20v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <span className={s.methodCardTitle}>{t("topup.methodTonTitle")}</span>
+                  <span className={s.methodCardDesc}>{t("topup.methodTonSubtitle")}</span>
+                </button>
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -295,7 +303,7 @@ export default function TopUpScreenNew() {
           </section>
         ) : null}
 
-        {method === "ton" ? (
+        {method === "ton" && !isDemoMode ? (
           <section className={s.stepSection} aria-label={t("topup.tonStepTitle")}>
             <button type="button" className={s.stepBack} onClick={() => selectMethod("choose")}>
               ← {t("topup.changeMethod")}

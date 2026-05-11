@@ -18,6 +18,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { useAppSession } from "../../session/useAppSession";
 import type { MessageKey } from "../../i18n/messages";
 import { routes } from "../routes";
+import { useDemoStore } from "../../stores/demoStore";
 import { appBarLogoUrl } from "../assets/appBarShared";
 import { SkeletonWalletHistoryRows } from "../../components/Skeleton/SkeletonBlock";
 
@@ -271,6 +272,8 @@ function TransactionRow({ row, tab, t, metaLabel }: RowProps) {
 /* ── Main Screen ─────────────────────────────────────────────── */
 export default function BalanceDepositScreenNew() {
   const { t } = useFmLocale();
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
+  const topUpHref = isDemoMode ? routes.demoTopUp : routes.depositTopUp;
   const { notificationUnreadCount } = useAppSession();
   const { balanceUsdt, depositAddress } = useWalletDisplay();
   const [tab, setTab] = useState<HistoryTab>("deposit");
@@ -333,7 +336,7 @@ export default function BalanceDepositScreenNew() {
             </div>
 
             <div className={s.actionRow}>
-              <Link to={routes.depositTopUp} className={`${s.btnTopUp} fm-interactive-pill`} data-tour-id="wallet-top-up">
+              <Link to={topUpHref} className={`${s.btnTopUp} fm-interactive-pill`} data-tour-id="wallet-top-up">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M12 6V18" stroke="#191919" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />
                   <path d="M6 12H18" stroke="#191919" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="round" />

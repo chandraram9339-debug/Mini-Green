@@ -16,6 +16,7 @@ import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
+import { useDemoStore } from "../../stores/demoStore";
 import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { getHomeChartMode } from "./homeChartMode";
@@ -45,6 +46,8 @@ const homeTabIcons: TabBarIconUrls = {
 export default function HomeScreen() {
   const { t } = useFmLocale();
   const navigate = useNavigate();
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
+  const topUpHref = isDemoMode ? routes.demoTopUp : routes.depositTopUp;
   const { phase, botRunning } = useAppSession();
   const { balanceUsdt, referralReceivedUsdt } = useWalletDisplay();
   const chartMode = getHomeChartMode(balanceUsdt);
@@ -119,7 +122,7 @@ export default function HomeScreen() {
         </div>
 
         <div className="fm-mini-col">
-          <Link to={routes.depositTopUp} className="fm-mini-topup">
+          <Link to={topUpHref} className="fm-mini-topup">
             <img alt="" src={homeAssets.group9} />
             <span>{t("home.topUp")}</span>
           </Link>

@@ -17,6 +17,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import type { MessageKey } from "../../i18n/messages";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
+import { useDemoStore } from "../../stores/demoStore";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatShortAddress } from "../withdraw/withdrawDraft";
 import { depositAssets } from "./depositAssets";
@@ -160,6 +161,8 @@ function staticHistoryBundle(): WalletHistoryBundle {
 export default function BalanceDepositScreen() {
   const { t } = useFmLocale();
   const { balanceUsdt, depositAddress } = useWalletDisplay();
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
+  const topUpHref = isDemoMode ? routes.demoTopUp : routes.depositTopUp;
   const [tab, setTab] = useState<HistoryTab>("deposit");
   const [apiHistory, setApiHistory] = useState<WalletHistoryBundle | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -234,7 +237,7 @@ export default function BalanceDepositScreen() {
             <p className="fm-deposit-balance-addr">{formatShortAddress(depositAddress, 6, 6)}</p>
           </div>
 
-          <Link to={routes.depositTopUp} className="fm-deposit-act fm-deposit-act--topup">
+          <Link to={topUpHref} className="fm-deposit-act fm-deposit-act--topup">
             <span className="fm-deposit-act-icon-wrap">
               <img alt="" src={depositAssets.group11} />
             </span>
@@ -284,7 +287,7 @@ export default function BalanceDepositScreen() {
               </div>
             </div>
             <Link
-              to={routes.depositTopUp}
+              to={topUpHref}
               className={`fm-deposit-tab-chevron${tab === "deposit" ? " fm-deposit-tab-chevron--active" : ""}`}
               aria-label={t("deposit.depositChevronAria")}
               onClick={(e) => e.stopPropagation()}

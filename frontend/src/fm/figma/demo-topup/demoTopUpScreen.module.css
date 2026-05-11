@@ -48,107 +48,14 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Method chooser (step 1) ─────────────────────────────────── */
-.methodChooser {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.heroTitle {
-  margin: 0 0 10px;
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  text-align: center;
-  color: #fff;
-}
-
-.heroSubtitle {
-  margin: 0 0 28px;
+.lead {
+  margin: 0;
   font-size: 14px;
   line-height: 1.45;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.52);
+  color: rgba(255, 255, 255, 0.55);
 }
 
-.methodGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  width: 100%;
-}
-
-.methodCard {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  width: 100%;
-  padding: 22px 20px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
-  cursor: pointer;
-  font-family: inherit;
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.12s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.methodCard:active {
-  transform: scale(0.99);
-}
-
-.methodCard:focus-visible {
-  outline: 2px solid #40ff96;
-  outline-offset: 3px;
-}
-
-.methodCardPrimary {
-  border-color: rgba(64, 255, 150, 0.45);
-  background: linear-gradient(145deg, rgba(64, 255, 150, 0.12) 0%, rgba(25, 40, 32, 0.55) 100%);
-  box-shadow: 0 0 0 1px rgba(64, 255, 150, 0.08) inset;
-}
-
-.methodIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 14px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.25);
-  color: #40ff96;
-}
-
-.methodCard:not(.methodCardPrimary) .methodIcon {
-  color: rgba(94, 234, 212, 0.95);
-}
-
-.methodCardTitle {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  margin-bottom: 6px;
-}
-
-.methodCardDesc {
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* ── Virtual / TON steps ─────────────────────────────────────── */
-.stepFlow {
+.virtualFlow {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -158,108 +65,6 @@
   margin: 0 auto;
   min-height: 0;
   gap: 18px;
-}
-
-.tonStepFlow {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  gap: 4px;
-}
-
-.stepBack {
-  align-self: flex-start;
-  margin: 0 0 4px;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(64, 255, 150, 0.9);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.stepBack:focus-visible {
-  outline: 2px solid #40ff96;
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.stepTitle {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: #fff;
-}
-
-.stepLead {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.tonIntro {
-  margin: 0 0 16px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.tonPanel {
-  width: 100%;
-  padding: 20px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(19, 20, 19, 0.85);
-  box-sizing: border-box;
-}
-
-.tonActionBtn {
-  width: 100%;
-  min-height: 52px;
-  padding: 14px 20px;
-  border-radius: 54px;
-  font-family: inherit;
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.tonActionBtn:active:not(:disabled) {
-  opacity: 0.88;
-}
-
-.tonActionBtn:focus-visible {
-  outline: 2px solid #40ff96;
-  outline-offset: 3px;
-}
-
-.tonActionBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.tonActionPrimary {
-  border: none;
-  background: linear-gradient(180deg, #40ff96 0%, #2edd7d 100%);
-  color: #0a0a0a;
-  font-weight: 600;
-}
-
-.tonActionSecondary {
-  border: 1.5px solid rgba(94, 234, 212, 0.55);
-  background: transparent;
-  color: rgba(94, 234, 212, 0.95);
-  font-weight: 500;
 }
 
 .grid {
@@ -396,10 +201,6 @@
   opacity: 0.42;
   cursor: not-allowed;
   pointer-events: none;
-}
-
-.tonBlockInner {
-  width: 100%;
 }
 
 @media (min-width: 480px) {

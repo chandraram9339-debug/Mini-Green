@@ -11,6 +11,7 @@ import type { StatusBarAssetUrls } from "../types/statusBarAssets";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
+import { useDemoStore } from "../../stores/demoStore";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatShortAddress } from "../withdraw/withdrawDraft";
 import { depositAssets } from "../balance-deposit/depositAssets";
@@ -35,6 +36,8 @@ const INVITE_ROWS = [
 export default function BalanceReferralScreen() {
   const { t } = useFmLocale();
   const { balanceUsdt, depositAddress } = useWalletDisplay();
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
+  const topUpHref = isDemoMode ? routes.demoTopUp : routes.depositTopUp;
 
   return (
     <main
@@ -59,7 +62,7 @@ export default function BalanceReferralScreen() {
             <p className="fm-deposit-balance-addr">{formatShortAddress(depositAddress, 6, 6)}</p>
           </div>
 
-          <Link to={routes.depositTopUp} className="fm-deposit-act fm-deposit-act--topup">
+          <Link to={topUpHref} className="fm-deposit-act fm-deposit-act--topup">
             <span className="fm-deposit-act-icon-wrap">
               <img alt="" src={depositAssets.group11} />
             </span>

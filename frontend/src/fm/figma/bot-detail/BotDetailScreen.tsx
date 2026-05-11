@@ -24,6 +24,7 @@ import type { TabBarIconUrls } from "../types/tabBarIcons";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { routes } from "../routes";
+import { useDemoStore } from "../../stores/demoStore";
 import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { botDetailAssets } from "./botDetailAssets";
@@ -61,6 +62,7 @@ export default function BotDetailScreen() {
   const { t } = useFmLocale();
   const { phase, botRunning, refreshWallet, setBotRunning } = useAppSession();
   const { balanceUsdt: balance } = useWalletDisplay();
+  const isDemoMode = useDemoStore((s) => s.isDemoMode);
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
   const [journalRows, setJournalRows] = useState<TradingJournalItem[]>([]);
   const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
@@ -181,7 +183,7 @@ export default function BotDetailScreen() {
 
   async function applyBotState(enabled: boolean): Promise<void> {
     if (balance <= 0 && enabled) {
-      navigate(routes.depositTopUp);
+      navigate(isDemoMode ? routes.demoTopUp : routes.depositTopUp);
       return;
     }
 
