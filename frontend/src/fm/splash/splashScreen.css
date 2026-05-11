@@ -212,7 +212,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fm-splash,
+  /* Не укорачивать .fm-splash: иначе анимация выхода ~1ms, оверлей пропадает, а app-shell ещё
+     opacity:0 до конца таймера в App.tsx — получается пустой экран на секунды. */
   .fm-splash-logo-shimmer,
   .fm-splash-pulse-core {
     animation-duration: 1ms;

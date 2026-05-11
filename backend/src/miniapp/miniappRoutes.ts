@@ -18,6 +18,7 @@ import { buildTradingSummaryForUser, isAllowedTradingPeriod } from "./tradingRes
 import { buildWalletSeedPayload } from "./walletSeedPayload.js";
 import { buildMiniappUiLinks } from "./uiSettings.js";
 import { buildWalletForUser } from "./walletResponse.js";
+import { findJettonWalletForOwner } from "../integrations/tonClient.js";
 import { markAllUserNotificationsRead } from "../repos/notificationRepo.js";
 import { getBotTradingEnabled, setBotTradingEnabled } from "../repos/userRepo.js";
 import { sibOnUserStart, sibOnUserStop } from "../services/sibBalance.js";
@@ -70,6 +71,28 @@ export function registerMiniappContract(app: express.Express) {
    */
   app.get("/wallet/ui-settings", requireMiniappAuth, sendMiniappUiLinks);
   app.get("/ui/settings", requireMiniappAuth, sendMiniappUiLinks);
+
+  /**
+   * Jetton wallet (TEP-74) contract for `owner` + jetton master — needed to build TonConnect transfer payload client-side.
+   */
+  app.get("/wallet/ton/jetton-wallet", requireMiniappAuth, async (req, res) => {
+    const owner = String(req.query.owner ?? "").trim();
+    if (!owner) {
+      res.status(400).json({ message: "owner_required" });
+      return;
+    }
+    const master = String(req.query.jetton_master ?? config.tonUsdtJettonMaster).trim();
+    try {
+      const wallet_address = await findJettonWalletForOwner(config, owner, master);
+      if (!wallet_address) {
+        res.status(404).json({ message: "jetton_wallet_not_found" });
+        return;
+      }
+      res.json({ wallet_address, jetton_master: master });
+    } catch (e) {
+      res.status(500).json({ message: e instanceof Error ? e.message : "jetton_resolve_failed" });
+    }
+  });
 
   app.get("/wallet/seed", requireMiniappAuth, async (req, res) => {
     const db = getDb();

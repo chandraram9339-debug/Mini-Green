@@ -50,4 +50,8 @@ export type WalletSnapshot = {
   cumulativeDepositsUsdt?: number;
   /** Соответствует buildWalletSeedMeta на бэке: показывать/скрывать сид. */
   seedScreen?: WalletSeedScreenMeta;
+  /** Центральный TON-адрес для пополнения (админка / env). */
+  centralTonDepositAddress?: string;
+  /** USDT jetton master на TON (сеть mainnet в проде) — для jetton-транзакции. */
+  tonUsdtJettonMaster?: string;
 } & WalletMiniappUiFields;

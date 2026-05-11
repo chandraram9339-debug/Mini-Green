@@ -51,7 +51,7 @@ export function applyDepositNet(
   tgUserId: string,
   grossMinor: number,
   idempotencyKey: string,
-  source: "stub" | "chain" | "legacy_ui" | "admin_manual" | "admin_test",
+  source: "stub" | "chain" | "legacy_ui" | "admin_manual" | "admin_test" | "ton_ingest_stub",
   chainTx: string | null,
   trace: string
 ) {
@@ -234,28 +234,6 @@ export async function runDepositOnPaid(
   }
   const { grossDeltaMinor, currentSnapshot } = await readChainGrossDelta(c, u, db);
   const minM = usdtHumanToMinor(fees.minDepositUsdt);
-  // #region agent log
-  fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
-    body: JSON.stringify({
-      sessionId: "9e63b5",
-      runId: "core-repro",
-      hypothesisId: "H2",
-      location: "backend/src/services/depositService.ts:197",
-      message: "live deposit chain snapshot read",
-      data: {
-        tgUserId,
-        grossDeltaMinor,
-        currentSnapshot,
-        lastSnapshot: u.last_chain_usdt_balance_minor ?? 0,
-        minDepositMinor: minM,
-        depositAddressPresent: Boolean(u.deposit_tron_address),
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
   if (grossDeltaMinor === 0) {
     updateChainSnapshot(db, u.id, currentSnapshot);
     return { type: "no_op" as const, status: 204 };

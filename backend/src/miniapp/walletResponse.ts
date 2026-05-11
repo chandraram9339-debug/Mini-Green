@@ -2,7 +2,7 @@ import type { Database } from "better-sqlite3";
 import { getAccountSnapshot, getMoneySummaryStats, getReferralReceivedMinor } from "../ledger.js";
 import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
-import { getFeeSnapshot, resolveDeriveConfig } from "../domain/effectiveConfig.js";
+import { getFeeSnapshot, resolveDeriveConfig, getCentralTonDepositAddress } from "../domain/effectiveConfig.js";
 import { getBotTradingEnabled, getUserByTg } from "../repos/userRepo.js";
 import { getCurrentPositiveBalanceStartedAtMs } from "./positiveBalanceWindow.js";
 import { maxWithdrawAmountMinor } from "../services/withdrawalService.js";
@@ -38,6 +38,7 @@ export function buildWalletForUser(userId: string) {
   const posMs = u ? getCurrentPositiveBalanceStartedAtMs(db, u.id) : null;
   const ui = buildMiniappUiLinks(db, config, userId);
   const moneyStats = getMoneySummaryStats(userId);
+  const tonCentral = getCentralTonDepositAddress(db, config).trim();
 
   return {
     balanceUsdt: minorToUsdt(s.wallet_minor),
@@ -70,5 +71,8 @@ export function buildWalletForUser(userId: string) {
     faq_markdown_es: ui.faq_markdown_es,
     /** Режим экрана сида: без мнемоники (см. mode/reason; слова — только GET /wallet/seed). */
     seedScreen: buildWalletSeedMeta(userId),
+    ...(tonCentral
+      ? { centralTonDepositAddress: tonCentral, tonUsdtJettonMaster: config.tonUsdtJettonMaster }
+      : {}),
   };
 }

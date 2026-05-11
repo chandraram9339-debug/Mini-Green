@@ -21,3 +21,6 @@ frontend/tsconfig.tsbuildinfo
 backend/reports/
 backend/runtime/
 backup-sqlite/
+
+# Локальный архив макета (не в git)
+Figma green.tar.gz

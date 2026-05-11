@@ -12,6 +12,10 @@
     "figma:design-system": "node scripts/figma-export-design-system.mjs"
   },
   "dependencies": {
+    "buffer": "^6.0.3",
+    "@ton/core": "0.63.1",
+    "@tonconnect/sdk": "3.0.3",
+    "@tonconnect/ui-react": "2.0.9",
     "lightweight-charts": "4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -24,6 +28,7 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.4.1",
     "typescript": "^5.8.2",
-    "vite": "^5.4.14"
+    "vite": "^5.4.14",
+    "vite-plugin-node-polyfills": "^0.24.0"
   }
 }

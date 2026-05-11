@@ -1,8 +1,9 @@
+import { Address } from "@ton/core";
 import crypto from "node:crypto";
 import type express from "express";
 import { config } from "../config.js";
 import { getDb } from "../db/connection.js";
-import { getFeeSnapshot, setAppConfigValue } from "../domain/effectiveConfig.js";
+import { getFeeSnapshot, getCentralTonDepositAddress, setAppConfigValue } from "../domain/effectiveConfig.js";
 import { logEvent } from "../httpEnvelope.js";
 import { usdtHumanToMinor } from "../domain/amounts.js";
 import { releaseIdempotency } from "../domain/idempotency.js";
@@ -46,6 +47,7 @@ import {
   triggerTestSubscribeCapi
 } from "../integrations/metaCapi.js";
 import { getWalletHealthReport } from "../integrations/walletHealth.js";
+import { fetchCentralTonWalletBalances } from "../integrations/tonClient.js";
 
 function timingSafeAdminKey(headerVal: unknown, secret: string): boolean {
   if (typeof headerVal !== "string" || !secret) return false;
@@ -244,6 +246,58 @@ export function registerAdminApi(app: express.Express) {
       res.json(await getWalletHealthReport(getDb(), config));
     } catch (e) {
       res.status(500).json({ error: String(e) });
+    }
+  });
+
+  app.get("/admin/wallets/ton", requireAdmin, (_req, res) => {
+    const address = getCentralTonDepositAddress(getDb(), config);
+    res.json({ address, configured: Boolean(address.trim()) });
+  });
+
+  app.post("/admin/wallets/ton", requireAdmin, (req, res) => {
+    const raw = String((req.body as { address?: string })?.address ?? "").trim();
+    if (raw) {
+      try {
+        Address.parse(raw);
+      } catch {
+        res.status(400).json({ error: "invalid_ton_address" });
+        return;
+      }
+    }
+    setAppConfigValue(getDb(), "central_ton_deposit_address", raw);
+    res.json({ ok: true, address: raw });
+  });
+
+  app.get("/admin/wallets/ton/balance", requireAdmin, async (_req, res) => {
+    const address = getCentralTonDepositAddress(getDb(), config);
+    const checked_at = new Date().toISOString();
+    if (!address.trim()) {
+      res.json({
+        address: null,
+        ton_human: null,
+        usdt_jetton_human: null,
+        jetton_master: config.tonUsdtJettonMaster,
+        error: "central_ton_not_configured",
+        checked_at
+      });
+      return;
+    }
+    try {
+      const b = await fetchCentralTonWalletBalances(config, address);
+      res.json({
+        address,
+        ton_human: b.tonHuman,
+        usdt_jetton_human: b.usdtJettonHuman,
+        jetton_master: config.tonUsdtJettonMaster,
+        checked_at
+      });
+    } catch (e) {
+      res.status(500).json({
+        address,
+        error: String(e),
+        jetton_master: config.tonUsdtJettonMaster,
+        checked_at
+      });
     }
   });
 
@@ -758,6 +812,18 @@ export function registerAdminApi(app: express.Express) {
     if (b.hd_wallet_mnemonic != null) {
       setS("hd_wallet_mnemonic", b.hd_wallet_mnemonic);
     }
+    if (b.central_ton_deposit_address != null) {
+      const raw = String(b.central_ton_deposit_address).trim();
+      if (raw) {
+        try {
+          Address.parse(raw);
+        } catch {
+          res.status(400).json({ error: "invalid_ton_address" });
+          return;
+        }
+      }
+      setAppConfigValue(db, "central_ton_deposit_address", raw);
+    }
     const as01 = (v: unknown) => (v === true || v === 1 || v === "1" || v === "true" ? "1" : "0");
     if (b.withdraw_auto_approve != null) {
       setAppConfigValue(db, "withdraw_auto_approve", as01(b.withdraw_auto_approve));
@@ -775,28 +841,6 @@ export function registerAdminApi(app: express.Express) {
     if (b.push_auto_text_no_deposit != null) setS("push_auto_text_no_deposit", b.push_auto_text_no_deposit);
     if (b.push_auto_text_deposited != null) setS("push_auto_text_deposited", b.push_auto_text_deposited);
     if (b.push_auto_text_all != null) setS("push_auto_text_all", b.push_auto_text_all);
-    // #region agent log
-    fetch("http://127.0.0.1:7557/ingest/485fc05c-6ee8-41f5-ad61-28b0be9e281f", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "9e63b5" },
-      body: JSON.stringify({
-        sessionId: "9e63b5",
-        runId: "core-repro",
-        hypothesisId: "H5",
-        location: "backend/src/admin/adminApi.ts:720",
-        message: "admin config patched",
-        data: {
-          minDepositUsdt: b.min_deposit_usdt ?? null,
-          depositFeeBps: b.deposit_fee_bps ?? null,
-          withdrawFeeBps: b.withdraw_fee_bps ?? null,
-          withdrawAutoApprove: b.withdraw_auto_approve ?? null,
-          topupBank: b.topup_bank_tron != null ? Boolean(String(b.topup_bank_tron).trim()) : null,
-          withdrawWallet: b.withdraw_wallet_tron != null ? Boolean(String(b.withdraw_wallet_tron).trim()) : null,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
     res.json({ ok: true, current: getFeeSnapshot(db, config) });
   });
 

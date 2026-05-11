@@ -72,6 +72,14 @@ export function resolveChainLabels(base: AppConfig, db: Database) {
   };
 }
 
+/** Central TON treasury (jetton + native); `app_config.central_ton_deposit_address` overrides env. */
+export function getCentralTonDepositAddress(db: Database, c: AppConfig): string {
+  const g = getG(db);
+  const dbVal = (g("central_ton_deposit_address") ?? "").trim();
+  if (dbVal) return dbVal;
+  return (c.centralTonDepositAddress ?? "").trim();
+}
+
 export function setAppConfigValue(db: Database, key: string, value: string) {
   db.prepare(
     "INSERT INTO app_config (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at"

@@ -22,7 +22,11 @@ export function setStoredAccessToken(token: string | null): void {
 export function apiUrl(path: string): string {
   const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
   const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${normalized}`;
+  if (base) return `${base}${normalized}`;
+  if (import.meta.env.DEV && import.meta.env.VITE_DEV_USE_VITE_PROXY !== "false") {
+    return normalized;
+  }
+  return normalized;
 }
 
 /** Запрос к вашему API: Bearer после логина + заголовок initData для совместимости с валидацией Telegram. */

@@ -52,6 +52,9 @@ export function OnboardingTourRoot({ splashDone = true }: OnboardingTourRootProp
 
   const openedAfterSplashRef = useRef(false);
 
+  /** Не запускать авто Quick Tour с deep link: иначе сразу уводим на шаг 1 (`/home`) и экран «ломается». */
+  const onboardingAutoEntryPaths = useMemo(() => new Set<string>(["/", routes.home]), []);
+
   const activeSteps = flow === "quick" ? quickSteps : flow === "getting-started" ? gsSteps : [];
   const activeStep =
     activeSteps.length === 0 ? undefined : activeSteps[Math.min(stepIndex, activeSteps.length - 1)];
@@ -79,6 +82,9 @@ export function OnboardingTourRoot({ splashDone = true }: OnboardingTourRootProp
     }
 
     if (!isQuickTourCompleted()) {
+      if (!onboardingAutoEntryPaths.has(location.pathname)) {
+        return;
+      }
       openedAfterSplashRef.current = true;
       setStepIndex(0);
       setFlow("quick");
@@ -93,7 +99,7 @@ export function OnboardingTourRoot({ splashDone = true }: OnboardingTourRootProp
       openedAfterSplashRef.current = true;
       setTransitionOpen(true);
     }
-  }, [splashDone]);
+  }, [splashDone, location.pathname, onboardingAutoEntryPaths]);
 
   /* Navigate to current step route */
   useEffect(() => {

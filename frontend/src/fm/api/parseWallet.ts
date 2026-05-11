@@ -40,7 +40,8 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
   if (
     balanceUsdt === undefined &&
     referralReceivedUsdt === undefined &&
-    depositAddress === undefined
+    depositAddress === undefined &&
+    typeof o.centralTonDepositAddress !== "string"
   ) {
     return undefined;
   }
@@ -90,6 +91,10 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
   const miniapp_webapp_url = typeof o.miniapp_webapp_url === "string" ? o.miniapp_webapp_url : undefined;
   const faq_markdown = typeof o.faq_markdown === "string" ? o.faq_markdown : undefined;
   const faq_markdown_es = typeof o.faq_markdown_es === "string" ? o.faq_markdown_es : undefined;
+
+  const centralTonDepositAddress =
+    typeof o.centralTonDepositAddress === "string" ? o.centralTonDepositAddress : undefined;
+  const tonUsdtJettonMaster = typeof o.tonUsdtJettonMaster === "string" ? o.tonUsdtJettonMaster : undefined;
 
   const rawSeed = (o.seedScreen ?? o.seed_screen) as Record<string, unknown> | undefined;
   let seedScreen: WalletSeedScreenMeta | undefined;
@@ -142,5 +147,7 @@ export function parseWalletPayload(root: unknown): WalletSnapshot | undefined {
     ...(faq_markdown !== undefined ? { faq_markdown } : {}),
     ...(faq_markdown_es !== undefined ? { faq_markdown_es } : {}),
     ...(seedScreen !== undefined ? { seedScreen } : {}),
+    ...(centralTonDepositAddress !== undefined ? { centralTonDepositAddress } : {}),
+    ...(tonUsdtJettonMaster !== undefined ? { tonUsdtJettonMaster } : {}),
   };
 }

@@ -135,6 +135,7 @@ export function runMigrations(_db: Database, appConfig: AppConfig) {
   runMigration029PalladiumFeePolicy7AndPercents(db, now);
   runMigration030ReferralPercent8Percent(db, now);
   runMigration031FaqMarkdownEsKey(db, now);
+  runMigration032CentralTonDeposit(db, now);
 }
 
 function tableHasColumn(db: Database, table: string, column: string) {
@@ -644,4 +645,13 @@ function runMigration031FaqMarkdownEsKey(db: Database, now: string) {
   if (m) return;
   setConfigIfMissing(db, "content_faq_markdown_es", "", now);
   db.prepare("INSERT INTO _migrations (id, name) VALUES (31, '031_faq_markdown_es_key')").run();
+}
+
+/** Центральный TON-кошелёк приложения + водяной знак для ingest TonAPI. */
+function runMigration032CentralTonDeposit(db: Database, now: string) {
+  const m = db.prepare("SELECT 1 as ok FROM _migrations WHERE id=32").get() as { ok: number } | undefined;
+  if (m) return;
+  setConfigIfMissing(db, "central_ton_deposit_address", "", now);
+  setConfigIfMissing(db, "ton_ingest_waterline_ts", "0", now);
+  db.prepare("INSERT INTO _migrations (id, name) VALUES (32, '032_central_ton_deposit')").run();
 }

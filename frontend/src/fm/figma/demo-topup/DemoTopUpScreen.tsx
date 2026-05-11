@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { useDemoStore } from "../../stores/demoStore";
+import { useAppSession } from "../../session/useAppSession";
+import { readTgUserIdForMemo } from "../../telegram/tgUserId";
+import { TonTopUpBlock } from "../../ton/TonTopUpBlock";
 
 import s from "./demoTopUpScreen.module.css";
 
@@ -16,6 +19,8 @@ export default function DemoTopUpScreen() {
   const resetDemoAccount = useDemoStore((s) => s.resetDemoAccount);
   const setDemoMode = useDemoStore((s) => s.setDemoMode);
   const demoTotalDepositedUsdt = useDemoStore((s) => s.demoTotalDepositedUsdt);
+  const { wallet } = useAppSession();
+  const tgMemo = useMemo(() => readTgUserIdForMemo(), []);
 
   const [selected, setSelected] = useState<number>(PRESET_USD[1]);
   const presetsLocked = demoTotalDepositedUsdt > 0;
@@ -99,6 +104,17 @@ export default function DemoTopUpScreen() {
       >
         {t("demo.getFunds")}
       </button>
+
+      <div className={s.tonBlock}>
+        <TonTopUpBlock
+          wrapClassName={s.tonBlockInner}
+          buttonClassName={s.tonBtn}
+          tonCentralAddress={wallet?.centralTonDepositAddress}
+          jettonMaster={wallet?.tonUsdtJettonMaster}
+          tgComment={tgMemo}
+          demoHint
+        />
+      </div>
     </div>
   );
 }

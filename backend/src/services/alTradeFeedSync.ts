@@ -12,7 +12,7 @@ import {
   listTradePositionsByUserId,
   upsertTradePosition,
 } from "../repos/tradePositionRepo.js";
-import { sibApplyClosesFromIngest } from "./sibBalance.js";
+import { sibApplyClosesFromIngest, type SibCloseRow } from "./sibBalance.js";
 
 export type AlTradeFeedJson = {
   opens?: Array<{
@@ -234,6 +234,7 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
         });
       }
 
+      const sibCloses: SibCloseRow[] = [];
       for (const cl of closes) {
         const tn = Number(cl.tradeNumber);
         const pair = String(cl.pair ?? "").trim().toUpperCase();
@@ -260,14 +261,16 @@ export async function syncAlTradeFeedOnce(db: Database, c: AppConfig, trace: str
           close_result_percent: Number.isFinite(resPct) ? resPct : existingClose?.close_result_percent ?? null,
         });
 
+        sibCloses.push({ id: pid, result: Number(cl.result) });
+      }
+      if (sibCloses.length > 0) {
         try {
-          sibApplyClosesFromIngest(db, u.id, tg, [{ id: pid, result: Number(cl.result) }], trace);
+          sibApplyClosesFromIngest(db, u.id, tg, sibCloses, trace);
         } catch (sibErr) {
           const sibMsg = sibErr instanceof Error ? sibErr.message : String(sibErr);
           logEvent(trace, "al_trade_feed.sib_apply_failed", {
             tg_user_id: tg,
-            position_id: pid,
-            error: sibMsg.slice(0, 300)
+            error: sibMsg.slice(0, 300),
           });
         }
       }

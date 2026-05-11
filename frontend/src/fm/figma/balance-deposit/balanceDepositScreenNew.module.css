@@ -49,7 +49,9 @@
   padding-right: 0;
 }
 
+/* Как Home: blur + rgba(255,255,255) давали «высветление» зелёного — отключено; убери display:none чтобы вернуть */
 .headerBlobs {
+  display: none;
   position: absolute;
   inset: 0;
   z-index: 0;

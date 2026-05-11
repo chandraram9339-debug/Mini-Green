@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Outfit:wght@400;500;600&display=swap");
+/* Шрифты: только <link> в index.html. НЕ использовать здесь @import с googleapis — он блокирует
+   применение всего этого файла до сети и даёт «белый экран» при недоступности Google Fonts. */
 /* Repo root: miniapp/figma-miniapp-design-system/ (variant A bundle) */
 @import "../../../figma-miniapp-design-system/figma-tokens--node-1-3643-Ready.css";
 @import "./figma/figma-layout-tokens.css";

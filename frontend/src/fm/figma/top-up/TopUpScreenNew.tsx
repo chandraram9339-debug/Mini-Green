@@ -13,6 +13,8 @@ import {
   hapticSuccess,
   showMiniAppAlert,
 } from "../../telegram/uiFeedback";
+import { readTgUserIdForMemo } from "../../telegram/tgUserId";
+import { TonTopUpBlock } from "../../ton/TonTopUpBlock";
 
 import s from "./topUpScreenNew.module.css";
 
@@ -111,6 +113,8 @@ export default function TopUpScreenNew() {
     depositFeeFixedUsdt,
   });
 
+  const tgMemo = readTgUserIdForMemo();
+
   /* QR image error fallback */
   const [qrOk, setQrOk] = useState(true);
 
@@ -187,6 +191,16 @@ export default function TopUpScreenNew() {
         <p className={s.feeNote} data-tour-id="deposit-fee-note">
           {depositFeeNote}
         </p>
+
+        <div className={s.tonActions}>
+          <TonTopUpBlock
+            wrapClassName={s.tonActionsInner}
+            buttonClassName={`${s.btn} ${s.btnTon}`}
+            tonCentralAddress={wallet?.centralTonDepositAddress}
+            jettonMaster={wallet?.tonUsdtJettonMaster}
+            tgComment={tgMemo}
+          />
+        </div>
 
         {/* Copy button */}
         <button

@@ -24,12 +24,14 @@ import "./figma/components/appBarLogoShimmer.css";
 import { routes } from "./figma/routes";
 import { OnboardingTourRoot } from "./onboarding-tour/OnboardingTourRoot";
 import { FmLocaleProvider } from "./i18n/FmLocaleContext";
+import { TonConnectAppRoot } from "./ton/TonConnectAppRoot";
 import { AppSessionProvider } from "./session/AppSessionProvider";
 import { SessionBanner } from "./session/SessionBanner";
 import { SplashScreen } from "./splash/SplashScreen";
 import "./splash/splashScreen.css";
 
-const SPLASH_DURATION_MS = 3500;
+/** В dev короче: иначе `app-shell--splash-hidden` держит контент прозрачным и кажется «чёрный экран». */
+const SPLASH_DURATION_MS = import.meta.env.DEV ? 900 : 3500;
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -42,7 +44,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <FmLocaleProvider>
-        <AppSessionProvider>
+        <TonConnectAppRoot>
+          <AppSessionProvider>
           <div className={`app-shell${showSplash ? " app-shell--splash-hidden" : ""}`}>
             <SessionBanner />
             <OnboardingTourRoot splashDone={!showSplash} />
@@ -72,6 +75,7 @@ export default function App() {
           </div>
           {showSplash ? <SplashScreen durationMs={SPLASH_DURATION_MS} /> : null}
         </AppSessionProvider>
+        </TonConnectAppRoot>
       </FmLocaleProvider>
     </BrowserRouter>
   );

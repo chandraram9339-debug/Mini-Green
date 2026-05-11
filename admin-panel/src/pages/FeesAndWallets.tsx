@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiJson } from "../api";
-import type { AdminConfigResponse, FeePolicy, WalletHealthEntry, WalletHealthResponse } from "../types";
+import type { AdminConfigResponse, FeePolicy, WalletHealthEntry, WalletHealthResponse, TonWalletBalanceResponse, TonWalletAdminResponse } from "../types";
 import { FieldNote, OkBadge, RequiredBadge } from "../components/FieldHint";
 
 function fmtWalletAmount(value: number | null, suffix: string): string {
@@ -71,6 +71,9 @@ export default function FeesAndWallets() {
   const [deterministicDeriveKey, setDeterministicDeriveKey] = useState("");
   const [hdMnemonic, setHdMnemonic] = useState("");
 
+  const [tonCentralInput, setTonCentralInput] = useState("");
+  const [tonBalance, setTonBalance] = useState<TonWalletBalanceResponse | null>(null);
+
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
@@ -99,6 +102,34 @@ export default function FeesAndWallets() {
       })
       .catch((e: Error) => setErr(e.message));
   }, []);
+
+  useEffect(() => {
+    apiJson<TonWalletAdminResponse>("/admin/wallets/ton")
+      .then((r) => setTonCentralInput(r.address ?? ""))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: number | undefined;
+
+    const loadBal = () => {
+      apiJson<TonWalletBalanceResponse>("/admin/wallets/ton/balance")
+        .then((p) => {
+          if (!cancelled) setTonBalance(p);
+        })
+        .catch(() => {
+          if (!cancelled) setTonBalance(null);
+        });
+    };
+
+    loadBal();
+    timer = window.setInterval(loadBal, 25_000);
+    return () => {
+      cancelled = true;
+      if (timer != null) window.clearInterval(timer);
+    };
+  }, [tonCentralInput]);
 
   useEffect(() => {
     let cancelled = false;
@@ -186,11 +217,88 @@ export default function FeesAndWallets() {
     }
   }
 
+  async function saveTonCentral(e: FormEvent) {
+    e.preventDefault();
+    setErr("");
+    setMsg("");
+    try {
+      await apiJson<{ ok: boolean; address: string }>("/admin/wallets/ton", {
+        method: "POST",
+        body: JSON.stringify({ address: tonCentralInput.trim() }),
+      });
+      const r = await apiJson<TonWalletAdminResponse>("/admin/wallets/ton");
+      setTonCentralInput(r.address ?? "");
+      setMsg("Центральный TON-кошелёк сохранён");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  async function refreshTonBalanceManual() {
+    setErr("");
+    try {
+      const p = await apiJson<TonWalletBalanceResponse>("/admin/wallets/ton/balance");
+      setTonBalance(p);
+      setMsg("Баланс TON обновлён");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : String(e));
+    }
+  }
+
   return (
     <>
       <h2>Комиссии, пороги Meta и кошельки</h2>
       {err ? <div className="err">{err}</div> : null}
       {msg ? <div className="ok">{msg}</div> : null}
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Центральный TON Wallet</h3>
+        <p className="muted">
+          Адрес для приёма TON и USDT (jetton) в сети TON. Пользователи отправляют средства с комментарием = их{" "}
+          <code>tg_user_id</code>. На бэкенде включите <code>TON_INGEST_ENABLED=1</code> и при необходимости{" "}
+          <code>TONAPI_KEY</code>.
+        </p>
+        <form onSubmit={saveTonCentral}>
+          <div className="row">
+            <label>central_ton_deposit_address (TON)</label>
+            <input
+              value={tonCentralInput}
+              onChange={(e) => setTonCentralInput(e.target.value)}
+              placeholder="UQ... / EQ..."
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ marginTop: "0.5rem" }}>
+            Сохранить TON-адрес
+          </button>
+        </form>
+        <div style={{ marginTop: "1rem" }}>
+          <p className="muted" style={{ marginBottom: "0.5rem" }}>
+            Текущий баланс (TonAPI) · jetton master: <code>{tonBalance?.jetton_master ?? "—"}</code>
+          </p>
+          <table className="data">
+            <tbody>
+              <tr>
+                <td>TON</td>
+                <td>{tonBalance?.ton_human != null ? tonBalance.ton_human.toFixed(6) : "—"}</td>
+              </tr>
+              <tr>
+                <td>USDT jetton</td>
+                <td>{tonBalance?.usdt_jetton_human != null ? tonBalance.usdt_jetton_human.toFixed(4) : "—"}</td>
+              </tr>
+              <tr>
+                <td>Проверено</td>
+                <td>{tonBalance?.checked_at ?? "—"}</td>
+              </tr>
+            </tbody>
+          </table>
+          {tonBalance?.error ? <div className="err" style={{ marginTop: "0.5rem" }}>{tonBalance.error}</div> : null}
+          <button type="button" className="btn btn-primary" style={{ marginTop: "0.75rem" }} onClick={() => void refreshTonBalanceManual()}>
+            Обновить баланс
+          </button>
+        </div>
+      </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Мониторинг кошельков вывода</h3>

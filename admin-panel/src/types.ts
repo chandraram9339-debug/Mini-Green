@@ -49,6 +49,20 @@ export type WalletHealthResponse = {
   alerts: string[];
 };
 
+export type TonWalletAdminResponse = {
+  address: string;
+  configured: boolean;
+};
+
+export type TonWalletBalanceResponse = {
+  address: string | null;
+  ton_human: number | null;
+  usdt_jetton_human: number | null;
+  jetton_master: string;
+  error?: string;
+  checked_at: string;
+};
+
 export type DepositRow = {
   id: string;
   user_id: number;

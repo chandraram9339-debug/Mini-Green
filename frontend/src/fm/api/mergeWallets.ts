@@ -41,5 +41,7 @@ export function mergeWalletSnapshots(a?: WalletSnapshot, b?: WalletSnapshot): Wa
     faq_markdown: pickStr(b?.faq_markdown, a?.faq_markdown),
     faq_markdown_es: pickStr(b?.faq_markdown_es, a?.faq_markdown_es),
     seedScreen: b?.seedScreen ?? a?.seedScreen,
+    centralTonDepositAddress: pickStr(b?.centralTonDepositAddress, a?.centralTonDepositAddress),
+    tonUsdtJettonMaster: pickStr(b?.tonUsdtJettonMaster, a?.tonUsdtJettonMaster),
   };
 }

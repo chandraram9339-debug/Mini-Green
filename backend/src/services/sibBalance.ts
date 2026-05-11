@@ -211,13 +211,16 @@ export function sibApplyClosesFromIngest(
         "sib_close",
         JSON.stringify({ position_id: positionId, result_percent: rp, delta_minor: deltaMinor })
       );
-      logEvent(trace, "sib.adjust", {
-        tg_user_id: tgUserId,
-        position_id: positionId,
-        result_percent: rp,
-        delta_minor: deltaMinor,
-        balance_after_minor: balAfter
-      });
+      /** Иначе при sync AL в консоль летят сотни/тысячи строк на одного пользователя. */
+      if (process.env.LOG_EACH_SIB_ADJUST === "1") {
+        logEvent(trace, "sib.adjust", {
+          tg_user_id: tgUserId,
+          position_id: positionId,
+          result_percent: rp,
+          delta_minor: deltaMinor,
+          balance_after_minor: balAfter,
+        });
+      }
 
       if (balAfter <= 0) {
         sibOnBalanceZero(db, userId);

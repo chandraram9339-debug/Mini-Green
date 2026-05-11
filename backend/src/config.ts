@@ -135,6 +135,19 @@ export type AppConfig = {
    * Empty → permissive `cors()` (dev); in telegram auth mode the server logs a production warning.
    */
   corsOrigins: string[];
+  /** TonAPI base (v2), e.g. https://tonapi.io */
+  tonApiBaseUrl: string;
+  /** Optional TonAPI / TonConsole bearer token (rate limits). */
+  tonApiKey: string;
+  /** USDT jetton master (mainnet default Tether). */
+  tonUsdtJettonMaster: string;
+  /** Fallback from env if DB `central_ton_deposit_address` empty. */
+  centralTonDepositAddress: string;
+  /** Poll TonAPI for incoming transfers to the central treasury (stub bridge credit). */
+  tonIngestEnabled: boolean;
+  tonIngestPollSec: number;
+  /** Gross USDT minor credited per matched Ton event while bridge is stubbed (100 USDT = 10000). */
+  tonIngestStubGrossMinor: number;
 };
 
 function numEnv(name: string, def: number) {
@@ -227,7 +240,17 @@ export const config: AppConfig = {
   corsOrigins: (process.env.CORS_ORIGINS ?? "")
     .split(/[,;\s]+/)
     .map((s) => s.trim())
-    .filter(Boolean)
+    .filter(Boolean),
+  tonApiBaseUrl: strEnv("TONAPI_BASE_URL", "https://tonapi.io").replace(/\/$/, ""),
+  tonApiKey: strEnv("TONAPI_KEY", "").trim(),
+  tonUsdtJettonMaster: strEnv(
+    "TON_USDT_JETTON_MASTER",
+    "EQCxE6mUtQJKFnGfa8Z6f18GHuCeI6vtBed1GDHnHHT"
+  ).trim(),
+  centralTonDepositAddress: strEnv("CENTRAL_TON_DEPOSIT_ADDRESS", "").trim(),
+  tonIngestEnabled: strEnv("TON_INGEST_ENABLED", "0") === "1",
+  tonIngestPollSec: Math.max(15, numEnv("TON_INGEST_POLL_SEC", 45)),
+  tonIngestStubGrossMinor: Math.max(0, numEnv("TON_INGEST_STUB_GROSS_MINOR", 10_000))
 };
 
 export function assertWalletVaultEnv(c: AppConfig) {

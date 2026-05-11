@@ -24,16 +24,19 @@ export default defineConfig(({ mode }) => {
       alias: { "@": path.resolve(__dirname, "src") }
     },
     server: {
+      host: "127.0.0.1",
       port: 5180,
-      strictPort: true,
+      /** Иначе при занятом 5180 (второй Cursor / старый dev) весь `pnpm dev` выглядит как «не стартует». */
+      strictPort: false,
       proxy: {
         "/admin": { target: "http://127.0.0.1:4000", changeOrigin: true },
         "/health": { target: "http://127.0.0.1:4000", changeOrigin: true }
       }
     },
     preview: {
+      host: "127.0.0.1",
       port: 5180,
-      strictPort: true,
+      strictPort: false,
       proxy: {
         "/admin": { target: "http://127.0.0.1:4000", changeOrigin: true },
         "/health": { target: "http://127.0.0.1:4000", changeOrigin: true }

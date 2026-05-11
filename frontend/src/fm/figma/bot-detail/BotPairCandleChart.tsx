@@ -27,6 +27,15 @@ function timeFromIso(iso: string): UTCTimestamp {
   return (Number.isFinite(ms) ? Math.floor(ms / 1000) : 0) as UTCTimestamp;
 }
 
+/** Фон canvas как у экрана (`--fm-page-bg` из `fm/index.css`), не отдельный «чернильный» слой. */
+function resolvePairChartCanvasBg(host: HTMLElement): string {
+  const fromHost = getComputedStyle(host).getPropertyValue("--fm-page-bg").trim();
+  if (fromHost) return fromHost;
+  const fromRoot = getComputedStyle(document.documentElement).getPropertyValue("--fm-page-bg").trim();
+  if (fromRoot) return fromRoot;
+  return "#0a0a0a";
+}
+
 /** Сторона позиции из API (long/short, buy/sell, в т.ч. верхний регистр). */
 function isShortSide(side: string | undefined): boolean {
   const x = side?.trim().toLowerCase() ?? "";
@@ -182,9 +191,10 @@ export function BotPairCandleChart({ binanceSymbol, trades, interval }: BotPairC
     const el = hostRef.current;
     if (!el) return;
 
+    const pageBg = resolvePairChartCanvasBg(el);
     const chart = createChart(el, {
       layout: {
-        background: { type: ColorType.Solid, color: "#08090c" },
+        background: { type: ColorType.Solid, color: pageBg },
         textColor: "rgba(255,255,255,0.55)",
         fontFamily: '"Outfit", system-ui, sans-serif',
         attributionLogo: false,

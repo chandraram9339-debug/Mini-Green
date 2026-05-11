@@ -1,6 +1,6 @@
 /**
  * Захват PNG для public/trafik/screens/ с локального mini app (viewport 390×844).
- * Запуск: dev-сервер на 127.0.0.1:4297, затем:
+ * Запуск: dev-сервер на 127.0.0.1:47400 (см. vite.config), затем:
  *   node scripts/capture-trafik-screens.mjs
  */
 import fs from "node:fs";
@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(__dirname, "../public/trafik/screens");
-const BASE = process.env.TRAFIK_CAPTURE_BASE ?? "http://127.0.0.1:4297";
+const BASE = process.env.TRAFIK_CAPTURE_BASE ?? "http://127.0.0.1:47400";
 
 /** Полный Chromium (chrome-linux64/chrome), если установлен только playwright без headless-shell. */
 function findBundledChromiumExecutable() {

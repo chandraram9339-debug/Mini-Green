@@ -7,7 +7,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "node scripts/run-dev.mjs",
     "start": "node dist/index.js",
     "rebuild": "pnpm rebuild better-sqlite3",
     "build": "tsc -p tsconfig.json",
@@ -21,9 +21,10 @@
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
+    "@ton/core": "0.63.1",
+    "better-sqlite3": "^11.6.0",
     "bip32": "^4.0.0",
     "bip39": "^3.1.0",
-    "better-sqlite3": "^11.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",

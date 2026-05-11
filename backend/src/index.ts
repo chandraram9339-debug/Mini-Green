@@ -1,5 +1,6 @@
 import "dotenv/config";
 import crypto from "node:crypto";
+import http from "node:http";
 import cors, { type CorsOptions } from "cors";
 import express from "express";
 import { assertWalletVaultEnv, config } from "./config.js";
@@ -12,9 +13,61 @@ import { runAutoPushesIfDue } from "./services/pushAutoService.js";
 import { registerTelegramWebhook } from "./telegramWebhook.js";
 import { registerTradingIngest } from "./tradingIngest.js";
 import { scheduleAlTradeFeedPoller } from "./services/alTradeFeedSync.js";
+import { scheduleTonDepositPoller } from "./services/tonDepositPoller.js";
 
 const app = express();
-const port = config.port;
+const basePort = config.port;
+
+/** В dev/test, если PORT занят — перебираем следующие (не затираем production с NODE_ENV=production). */
+function allowDevPortFallback(): boolean {
+  if (process.env.PORT_AUTO_FALLBACK === "0") return false;
+  if (process.env.PORT_AUTO_FALLBACK === "1") return true;
+  const n = process.env.NODE_ENV;
+  return n !== "production";
+}
+
+function startHttpServer(tryPort: number, attemptsLeft: number): void {
+  const server = http.createServer(app);
+  server.once("listening", () => {
+    const addr = server.address();
+    const actual = typeof addr === "object" && addr ? addr.port : tryPort;
+    console.log(`backend listening on http://localhost:${actual}`);
+    if (actual !== basePort) {
+      console.warn(
+        `[boot] Port ${basePort} was busy — using ${actual}. Set backend PORT=${actual} and frontend VITE_API_BASE_URL=http://127.0.0.1:${actual} (or stop the other process on ${basePort}).`,
+      );
+    }
+    if (config.jwtSecret === "dev-only-insecure-jwt-do-not-use-in-prod") {
+      console.warn(
+        "[boot] Using default JWT secret. Set JWT_SECRET in production; never commit real secrets.",
+      );
+    }
+    scheduleAlTradeFeedPoller(db, config);
+    scheduleTonDepositPoller(db, config);
+    const tr = "push-auto-cron";
+    setInterval(
+      () => {
+        runAutoPushesIfDue(getDb(), config, tr);
+      },
+      60 * 60 * 1000,
+    );
+  });
+  server.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE" && allowDevPortFallback() && attemptsLeft > 0) {
+      const next = tryPort + 1;
+      console.warn(`[boot] Port ${tryPort} in use, trying ${next}`);
+      server.close();
+      startHttpServer(next, attemptsLeft - 1);
+      return;
+    }
+    console.error(err);
+    process.exit(1);
+  });
+  server.listen(tryPort);
+}
+
+const portFallbackRange = Math.max(0, Math.min(100, Number(process.env.PORT_FALLBACK_RANGE ?? "24")));
+startHttpServer(basePort, portFallbackRange);
 
 function corsMiddleware(): express.RequestHandler {
   const origins = config.corsOrigins;
@@ -98,19 +151,3 @@ app.use(
   }
 );
 
-app.listen(port, () => {
-  console.log(`backend listening on http://localhost:${port}`);
-  if (config.jwtSecret === "dev-only-insecure-jwt-do-not-use-in-prod") {
-    console.warn(
-      "[boot] Using default JWT secret. Set JWT_SECRET in production; never commit real secrets."
-    );
-  }
-  scheduleAlTradeFeedPoller(db, config);
-  const tr = "push-auto-cron";
-  setInterval(
-    () => {
-      runAutoPushesIfDue(getDb(), config, tr);
-    },
-    60 * 60 * 1000
-  );
-});

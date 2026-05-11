@@ -50,8 +50,12 @@
   padding-bottom: 30px;
 }
 
-/* Blobs stay clipped to rounded header; app bar icons use overflow:visible — avoids clipping bell stroke */
+/*
+ * Декоративные blur-блобы (ниже) давали «высветление» зелёного фона.
+ * Отключено по UX; чтобы вернуть — убери display:none.
+ */
 .headerBlobs {
+  display: none;
   position: absolute;
   inset: 0;
   z-index: 0;

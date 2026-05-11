@@ -296,6 +296,26 @@
   color: #191919;
 }
 
+.tonActions {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.tonActionsInner {
+  width: 100%;
+}
+
+.btnTon {
+  background-color: transparent;
+  color: #5eead4;
+  border: 1.5px solid rgba(94, 234, 212, 0.75);
+}
+
+.btnTon:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ── Success toast overlay ───────────────────────────────────── */
 .successToast {
   position: absolute;

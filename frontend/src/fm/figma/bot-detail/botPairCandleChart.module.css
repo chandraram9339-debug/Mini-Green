@@ -10,6 +10,8 @@
   min-height: clamp(168px, 42vw, 210px);
   height: clamp(168px, 42vw, 210px);
   box-sizing: border-box;
+  /* Под canvas lightweight-charts — тот же фон, что у приложения */
+  background-color: var(--fm-page-bg, #0a0a0a);
 }
 
 .tradeTip {

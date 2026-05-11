@@ -308,6 +308,17 @@ export const messagesEn = {
   "topup.alertCopyFail": "Could not copy address.",
   "topup.alertPaidOk": "Payment received.",
   "topup.alertPaidFail": "No deposit detected. Try again after the transfer confirms.",
+  "topup.tonWalletPrimary": "Top up via TON Wallet (TON)",
+  "topup.tonWalletJetton": "Send USDT (Jetton)",
+  "topup.tonDemoHint":
+    "Demo account uses virtual USDT. You can still send real TON or jettons — crediting follows the live server rules.",
+  "topup.tonNotConfigured": "TON top-up is not configured yet (no central address).",
+  "topup.tonJettonNotConfigured": "Jetton master is not configured.",
+  "topup.tonNoTgId": "Telegram user id is required in the memo. Open the app from Telegram.",
+  "topup.tonConnectFirst": "Connect your TON wallet first, then tap Jetton again.",
+  "topup.tonSentPending": "Transaction sent. Please wait 1–10 minutes for your balance to update.",
+  "topup.tonCancelled": "Transaction was not completed.",
+  "topup.tonFailed": "Could not complete transaction: {message}",
 
   "withdraw.ariaScreen": "Withdraw",
   "withdraw.noteProcess":
@@ -642,6 +653,17 @@ export const messagesEs: Partial<Record<MessageKey, string>> = {
   "topup.alertCopyFail": "No se pudo copiar la dirección.",
   "topup.alertPaidOk": "Pago recibido.",
   "topup.alertPaidFail": "No se detectó el depósito. Inténtalo cuando la transferencia confirme.",
+  "topup.tonWalletPrimary": "Recargar con TON Wallet (TON)",
+  "topup.tonWalletJetton": "Enviar USDT (Jetton)",
+  "topup.tonDemoHint":
+    "La cuenta demo usa USDT virtual. Aún puedes enviar TON o jettons reales; el abono sigue las reglas del servidor en vivo.",
+  "topup.tonNotConfigured": "Recarga TON aún no configurada (sin dirección central).",
+  "topup.tonJettonNotConfigured": "Jetton principal no configurado.",
+  "topup.tonNoTgId": "Se requiere el id de Telegram en el memo. Abre la app desde Telegram.",
+  "topup.tonConnectFirst": "Conecta primero tu billetera TON y vuelve a pulsar Jetton.",
+  "topup.tonSentPending": "Transacción enviada. Espera 1–10 minutos para que se actualice el saldo.",
+  "topup.tonCancelled": "La transacción no se completó.",
+  "topup.tonFailed": "No se pudo completar la transacción: {message}",
 
   "withdraw.ariaScreen": "Retiro",
   "withdraw.noteProcess":

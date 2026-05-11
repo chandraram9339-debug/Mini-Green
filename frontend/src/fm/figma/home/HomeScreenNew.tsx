@@ -219,10 +219,15 @@ export default function HomeScreenNew() {
 
   const apiSessionReady = !hasApiBase() || phase === "ready";
   const isBotActive = balanceUsdt > 0 && botRunning;
+  /**
+   * Личная кривая на главной (USDT): демо — после виртуального депозита; реал — при balance > 0 (как getHomeChartMode).
+   * Отдельно от {@link isBotActive} (Start/Stop): график баланса может быть при остановленном боте.
+   */
+  const chartShowsPersonalBalance = isDemoMode ? demoTotalDepositedUsdt > 0 : balanceUsdt > 0;
 
   const [chartRows, setChartRows] = useState<TradingJournalItem[]>([]);
   const [systemChartPoints, setSystemChartPoints] = useState<GraphicPoint[]>([]);
-  /** Системная лента AL с бэкенда — те же closes/opens, что на экране бота; для графика «%» на главной при !isBotActive. */
+  /** Системная лента AL с бэкенда — те же closes/opens, что на экране бота; для графика «%» при режиме журнала. */
   const [alFeedJournalRows, setAlFeedJournalRows] = useState<TradingJournalItem[]>([]);
   const [tradingFromApi, setTradingFromApi] = useState<BotTradingSnapshot | null>(null);
 
@@ -325,7 +330,7 @@ export default function HomeScreenNew() {
   const journalRowsForPersonalChart = isDemoMode ? demoMirrorJournalRows : chartRows;
 
   const personalTradePoints = useMemo(() => {
-    if (!isBotActive) return [];
+    if (!chartShowsPersonalBalance) return [];
     const pts = buildPersonalBalanceChartPoints(
       journalRowsForPersonalChart,
       balanceUsdt,
@@ -350,7 +355,7 @@ export default function HomeScreenNew() {
     }
     return [];
   }, [
-    isBotActive,
+    chartShowsPersonalBalance,
     journalRowsForPersonalChart,
     balanceUsdt,
     positiveBalanceStartedAt,
@@ -360,8 +365,12 @@ export default function HomeScreenNew() {
   ]);
 
   const chartPoints = useMemo(() => {
-    if (!isBotActive) {
+    if (!chartShowsPersonalBalance) {
       if (isDemoMode) {
+        if (alFeedJournalRows.length > 0) {
+          const alPts = buildCompoundedChartPoints(alFeedJournalRows);
+          if (alPts.length > 0) return alPts;
+        }
         return chartPointsSystemOrUserFallback(demoMirrorSystemChartPoints, demoMirrorJournalRows);
       }
       if (alFeedJournalRows.length > 0) {
@@ -373,7 +382,7 @@ export default function HomeScreenNew() {
     if (personalTradePoints.length === 0) return [];
     return prependDepositTotalAnchor(personalTradePoints, depositTotalUsdt, positiveBalanceStartedAt);
   }, [
-    isBotActive,
+    chartShowsPersonalBalance,
     isDemoMode,
     alFeedJournalRows,
     systemChartPoints,
@@ -386,9 +395,9 @@ export default function HomeScreenNew() {
   ]);
 
   const fixedYDomain = useMemo((): [number, number] | undefined => {
-    if (!isBotActive || chartPoints.length < 2) return undefined;
+    if (!chartShowsPersonalBalance || chartPoints.length < 2) return undefined;
     return computeDepositBalanceYDomain(depositTotalUsdt, balanceUsdt);
-  }, [isBotActive, chartPoints.length, depositTotalUsdt, balanceUsdt]);
+  }, [chartShowsPersonalBalance, chartPoints.length, depositTotalUsdt, balanceUsdt]);
 
   const priceDisplay = tradingFromApi?.displayPrice ?? "69 425.22";
   const pricePair = tradingFromApi?.pricePair ?? "USDT/BTC";
@@ -487,7 +496,7 @@ export default function HomeScreenNew() {
             <div className={s.chartWrapper}>
               <PerformanceChart
                 points={chartPoints}
-                yAxis={isBotActive ? "usdt" : "percent"}
+                yAxis={chartShowsPersonalBalance ? "usdt" : "percent"}
                 fixedYDomain={fixedYDomain}
                 variant={isDemoMode ? "demo" : "live"}
               />
