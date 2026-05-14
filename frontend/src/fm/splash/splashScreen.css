@@ -76,25 +76,19 @@
   transform: rotateY(180deg);
 }
 
-/*
- * Зелёный силуэт без filter на <img>: в Telegram WebView (iOS/Android) filter на картинке
- * внутри preserve-3d + rotateY часто даёт «чёрный» логотип. Маска + заливка стабильнее.
- */
-.fm-splash-logo-mark {
+.fm-splash-logo-image {
   display: block;
   width: 196px;
   height: 24px;
-  flex-shrink: 0;
-  background-color: #40ff96;
-  -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: contain;
-  mask-image: url("/assets/app-bar/palladium-logo.png");
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: contain;
-  filter: drop-shadow(0 6px 22px rgba(64, 255, 150, 0.38));
+  object-fit: contain;
+  max-width: none;
+  max-height: none;
+  /*
+   * Тот же акцентный зелёный, что на экранах (--fm-pill-nav-active / #40ff96).
+   * Цепочка filter превращает чёрный PNG-силуэт в этот цвет.
+   */
+  filter: brightness(0) invert(79%) sepia(52%) saturate(2876%) hue-rotate(91deg) brightness(103%) contrast(101%)
+    drop-shadow(0 6px 22px rgba(64, 255, 150, 0.38));
 }
 
 /* Тёмный «блик» по маске логотипа — хорошо читается на зелёном (раньше был светлый/серебристый) */

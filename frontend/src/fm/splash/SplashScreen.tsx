@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
+import { appBarLogoUrl } from "../figma/assets/appBarShared";
+
 type SplashScreenProps = {
   durationMs: number;
 };
 
 function resolveSplashScheme(): "light" | "dark" {
-  const tg = window.Telegram?.WebApp;
-  if (tg?.colorScheme === "dark" || tg?.colorScheme === "light") return tg.colorScheme;
+  if (window.Telegram?.WebApp) return "light";
   return document.documentElement.dataset.fmTheme === "dark" ? "dark" : "light";
 }
 
@@ -56,11 +57,11 @@ export function SplashScreen({ durationMs }: SplashScreenProps) {
           <div className="fm-splash-logo-stage">
             <div className="fm-splash-logo-orbit" style={orbitStyle}>
               <div className="fm-splash-logo-face fm-splash-logo-face--front">
-                <div className="fm-splash-logo-mark" role="img" aria-label="Palladium" />
+                <img className="fm-splash-logo-image" alt="Palladium" src={appBarLogoUrl} />
                 <span className="fm-splash-logo-shimmer" aria-hidden="true" />
               </div>
               <div className="fm-splash-logo-face fm-splash-logo-face--back" aria-hidden="true">
-                <div className="fm-splash-logo-mark" />
+                <img className="fm-splash-logo-image" alt="" src={appBarLogoUrl} />
                 <span className="fm-splash-logo-shimmer" aria-hidden="true" />
               </div>
             </div>
