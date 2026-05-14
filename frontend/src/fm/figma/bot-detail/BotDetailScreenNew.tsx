@@ -37,8 +37,6 @@ import {
   filterJournalRowsForBotChartPeriod,
   type GraphicPoint,
 } from "../components/tradingChartPoints";
-import { resolveBotBinanceSymbol } from "../../api/pairSymbol";
-import type { BinanceKlineInterval } from "../../api/fetchBinanceKlines";
 import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { consumePostOnboardingStartHighlight } from "../../onboarding-tour/onboardingStorage";
@@ -47,13 +45,10 @@ import { useEffectiveWalletDisplay } from "../../hooks/useEffectiveWalletDisplay
 import { useAppSession } from "../../session/useAppSession";
 import { appBarLogoUrl } from "../assets/appBarShared";
 import { SkeletonChart, SkeletonFeedRows } from "../../components/Skeleton/SkeletonBlock";
-import { BotPairCandleChart } from "./BotPairCandleChart";
 import { BotJournalTradeCard } from "./BotJournalTradeCard";
 import type { MessageKey } from "../../i18n/messages";
 
 import s from "./botDetailScreenNew.module.css";
-
-type ChartViewTab = "yield" | "pair";
 
 /* ── Types ──────────────────────────────────────────────────── */
 type BotPeriod = "24h" | "7d" | "1m" | "all";
@@ -199,8 +194,6 @@ export default function BotDetailScreenNew() {
     pricePair: string;
   } | null>(null);
   const [postOnboardingStartCue, setPostOnboardingStartCue] = useState(false);
-  const [chartTab, setChartTab] = useState<ChartViewTab>("yield");
-  const [candleTf, setCandleTf] = useState<BinanceKlineInterval>("1h");
 
   useEffect(() => {
     if (!consumePostOnboardingStartHighlight()) return;
@@ -382,11 +375,6 @@ export default function BotDetailScreenNew() {
     [alFeedJournalRows, journalRows],
   );
 
-  const botBinanceSymbol = useMemo(
-    () => resolveBotBinanceSymbol(trading.pricePair, feedRowsForList),
-    [trading.pricePair, feedRowsForList],
-  );
-
   const defaultStat = { totalDeals: 0, successful: 0, unsuccessful: 0, profitPercent: 0, neutral: 0, openInPeriod: 0, closedWithoutResult: 0 };
   const zeroStat    = { totalDeals: 0,  successful: 0,  unsuccessful: 0,  profitPercent: 0,     neutral: 0, openInPeriod: 0, closedWithoutResult: 0 };
 
@@ -420,14 +408,6 @@ export default function BotDetailScreenNew() {
   const fmtPct = (n: number) => `${n.toFixed(2)} %`;
 
   const PERIOD_TABS: BotPeriod[] = ["24h", "7d", "1m", "all"];
-  const CANDLE_TF_TABS: BinanceKlineInterval[] = ["15m", "1h", "4h", "1d"];
-
-  function candleTfMessageKey(tf: BinanceKlineInterval): MessageKey {
-    if (tf === "15m") return "bot.candleTf15m";
-    if (tf === "1h") return "bot.candleTf1h";
-    if (tf === "4h") return "bot.candleTf4h";
-    return "bot.candleTf1d";
-  }
 
   function periodTabLabel(tab: BotPeriod): string {
     if (tab === "24h") return t("bot.period24h");
@@ -520,63 +500,20 @@ export default function BotDetailScreenNew() {
           className={s.statsSection}
           aria-label={fromJournal ? t("bot.statsAriaJournal") : t("bot.statsAriaAlgo")}
         >
-          <div className={s.chartModeTabs} role="tablist" aria-label={t("bot.chartModeTabsAria")}>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={chartTab === "yield"}
-              className={`${s.chartModeTab} ${chartTab === "yield" ? s.chartModeTabActive : s.chartModeTabInactive} fm-interactive-chip`}
-              onClick={() => setChartTab("yield")}
-            >
-              {t("bot.chartTabYield")}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={chartTab === "pair"}
-              className={`${s.chartModeTab} ${chartTab === "pair" ? s.chartModeTabActive : s.chartModeTabInactive} fm-interactive-chip`}
-              onClick={() => setChartTab("pair")}
-            >
-              {t("bot.chartTabPair")}
-            </button>
-          </div>
-
-          {chartTab === "pair" ? (
-            <>
-              <div className={s.candleTfTabs} role="tablist" aria-label={t("bot.candleTfAria")}>
-                {CANDLE_TF_TABS.map((tf) => (
-                  <button
-                    key={tf}
-                    type="button"
-                    role="tab"
-                    aria-selected={candleTf === tf}
-                    className={`${s.candleTfTab} ${candleTf === tf ? s.candleTfTabActive : s.candleTfTabInactive} fm-interactive-chip`}
-                    onClick={() => setCandleTf(tf)}
-                  >
-                    {t(candleTfMessageKey(tf))}
-                  </button>
-                ))}
-              </div>
-              <div className={s.chartAreaWrap}>
-                <BotPairCandleChart binanceSymbol={botBinanceSymbol} trades={feedRowsForList} interval={candleTf} />
-              </div>
-            </>
-          ) : (
-            <div className={s.chartAreaWrap} data-tour-id="trading-chart">
-              <div className={journalLoading ? s.chartDimmed : undefined}>
-                <TradingChart points={chartPoints} />
-              </div>
-              {journalLoading ? (
-                <div
-                  className={s.chartSpinnerOverlay}
-                  role="status"
-                  aria-label={t("common.loading")}
-                >
-                  <SkeletonChart variant="trading" plotAreaOnly />
-                </div>
-              ) : null}
+          <div className={s.chartAreaWrap} data-tour-id="trading-chart">
+            <div className={journalLoading ? s.chartDimmed : undefined}>
+              <TradingChart points={chartPoints} />
             </div>
-          )}
+            {journalLoading ? (
+              <div
+                className={s.chartSpinnerOverlay}
+                role="status"
+                aria-label={t("common.loading")}
+              >
+                <SkeletonChart variant="trading" plotAreaOnly />
+              </div>
+            ) : null}
+          </div>
 
           <h2 className={s.sectionTitle}>{t("bot.periodTitle")}</h2>
 

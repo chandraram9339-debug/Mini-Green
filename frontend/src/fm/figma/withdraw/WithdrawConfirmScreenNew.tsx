@@ -18,7 +18,7 @@ import {
 import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
 import { useWithdrawDraftGuard } from "./useWithdrawDraftGuard";
 
-import { WithdrawAppBar, WithdrawTabBar, ReceiptCard } from "./withdrawFlowShared";
+import { WithdrawAppBar, WithdrawFlowBottomNav, ReceiptCard } from "./withdrawFlowShared";
 import s from "./withdrawFlowNew.module.css";
 
 export default function WithdrawConfirmScreenNew() {
@@ -100,7 +100,7 @@ export default function WithdrawConfirmScreenNew() {
         </button>
       </div>
 
-      <WithdrawTabBar theme="dark" />
+      <WithdrawFlowBottomNav />
     </div>
   );
 }

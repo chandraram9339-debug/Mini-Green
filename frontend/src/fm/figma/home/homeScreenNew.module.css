@@ -46,8 +46,8 @@
    * У нас под балансом ещё рефералы, поэтому высота по контенту; без min-height шапка не «растягивается» пустотой.
    */
   padding-top: var(--fm-green-header-pad-top);
-  /* Воздух под рефералкой до скругления */
-  padding-bottom: 30px;
+  /* Как Wallet / Bot: одинаковый низ зелёной шапки (--fm-green-header-pad-bottom в figma-layout-tokens) */
+  padding-bottom: var(--fm-green-header-pad-bottom, 20px);
 }
 
 /*
@@ -90,20 +90,18 @@
   z-index: 0;
 }
 
-/* ===== APP BAR ===== */
+/* ===== APP BAR (геометрия как Wallet / Bot — figma-layout-tokens) ===== */
 .appBar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   box-sizing: border-box;
   padding: var(--fm-appbar-padding);
   min-height: var(--fm-appbar-row-height);
-  /* При скролле шапка с балансом уезжает — полоса остаётся на зелёном фоне */
-  background-color: #2edd7d;
-  box-shadow: 0 1px 0 rgba(10, 10, 10, 0.08);
+  background: transparent;
 }
 
 .appBarRow {
@@ -112,6 +110,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  min-height: var(--fm-appbar-row-height);
 }
 
 .appBarBack {
@@ -126,6 +125,7 @@
   cursor: pointer;
   padding: 4px;
   flex-shrink: 0;
+  transition: background-color 0.15s;
 }
 
 .appBarLogo {
@@ -146,6 +146,7 @@
 
 .appBarBell,
 .appBarGear {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,8 +157,11 @@
   height: var(--fm-appbar-icon-slot);
   overflow: visible;
   line-height: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   text-decoration: none;
-  position: relative;
 }
 
 .appBarBell svg,
@@ -192,8 +196,8 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  /* ~20px от низа app bar до «Total Balance» в старт-стоп (top 140 vs app bar ~120). */
-  padding: 12px var(--fm-green-header-inset-x) 0;
+  /* Как Wallet: отступ под строкой app bar через контент (там margin-top у блока баланса) */
+  padding: 0 var(--fm-green-header-inset-x) 0;
   position: relative;
   z-index: 1;
 }
@@ -202,6 +206,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  /* Как Wallet .balanceInfo: 16px от низа app bar до первой строки контента */
+  margin-top: 16px;
 }
 
 .balanceLeft {

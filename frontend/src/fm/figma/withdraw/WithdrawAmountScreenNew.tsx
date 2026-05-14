@@ -12,7 +12,7 @@ import {
 import { useWithdrawDraftGuard } from "./useWithdrawDraftGuard";
 import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
 
-import { WithdrawAppBar, WithdrawTabBar } from "./withdrawFlowShared";
+import { WithdrawAppBar, WithdrawFlowBottomNav } from "./withdrawFlowShared";
 import s from "./withdrawFlowNew.module.css";
 
 function nextWithdrawRequestKey(): string {
@@ -104,7 +104,7 @@ export default function WithdrawAmountScreenNew() {
         </button>
       </div>
 
-      <WithdrawTabBar />
+      <WithdrawFlowBottomNav />
     </div>
   );
 }

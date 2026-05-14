@@ -343,17 +343,32 @@ export default function BalanceDepositScreenNew() {
                 </svg>
                 <span className={s.btnLabel}>{t("home.topUp")}</span>
               </Link>
-              <Link
-                to={routes.withdraw}
-                className={`${s.btnWithdraw} fm-interactive-pill`}
-                data-tour-id="wallet-withdraw"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M11.35 18V18.65H12.65V18H12H11.35ZM12 18H12.65V6H12H11.35V18H12Z" fill="white" />
-                  <path d="M7.5 10.5L12 6L16.5 10.5" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
-                </svg>
-                <span className={s.btnLabel}>{t("home.withdraw")}</span>
-              </Link>
+              {isDemoMode ? (
+                <span
+                  className={`${s.btnWithdraw} ${s.btnWithdrawDisabled}`}
+                  aria-disabled="true"
+                  title={t("demo.withdrawDisabled")}
+                  data-tour-id="wallet-withdraw"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M11.35 18V18.65H12.65V18H12H11.35ZM12 18H12.65V6H12H11.35V18H12Z" fill="white" />
+                    <path d="M7.5 10.5L12 6L16.5 10.5" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                  </svg>
+                  <span className={s.btnLabel}>{t("home.withdraw")}</span>
+                </span>
+              ) : (
+                <Link
+                  to={routes.withdraw}
+                  className={`${s.btnWithdraw} fm-interactive-pill`}
+                  data-tour-id="wallet-withdraw"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M11.35 18V18.65H12.65V18H12H11.35ZM12 18H12.65V6H12H11.35V18H12Z" fill="white" />
+                    <path d="M7.5 10.5L12 6L16.5 10.5" stroke="white" strokeWidth="1.3" strokeLinecap="square" strokeLinejoin="round" />
+                  </svg>
+                  <span className={s.btnLabel}>{t("home.withdraw")}</span>
+                </Link>
+              )}
             </div>
           </section>
         </header>

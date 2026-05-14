@@ -324,10 +324,10 @@
   margin: 0;
 }
 
-/* ── Bottom action area (button + gap before TabBar) ─────────── */
+/* ── Bottom action area (button + gap before floating nav) ───── */
 .bottomArea {
   flex-shrink: 0;
-  padding: 16px 20px 16px;
+  padding: 16px 20px calc(24px + 72px + 16px + env(safe-area-inset-bottom, 0px));
 }
 
 .ctaBtn {
@@ -363,55 +363,25 @@
   outline-offset: 3px;
 }
 
-/* ── Bottom TabBar ───────────────────────────────────────────── */
-.tabBar {
-  flex-shrink: 0;
+/* ── Fixed bottom dock: same geometry as FmMainLayout .bottomNavArea + FmSharedPillTabBar ─ */
+.withdrawFlowBottomDock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.withdrawFlowBottomDockInner {
   width: 100%;
-  background-color: #ffffff;
-  border-radius: 12px 12px 0 0;
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
-}
-
-.tabBarInner {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 0 16px;
-  height: 72px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.tabItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
-.tabItemIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 9999px;
-  transition:
-    background-color 0.15s ease,
-    opacity 0.15s ease;
-}
-
-.tabItemIconActive {
-  background-color: #2d6e93;
-}
-
-/* Light tab strip (bottom sheet): inactive hover */
-.tabItem:hover .tabItemIcon:not(.tabItemIconActive) {
-  background-color: rgba(0, 0, 0, 0.06);
-}
-
-.tabItem:hover .tabItemIconActive {
-  opacity: 0.9;
+  max-width: var(--fm-layout-column-max-width, 500px);
+  padding: 0 var(--fm-layout-shell-pad-x, 20px) calc(16px + env(safe-area-inset-bottom, 0px));
+  pointer-events: auto;
+  box-sizing: border-box;
 }
 
 /* ── Withdraw entry screen — Figma dark (Экран вывод), scoped ── */
@@ -489,7 +459,7 @@
 }
 
 .screenWithdrawDark .bottomArea {
-  padding: 16px 20px calc(24px + 72px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 20px calc(24px + 72px + 16px + env(safe-area-inset-bottom, 0px));
 }
 
 .screenWithdrawDark .ctaBtn {
@@ -500,37 +470,6 @@
 .screenWithdrawDark .ctaBtn:focus-visible {
   outline: 2px solid #40ff96;
   outline-offset: 3px;
-}
-
-.screenWithdrawDark .tabBar {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 350px;
-  z-index: 100;
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.screenWithdrawDark .tabBarInner {
-  justify-content: space-between;
-  height: auto;
-  min-height: 52px;
-  padding: 10px 26px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  border-radius: 50px;
-  background: rgba(25, 25, 25, 0.55);
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-sizing: border-box;
-}
-
-.screenWithdrawDark .tabItemIconActive {
-  background-color: #40ff96;
 }
 
 /* ── USDT Transfer (confirm) — Figma USDT Transfer, scoped ───── */
@@ -564,7 +503,7 @@
 }
 
 .screenTransferDark .bottomArea {
-  padding: 16px 20px calc(24px + 72px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 20px calc(24px + 72px + 16px + env(safe-area-inset-bottom, 0px));
 }
 
 .screenTransferDark .ctaBtn {
@@ -575,37 +514,6 @@
 .screenTransferDark .ctaBtn:focus-visible {
   outline: 2px solid #40ff96;
   outline-offset: 3px;
-}
-
-.screenTransferDark .tabBar {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 350px;
-  z-index: 100;
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.screenTransferDark .tabBarInner {
-  justify-content: space-between;
-  height: auto;
-  min-height: 52px;
-  padding: 10px 26px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  border-radius: 50px;
-  background: rgba(25, 25, 25, 0.55);
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-sizing: border-box;
-}
-
-.screenTransferDark .tabItemIconActive {
-  background-color: #40ff96;
 }
 
 /* Receipt: three separate #131413 rows (not one white card) */
@@ -670,7 +578,7 @@
 }
 
 .screenDoneDark .doneBody {
-  padding: 24px 20px calc(24px + 72px + env(safe-area-inset-bottom, 0px));
+  padding: 24px 20px calc(24px + 72px + 16px + env(safe-area-inset-bottom, 0px));
   gap: 0;
 }
 
@@ -705,40 +613,4 @@
   color: #40ff96;
 }
 
-.screenDoneDark .tabBar {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 350px;
-  z-index: 100;
-  background: transparent;
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.screenDoneDark .tabBarInner {
-  justify-content: space-between;
-  height: auto;
-  min-height: 52px;
-  padding: 10px 26px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-  border-radius: 50px;
-  background: rgba(25, 25, 25, 0.55);
-  box-shadow: 0 -4px 20px 0 rgba(45, 110, 147, 0.08);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-sizing: border-box;
-}
-
-.screenDoneDark .tabItemIconActive {
-  background-color: #40ff96;
-}
-
-/* Dark floating pill: same inactive hover tint as other redesigned screens */
-.screenWithdrawDark .tabItem:hover .tabItemIcon:not(.tabItemIconActive),
-.screenTransferDark .tabItem:hover .tabItemIcon:not(.tabItemIconActive),
-.screenDoneDark .tabItem:hover .tabItemIcon:not(.tabItemIconActive) {
-  background-color: rgba(255, 255, 255, 0.06);
-}
+/* (Bottom nav: shared FmSharedPillTabBar via WithdrawFlowBottomNav) */

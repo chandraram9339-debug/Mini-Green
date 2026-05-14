@@ -5,7 +5,6 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
-import { useDemoStore } from "../../stores/demoStore";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatDepositFeeFootnote } from "../withdraw/withdrawDraft";
 import {
@@ -14,12 +13,8 @@ import {
   hapticSuccess,
   showMiniAppAlert,
 } from "../../telegram/uiFeedback";
-import { readTgUserIdForMemo } from "../../telegram/tgUserId";
-import { TonTopUpBlock } from "../../ton/TonTopUpBlock";
 
 import s from "./topUpScreenNew.module.css";
-
-type TopMethod = "choose" | "trc20" | "ton";
 
 function qrImageUrl(data: string, size = 240) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
@@ -113,9 +108,6 @@ export default function TopUpScreenNew() {
   const { t } = useFmLocale();
   const { wallet, confirmDepositPaid, notificationUnreadCount } = useAppSession();
   const { minDepositUsdt, depositFeeBps, depositFeeFixedUsdt } = useWalletDisplay();
-  const isDemoMode = useDemoStore((s) => s.isDemoMode);
-
-  const [method, setMethod] = useState<TopMethod>("choose");
 
   const depositAddress = wallet?.depositAddress ?? DEPOSIT_WALLET_ADDRESS;
   const depositFeeNote = formatDepositFeeFootnote({
@@ -123,8 +115,6 @@ export default function TopUpScreenNew() {
     depositFeeBps,
     depositFeeFixedUsdt,
   });
-
-  const tgMemo = readTgUserIdForMemo();
 
   const [qrOk, setQrOk] = useState(true);
   const [paidBusy, setPaidBusy] = useState(false);
@@ -136,22 +126,9 @@ export default function TopUpScreenNew() {
     return () => window.clearTimeout(id);
   }, [paidSuccessVisible]);
 
-  useEffect(() => {
-    if (isDemoMode && method === "ton") setMethod("trc20");
-  }, [isDemoMode, method]);
-
   function handleAppBarBack(): void {
-    if (method !== "choose") {
-      hapticLight();
-      setMethod("choose");
-      return;
-    }
-    navigate(routes.balanceDeposit);
-  }
-
-  function selectMethod(next: TopMethod): void {
     hapticLight();
-    setMethod(next);
+    navigate(routes.balanceDeposit);
   }
 
   async function copyAddress(): Promise<void> {
@@ -186,144 +163,74 @@ export default function TopUpScreenNew() {
       <AppBar title={t("deposit.title")} onBack={handleAppBarBack} bellBadge={notificationUnreadCount} />
 
       <div className={s.body}>
-        {method === "choose" ? (
-          <section className={s.methodChooser} aria-label={t("topup.sectionAria")}>
-            <h1 className={s.heroTitle}>{t("topup.chooseMethodTitle")}</h1>
-            <p className={s.heroSubtitle}>{t("topup.chooseMethodSubtitle")}</p>
+        <section className={s.stepSection} aria-label={t("topup.trc20StepTitle")}>
+          <h1 className={s.stepTitle}>{t("topup.trc20StepTitle")}</h1>
+          <p className={s.stepHint}>{t("topup.title")}</p>
 
-            <div className={s.methodGrid}>
-              <button
-                type="button"
-                className={`${s.methodCard} ${s.methodCardPrimary}`}
-                onClick={() => selectMethod("trc20")}
-              >
-                <span className={s.methodIcon} aria-hidden>
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <rect x="4" y="6" width="32" height="28" rx="4" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M12 14h16M12 20h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <circle cx="28" cy="24" r="4" fill="currentColor" opacity="0.35" />
-                  </svg>
-                </span>
-                <span className={s.methodCardTitle}>{t("topup.methodTrc20Title")}</span>
-                <span className={s.methodCardDesc}>{t("topup.methodTrc20Subtitle")}</span>
-              </button>
-
-              {!isDemoMode ? (
-                <button type="button" className={s.methodCard} onClick={() => selectMethod("ton")}>
-                  <span className={s.methodIcon} aria-hidden>
-                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                      <path
-                        d="M20 6L8 12v8l12 6 12-6v-8L20 6z"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinejoin="round"
-                      />
-                      <path d="M20 20v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </span>
-                  <span className={s.methodCardTitle}>{t("topup.methodTonTitle")}</span>
-                  <span className={s.methodCardDesc}>{t("topup.methodTonSubtitle")}</span>
-                </button>
-              ) : null}
-            </div>
-          </section>
-        ) : null}
-
-        {method === "trc20" ? (
-          <section className={s.stepSection} aria-label={t("topup.trc20StepTitle")}>
-            <button type="button" className={s.stepBack} onClick={() => selectMethod("choose")}>
-              ← {t("topup.changeMethod")}
-            </button>
-            <h1 className={s.stepTitle}>{t("topup.trc20StepTitle")}</h1>
-            <p className={s.stepHint}>{t("topup.title")}</p>
-
-            <div className={s.depositAddressTourWrap} data-tour-id="deposit-address-block">
-              <div className={s.qrWrap}>
-                {qrOk && (
-                  <img
-                    className={s.qrImg}
-                    src={qrImageUrl(depositAddress, 240)}
-                    width={240}
-                    height={240}
-                    alt=""
-                    decoding="async"
-                    onError={() => setQrOk(false)}
-                  />
-                )}
-              </div>
-
-              <div className={s.addressCard}>
-                <p className={s.addressText}>{depositAddress}</p>
-              </div>
+          <div className={s.depositAddressTourWrap} data-tour-id="deposit-address-block">
+            <div className={s.qrWrap}>
+              {qrOk && (
+                <img
+                  className={s.qrImg}
+                  src={qrImageUrl(depositAddress, 240)}
+                  width={240}
+                  height={240}
+                  alt=""
+                  decoding="async"
+                  onError={() => setQrOk(false)}
+                />
+              )}
             </div>
 
-            <p className={s.feeNote} data-tour-id="deposit-fee-note">
-              {depositFeeNote}
-            </p>
+            <div className={s.addressCard}>
+              <p className={s.addressText}>{depositAddress}</p>
+            </div>
+          </div>
 
-            <button type="button" className={`${s.btn} ${s.btnCopy}`} onClick={() => void copyAddress()}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 8H16V21H3V8Z"
-                  stroke="#8C8C8C"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M8 8V3H21V16H16"
-                  stroke="#8C8C8C"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>{t("seed.copy")}</span>
-            </button>
+          <p className={s.feeNote} data-tour-id="deposit-fee-note">
+            {depositFeeNote}
+          </p>
 
-            <button
-              type="button"
-              className={`${s.btn} ${s.btnPaid}`}
-              disabled={paidBusy}
-              aria-busy={paidBusy}
-              data-tour-id="deposit-paid-button"
-              onClick={() => void handlePaid()}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M5 12L10 17L20 7"
-                  stroke="#191919"
-                  strokeWidth="2"
-                  strokeLinecap="square"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>{t("topup.paid")}</span>
-            </button>
-          </section>
-        ) : null}
-
-        {method === "ton" && !isDemoMode ? (
-          <section className={s.stepSection} aria-label={t("topup.tonStepTitle")}>
-            <button type="button" className={s.stepBack} onClick={() => selectMethod("choose")}>
-              ← {t("topup.changeMethod")}
-            </button>
-            <h1 className={s.stepTitle}>{t("topup.tonStepTitle")}</h1>
-            <p className={s.tonIntro}>{t("topup.tonStepIntro")}</p>
-
-            <div className={s.tonPanel}>
-              <TonTopUpBlock
-                wrapClassName={s.tonActionsInner}
-                primaryButtonClassName={`${s.btn} ${s.btnTonPrimary}`}
-                secondaryButtonClassName={`${s.btn} ${s.btnTonSecondary}`}
-                buttonClassName={`${s.btn} ${s.btnTonPrimary}`}
-                tonCentralAddress={wallet?.centralTonDepositAddress}
-                jettonMaster={wallet?.tonUsdtJettonMaster}
-                tgComment={tgMemo}
+          <button type="button" className={`${s.btn} ${s.btnCopy}`} onClick={() => void copyAddress()}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 8H16V21H3V8Z"
+                stroke="#8C8C8C"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-            </div>
-          </section>
-        ) : null}
+              <path
+                d="M8 8V3H21V16H16"
+                stroke="#8C8C8C"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>{t("seed.copy")}</span>
+          </button>
+
+          <button
+            type="button"
+            className={`${s.btn} ${s.btnPaid}`}
+            disabled={paidBusy}
+            aria-busy={paidBusy}
+            data-tour-id="deposit-paid-button"
+            onClick={() => void handlePaid()}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 12L10 17L20 7"
+                stroke="#191919"
+                strokeWidth="2"
+                strokeLinecap="square"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>{t("topup.paid")}</span>
+          </button>
+        </section>
       </div>
 
       {paidSuccessVisible ? (

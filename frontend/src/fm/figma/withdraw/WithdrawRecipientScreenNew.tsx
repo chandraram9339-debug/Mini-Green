@@ -4,7 +4,7 @@ import { routes } from "../routes";
 import { readWithdrawDraft, formatShortAddress } from "./withdrawDraft";
 import { useWithdrawDraftGuard } from "./useWithdrawDraftGuard";
 
-import { WithdrawAppBar, WithdrawTabBar } from "./withdrawFlowShared";
+import { WithdrawAppBar, WithdrawFlowBottomNav } from "./withdrawFlowShared";
 import s from "./withdrawFlowNew.module.css";
 
 export default function WithdrawRecipientScreenNew() {
@@ -41,7 +41,7 @@ export default function WithdrawRecipientScreenNew() {
         </Link>
       </div>
 
-      <WithdrawTabBar />
+      <WithdrawFlowBottomNav />
     </div>
   );
 }

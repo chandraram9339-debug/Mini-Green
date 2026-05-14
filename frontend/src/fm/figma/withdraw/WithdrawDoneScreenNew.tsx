@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { routes } from "../routes";
 import { formatShortAddress, readWithdrawDonePayload } from "./withdrawDraft";
 
-import { WithdrawAppBar, WithdrawTabBar, ReceiptCard } from "./withdrawFlowShared";
+import { WithdrawAppBar, WithdrawFlowBottomNav, ReceiptCard } from "./withdrawFlowShared";
 import s from "./withdrawFlowNew.module.css";
 
 export default function WithdrawDoneScreenNew() {
@@ -60,7 +60,7 @@ export default function WithdrawDoneScreenNew() {
         </div>
       </div>
 
-      <WithdrawTabBar theme="dark" />
+      <WithdrawFlowBottomNav />
     </div>
   );
 }

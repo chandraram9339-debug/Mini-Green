@@ -13,7 +13,7 @@ import { useWithdrawBalanceSnapshot } from "./useWithdrawBalanceSnapshot";
 import { isValidTronAddress, normalizeTronAddressInput } from "./tronAddress";
 import type { MessageKey } from "../../i18n/messages";
 
-import { WithdrawAppBar, WithdrawTabBar } from "./withdrawFlowShared";
+import { WithdrawAppBar, WithdrawFlowBottomNav } from "./withdrawFlowShared";
 import s from "./withdrawFlowNew.module.css";
 
 function nextWithdrawRequestKey(): string {
@@ -165,7 +165,7 @@ export default function WithdrawScreenNew() {
         </button>
       </div>
 
-      <WithdrawTabBar theme="dark" />
+      <WithdrawFlowBottomNav />
     </div>
   );
 }
