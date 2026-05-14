@@ -76,8 +76,15 @@ export function SplashScreen({ durationMs }: SplashScreenProps) {
     "--fm-splash-duration": `${durationMs}ms`,
   } as CSSProperties;
 
+  const tgMini = isTelegramMiniAppWebView();
+
   return (
-    <div className={`fm-splash fm-splash--${scheme}`} style={animationStyle} role="status" aria-label="Loading">
+    <div
+      className={`fm-splash fm-splash--${scheme}${tgMini ? " fm-splash--tg-miniapp" : ""}`}
+      style={animationStyle}
+      role="status"
+      aria-label="Loading"
+    >
       <div className="fm-splash-shell">
         <div className="fm-splash-logo-wrap">
           <div className="fm-splash-logo-stage">
