@@ -13,6 +13,7 @@ import { useFmLocale } from "../../i18n/useFmLocale";
 import { routes } from "../routes";
 import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
+import { copyTextToClipboard } from "../../lib/copyTextToClipboard";
 import { hapticError, hapticLight, hapticSuccess, showMiniAppAlert } from "../../telegram/uiFeedback";
 import { defaultAppBarAssetUrls } from "../assets/appBarShared";
 import { depositAssets } from "../balance-deposit/depositAssets";
@@ -58,11 +59,11 @@ export default function TopUpScreen() {
   }, [paidSuccessVisible]);
 
   async function copyAddress(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(depositAddress);
+    const ok = await copyTextToClipboard(depositAddress);
+    if (ok) {
       hapticLight();
       showMiniAppAlert(t("seed.copied"));
-    } catch {
+    } else {
       depositNotify(t("topup.alertCopyFail"));
     }
   }

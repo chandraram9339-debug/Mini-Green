@@ -7,6 +7,7 @@ import { DEPOSIT_WALLET_ADDRESS } from "../../config/deposit";
 import { useAppSession } from "../../session/useAppSession";
 import { useWalletDisplay } from "../useWalletDisplay";
 import { formatDepositFeeFootnote } from "../withdraw/withdrawDraft";
+import { copyTextToClipboard } from "../../lib/copyTextToClipboard";
 import {
   hapticError,
   hapticLight,
@@ -132,11 +133,11 @@ export default function TopUpScreenNew() {
   }
 
   async function copyAddress(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(depositAddress);
+    const ok = await copyTextToClipboard(depositAddress);
+    if (ok) {
       hapticLight();
       showMiniAppAlert(t("seed.copied"));
-    } catch {
+    } else {
       showMiniAppAlert(t("topup.alertCopyFail"), { force: true });
     }
   }
