@@ -91,6 +91,27 @@
     drop-shadow(0 6px 22px rgba(64, 255, 150, 0.38));
 }
 
+/*
+ * Только Telegram Mini App: тот же зелёный (#40ff96), без filter на растре внутри preserve-3d
+ * (иначе на Android WebView логотип почти сливается с фоном при вращении).
+ */
+.fm-splash-logo-mark {
+  display: block;
+  width: 196px;
+  height: 24px;
+  flex-shrink: 0;
+  background-color: #40ff96;
+  -webkit-mask-image: url("/assets/app-bar/palladium-logo.png");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-image: url("/assets/app-bar/palladium-logo.png");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  filter: drop-shadow(0 6px 22px rgba(64, 255, 150, 0.38));
+}
+
 /* Тёмный «блик» по маске логотипа — хорошо читается на зелёном (раньше был светлый/серебристый) */
 .fm-splash-logo-shimmer {
   position: absolute;

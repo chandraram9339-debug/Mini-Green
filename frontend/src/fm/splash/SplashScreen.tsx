@@ -11,6 +11,32 @@ function resolveSplashScheme(): "light" | "dark" {
   return document.documentElement.dataset.fmTheme === "dark" ? "dark" : "light";
 }
 
+/** В TG WebView (Android/iOS) filter на <img> внутри 3D rotateY даёт почти чёрный логотип; в браузере оставляем img+filter. */
+function isTelegramMiniAppWebView(): boolean {
+  return typeof window !== "undefined" && Boolean(window.Telegram?.WebApp);
+}
+
+function SplashLogoGlyph({ labelled }: { labelled: boolean }) {
+  if (isTelegramMiniAppWebView()) {
+    return (
+      <div
+        className="fm-splash-logo-mark"
+        role={labelled ? "img" : undefined}
+        aria-label={labelled ? "Palladium" : undefined}
+        aria-hidden={labelled ? undefined : true}
+      />
+    );
+  }
+  return (
+    <img
+      className="fm-splash-logo-image"
+      alt={labelled ? "Palladium" : ""}
+      src={appBarLogoUrl}
+      aria-hidden={labelled ? undefined : true}
+    />
+  );
+}
+
 export function SplashScreen({ durationMs }: SplashScreenProps) {
   const [scheme, setScheme] = useState<"light" | "dark">(() => resolveSplashScheme());
   const [spinProgress, setSpinProgress] = useState(0);
@@ -57,11 +83,11 @@ export function SplashScreen({ durationMs }: SplashScreenProps) {
           <div className="fm-splash-logo-stage">
             <div className="fm-splash-logo-orbit" style={orbitStyle}>
               <div className="fm-splash-logo-face fm-splash-logo-face--front">
-                <img className="fm-splash-logo-image" alt="Palladium" src={appBarLogoUrl} />
+                <SplashLogoGlyph labelled />
                 <span className="fm-splash-logo-shimmer" aria-hidden="true" />
               </div>
               <div className="fm-splash-logo-face fm-splash-logo-face--back" aria-hidden="true">
-                <img className="fm-splash-logo-image" alt="" src={appBarLogoUrl} />
+                <SplashLogoGlyph labelled={false} />
                 <span className="fm-splash-logo-shimmer" aria-hidden="true" />
               </div>
             </div>
